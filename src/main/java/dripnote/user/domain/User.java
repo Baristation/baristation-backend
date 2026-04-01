@@ -3,16 +3,18 @@ package dripnote.user.domain;
 import dripnote.user.enums.UserProvider;
 import dripnote.user.enums.UserRole;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(name = "unique_provider_id", columnNames = {"provider", "provider_id"})
@@ -26,12 +28,11 @@ public class User {
     @Column(name = "user_id")
     private Long userId;
 
-    // OAuth 정책상 이메일은 선택인 경우가 많아 nullable = true(디폴트)로 변경
-    @Column(name = "email", length = 255)
+    // Kakao, Naver, Google 전부 이메일을 제공해서 null false로 수정하였습니다.
+    @Column(name = "email", nullable = false, length = 255)
     private String email;
 
     // OAuth: google, kakao, naver 등
-    @Enumerated(EnumType.STRING)
     @Column(name = "provider", nullable = false, length = 20)
     private UserProvider provider;
 
@@ -56,4 +57,13 @@ public class User {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public void updateNickname(String newNickname) {
+        if (newNickname == null || newNickname.isBlank()) {
+            throw new IllegalArgumentException("닉네임은 필수 입력값입니다.");
+        }
+
+        // 추후 중복여부 글자수 제한 등 로직 추가
+        this.nickname = newNickname;
+    }
 }
