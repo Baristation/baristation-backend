@@ -2,17 +2,16 @@ package dripnote.bean.domain;
 
 import dripnote.bean.enums.ImageType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
+@Builder
 @Table(name = "bean_images")
 public class BeanImage {
 
@@ -38,13 +37,6 @@ public class BeanImage {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    public BeanImage(Bean bean, String imageUrl, ImageType imageType, Integer sortOrder) {
-        this.bean = bean;
-        this.imageUrl = imageUrl;
-        this.imageType = imageType;
-        this.sortOrder = sortOrder;
-    }
 
     public void changeImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;

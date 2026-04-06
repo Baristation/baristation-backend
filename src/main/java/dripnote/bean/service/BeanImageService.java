@@ -7,7 +7,7 @@ import dripnote.bean.payload.response.BeanImageResponse;
 import dripnote.bean.repository.BeanImagesRepository;
 import dripnote.bean.repository.BeansRepository;
 import dripnote.common.exception.CustomException;
-import dripnote.common.service.R2ImageService;
+import dripnote.common.r2.R2ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,8 +39,12 @@ public class BeanImageService {
         // 썸네일(Thumb)이 없으면 이미지 저장
         if (thumbImage == null) {
             String imageUrl = r2ImageService.uploadBeanThumb(file, beanId);
-            BeanImage saved = beanImagesRepository.save(
-                    new BeanImage(bean, imageUrl, ImageType.THUMB, THUMB_SORT_ORDER)
+            BeanImage saved = beanImagesRepository.save(BeanImage.builder()
+                    .bean(bean)
+                    .imageType(ImageType.THUMB)
+                    .imageUrl(imageUrl)
+                    .sortOrder(THUMB_SORT_ORDER)
+                    .build()
             );
             return BeanImageResponse.from(saved);
         }
@@ -60,7 +64,13 @@ public class BeanImageService {
         int nextSortOrder = beanImagesRepository.findMaxSubSortOrder(beanId) + 1;
         String imageUrl = r2ImageService.uploadBeanSubImage(file, beanId);
 
-        BeanImage subImage = new BeanImage(bean, imageUrl, ImageType.SUB, nextSortOrder);
+        BeanImage subImage = BeanImage.builder()
+                .bean(bean)
+                .imageType(ImageType.SUB)
+                .imageUrl(imageUrl)
+                .sortOrder(nextSortOrder)
+                .build();
+
         BeanImage saved = beanImagesRepository.save(subImage);
 
         return BeanImageResponse.from(saved);

@@ -1,6 +1,5 @@
-package dripnote.common.service;
+package dripnote.common.r2;
 
-import dripnote.common.r2.R2Properties;
 import dripnote.common.exception.CustomException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
