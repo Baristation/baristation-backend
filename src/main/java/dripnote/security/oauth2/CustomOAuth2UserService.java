@@ -1,13 +1,14 @@
-package dripnote.user.service;
+package dripnote.security.oauth2;
 
 import dripnote.user.domain.User;
-import dripnote.user.payload.dto.GoogleUserInfoDTO;
-import dripnote.user.payload.dto.KakaoUserInfoDTO;
-import dripnote.user.payload.dto.NaverUserInfoDTO;
-import dripnote.user.payload.dto.OAuth2UserInfo;
+import dripnote.user.payload.dto.oauth.GoogleUserInfoDTO;
+import dripnote.user.payload.dto.oauth.KakaoUserInfoDTO;
+import dripnote.user.payload.dto.oauth.NaverUserInfoDTO;
+import dripnote.user.payload.dto.oauth.OAuth2UserInfo;
 import dripnote.user.enums.UserRole;
 import dripnote.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -32,14 +34,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         OAuth2UserInfo oAuth2UserInfo = null;
         if (registrationId.equals("google")) {
-            System.out.println("구글 로그인 요청");
+            log.info("구글 로그인 요청");
             oAuth2UserInfo = new GoogleUserInfoDTO(attributes);
         } else if (registrationId.equals("naver")) {
-            System.out.println("네이버 로그인 요청");
+            log.info("네이버 로그인 요청");
             oAuth2UserInfo = new NaverUserInfoDTO(attributes);
         } else if (registrationId.equals("kakao")) {
-            System.out.println("카카오 로그인 요청");
-             oAuth2UserInfo = new KakaoUserInfoDTO(attributes);
+            log.info("카카오 로그인 요청");
+            oAuth2UserInfo = new KakaoUserInfoDTO(attributes);
         }
         saveOrUpdateUser(oAuth2UserInfo);
 
@@ -59,16 +61,28 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         );
 
         if (userOptional.isEmpty()) {
+            // 닉네임 중복 방지
+            String nickname = generateUniqueNickname(userInfo.getName());
+
             User newUser = User.builder()
                     .email(userInfo.getEmail())
                     .provider(userInfo.getProvider())
                     .providerId(userInfo.getProviderId())
-                    .nickname(userInfo.getName())
+                    .nickname(nickname)
                     .role(UserRole.USER)
                     .build();
 
             userRepository.save(newUser);
-            System.out.println("신규 소셜 유저 회원가입 완료! " + userInfo.getName());
+            log.info("신규 소셜 유저 회원가입 완료! : {} ", userInfo.getName());
         }
-}
+    }
+    private String generateUniqueNickname(String baseName) {
+        String nickname = baseName;
+        // 닉네임 중복 확인
+        while (userRepository.existsByNickname(nickname)) {
+            // 중복이라면 뒤에 4자리 난수를 붙여서 다시 체크
+            nickname = baseName + "_" + (int)(Math.random() * 9000 + 1000);
+        }
+        return nickname;
+    }
 }

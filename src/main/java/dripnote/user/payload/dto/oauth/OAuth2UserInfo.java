@@ -1,4 +1,4 @@
-package dripnote.user.payload.dto;
+package dripnote.user.payload.dto.oauth;
 
 import dripnote.user.enums.UserProvider;
 
