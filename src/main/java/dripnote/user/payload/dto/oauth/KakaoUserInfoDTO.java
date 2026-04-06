@@ -1,23 +1,10 @@
-package dripnote.user.payload.dto;
+package dripnote.user.payload.dto.oauth;
 
 import dripnote.user.enums.UserProvider;
 
-import java.util.Collections;
 import java.util.Map;
 
-public class KakaoUserInfoDTO implements OAuth2UserInfo {
-
-    private final Map<String, Object> attributes;
-    private final Map<String, Object> kakaoAccount;
-    private final Map<String, Object> profile;
-
-    @SuppressWarnings("unchecked")
-    public KakaoUserInfoDTO(Map<String, Object> attributes) {
-        this.attributes = attributes;
-        this.kakaoAccount = (Map<String, Object>) attributes.getOrDefault("kakao_account", Collections.emptyMap());
-        this.profile = (Map<String, Object>) kakaoAccount.getOrDefault("profile", Collections.emptyMap());
-    }
-
+public record KakaoUserInfoDTO(Map<String, Object> attributes) implements OAuth2UserInfo {
     @Override
     public UserProvider getProvider() {
         return UserProvider.KAKAO;
@@ -31,12 +18,19 @@ public class KakaoUserInfoDTO implements OAuth2UserInfo {
 
     @Override
     public String getEmail() {
+        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
         Object email = kakaoAccount.get("email");
         return email != null ? String.valueOf(email) : null;
     }
 
     @Override
     public String getName() {
+        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+        if (kakaoAccount == null) return "kakao_user";
+
+        Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+        if (profile == null) return "kakao_user";
+
         Object nickname = profile.get("nickname");
         return nickname != null ? String.valueOf(nickname) : "kakao_user";
     }

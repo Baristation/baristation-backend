@@ -1,16 +1,9 @@
-package dripnote.user.payload.dto;
+package dripnote.user.payload.dto.oauth;
 
 import dripnote.user.enums.UserProvider;
-
 import java.util.Map;
 
-// 구글 구현체 DTO
-public class GoogleUserInfoDTO implements OAuth2UserInfo {
-    private Map<String, Object> attributes; // 구글 JSON 데이터
-
-    public GoogleUserInfoDTO(Map<String, Object> attributes) {
-        this.attributes = attributes;
-    }
+public record GoogleUserInfoDTO(Map<String, Object> attributes) implements OAuth2UserInfo {
 
     @Override
     public UserProvider getProvider() {
