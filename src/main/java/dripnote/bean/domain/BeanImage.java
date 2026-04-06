@@ -2,6 +2,7 @@ package dripnote.bean.domain;
 
 import dripnote.bean.enums.ImageType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,17 +11,11 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "bean_images")
 public class BeanImage {
-    /**[수정된 부분]
-     * @Enumerated(EnumType.STRING)
-     * @Column(name = "image_type", length = 20)
-     * private ImageType imageType;
-     * ImageType을 ENUM으로 만들어서 Main 이미지와 Sub 이미지를 구분했습니다.
-     */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "bean_image_id")
@@ -38,9 +33,24 @@ public class BeanImage {
     private ImageType imageType;
 
     @Column(name = "sort_order", nullable = false)
-    private Integer sortOrder = 1;
+    private Integer sortOrder;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public BeanImage(Bean bean, String imageUrl, ImageType imageType, Integer sortOrder) {
+        this.bean = bean;
+        this.imageUrl = imageUrl;
+        this.imageType = imageType;
+        this.sortOrder = sortOrder;
+    }
+
+    public void changeImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void changeSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
+    }
 }

@@ -45,7 +45,7 @@ public class SecurityConfig {
 
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth -> oauth
-                        .loginPage("/signin") // 커스텀 로그인 페이지 사용 시
+//                        .loginPage("/signin") // 커스텀 로그인 페이지 사용 시
                         .defaultSuccessUrl("/", false) // 로그인 성공 시 이동할 곳
                 )
 

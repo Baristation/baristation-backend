@@ -65,7 +65,7 @@ public class HomeService {
                 beanTastingNotesRepository.findByBean_BeanIdIn(beanIds);
 
         List<BeanImage> beanImages =
-                beanImagesRepository.findByBean_BeanIdInAndImageType(beanIds, ImageType.THUMBNAIL);
+                beanImagesRepository.findByBean_BeanIdInAndImageType(beanIds, ImageType.THUMB);
 
         Map<Long, List<String>> beanTastingMap = new LinkedHashMap<>();
         for (BeanTastingNote beanTastingNote : beanTastingNotes) {
