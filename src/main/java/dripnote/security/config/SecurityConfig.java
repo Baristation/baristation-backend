@@ -1,6 +1,6 @@
 package dripnote.security.config;
 
-import dripnote.security.oauth2.CustomOAuth2UserService;
+import dripnote.user.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;

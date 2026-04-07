@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     // Provider별로 ProviderId를 통해 사용자 조회
     Optional<User> findByProviderAndProviderId(UserProvider provider, String providerId);
+
+    boolean existsByNickname(String nickname);
 }

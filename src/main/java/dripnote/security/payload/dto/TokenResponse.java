@@ -1,0 +1,11 @@
+package dripnote.security.payload.dto;
+
+public record TokenResponse(
+    String accessToken,
+    String refreshToken,
+    String tokenType // "Bearer"
+) {
+    public static TokenResponse of(String accessToken, String refreshToken) {
+        return new TokenResponse(accessToken, refreshToken, "Bearer");
+    }
+}
