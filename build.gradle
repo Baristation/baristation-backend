@@ -38,6 +38,8 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	implementation platform("software.amazon.awssdk:bom:2.31.57")
+	implementation "software.amazon.awssdk:s3"
 
 	// 3. 데이터베이스 (드라이버)
 	runtimeOnly 'com.mysql:mysql-connector-j'

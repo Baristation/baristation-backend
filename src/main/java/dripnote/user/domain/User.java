@@ -31,6 +31,7 @@ public class User {
     private String email;
 
     // OAuth: google, kakao, naver 등
+    @Enumerated(EnumType.STRING)
     @Column(name = "provider", nullable = false, length = 20)
     private UserProvider provider;
 
