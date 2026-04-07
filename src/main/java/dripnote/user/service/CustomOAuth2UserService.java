@@ -1,4 +1,4 @@
-package dripnote.security.oauth2;
+package dripnote.user.service;
 
 import dripnote.user.domain.User;
 import dripnote.user.payload.dto.oauth.GoogleUserInfoDTO;

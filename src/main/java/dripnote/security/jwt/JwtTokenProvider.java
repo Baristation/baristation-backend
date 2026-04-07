@@ -1,5 +1,6 @@
 package dripnote.security.jwt;
 
+import dripnote.security.payload.dto.TokenResponse;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -41,17 +42,13 @@ public class JwtTokenProvider {
         String accessToken = createToken(user, accessExp);
         String refreshToken = createToken(user, refreshExp); // Refresh Token도 동일 로직으로 생성
 
-        return TokenResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken) // Refresh Token 추가
-                .tokenType("Bearer")
-                .build();
+        return TokenResponse.of(accessToken, refreshToken);
     }
 
     // 로그인시 토큰 생성 메서드
     private String createToken(User user, long expTime) {
         // claims - jwt 토큰 속 내용 생성
-        Claims claims = Jwts.claims().setSubject(user.getProviderId());
+        Claims claims = Jwts.claims().setSubject(String.valueOf(user.getUserId()));
         claims.put("role", user.getRole().name()); // 권한 주입
         /**
          * 압축해서 하나의 문자열로
