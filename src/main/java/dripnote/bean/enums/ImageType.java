@@ -1,6 +1,6 @@
 package dripnote.bean.enums;
 
 public enum ImageType {
-    THUMBNAIL,
+    THUMB,
     SUB
 }
