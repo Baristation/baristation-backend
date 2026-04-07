@@ -8,7 +8,7 @@ public enum ErrorCode {
     CONCURRENCY_CONFLICT(HttpStatus.CONFLICT, "100-1","다른 사용자가 먼저 수정했습니다. 페이지를 새로고침 후 다시 이용해주세요"),
 
     // 600xx: Bean 관련 오류
-    CLUB_NOT_FOUND(HttpStatus.NOT_FOUND, "600-1", "원두가 존재하지 않습니다."),
+    BEAN_NOT_FOUND(HttpStatus.NOT_FOUND, "600-1", "원두를 찾을 수 없습니다."),
     CLUB_INFORMATION_NOT_FOUND(HttpStatus.NOT_FOUND, "600-2", "동아리 상세 정보가 존재하지 않습니다."),
     CLUB_FEED_IMAGES_NOT_FOUND(HttpStatus.NOT_FOUND, "600-3", "동아리 피드가 존재하지 않습니다."),
     CLUB_ID_INVALID(HttpStatus.BAD_REQUEST, "600-4", "올바르지 않은 클럽 요청입니다."),
@@ -48,7 +48,6 @@ public enum ErrorCode {
     EMPTY_IMAGE_FILE(HttpStatus.BAD_REQUEST, "800-2", "빈 파일은 업로드할 수 없습니다."),
     UNSUPPORTED_IMAGE_TYPE(HttpStatus.BAD_REQUEST, "800-3", "지원하지 않는 이미지 형식입니다."),
     IMAGE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "800-4", "이미지 크기는 5MB 이하여야 합니다."),
-    BEAN_NOT_FOUND(HttpStatus.NOT_FOUND, "800-5", "원두를 찾을 수 없습니다."),
     BEAN_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "800-6", "원두 이미지를 찾을 수 없습니다."),
     THUMB_IMAGE_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "800-7", "대표 이미지는 전용 API를 사용해주세요."),
 

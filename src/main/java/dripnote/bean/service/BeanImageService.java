@@ -36,23 +36,35 @@ public class BeanImageService {
         BeanImage thumbImage = beanImagesRepository.findByBean_BeanIdAndImageType(beanId, ImageType.THUMB)
                 .orElse(null);
 
-        // 썸네일(Thumb)이 없으면 이미지 저장
+        // 대표 이미지가 없으면 새로 저장
         if (thumbImage == null) {
             String imageUrl = r2ImageService.uploadBeanThumb(file, beanId);
-            BeanImage saved = beanImagesRepository.save(BeanImage.builder()
-                    .bean(bean)
-                    .imageType(ImageType.THUMB)
-                    .imageUrl(imageUrl)
-                    .sortOrder(THUMB_SORT_ORDER)
-                    .build()
+
+            BeanImage saved = beanImagesRepository.save(
+                    BeanImage.builder()
+                            .bean(bean)
+                            .imageType(ImageType.THUMB)
+                            .imageUrl(imageUrl)
+                            .sortOrder(THUMB_SORT_ORDER)
+                            .build()
             );
+
             return BeanImageResponse.from(saved);
         }
 
-        // 썸네일(Thumb)이 있으면 이미지 수정
-        String imageUrl = r2ImageService.updateByUrl(file, thumbImage.getImageUrl());
-        thumbImage.changeImageUrl(imageUrl);
-        thumbImage.changeSortOrder(0);
+        // 대표 이미지가 있으면 "기존 URL 경로 재사용"이 아니라
+        // 항상 새 규칙 경로로 업로드
+        String oldImageUrl = thumbImage.getImageUrl();
+        String newImageUrl = r2ImageService.uploadBeanThumb(file, beanId);
+
+        // 예전 구버전 경로였다면 정리
+        // 이미 새 경로였다면 uploadBeanThumb()가 같은 위치를 덮어썼을 수 있으므로 삭제하면 안 됨
+        if (!oldImageUrl.equals(newImageUrl)) {
+            r2ImageService.deleteByUrl(oldImageUrl);
+        }
+
+        thumbImage.changeImageUrl(newImageUrl);
+        thumbImage.changeSortOrder(THUMB_SORT_ORDER);
 
         return BeanImageResponse.from(thumbImage);
     }
@@ -81,13 +93,21 @@ public class BeanImageService {
         BeanImage beanImage = beanImagesRepository.findById(beanImageId)
                 .orElseThrow(() -> new CustomException(BEAN_IMAGE_NOT_FOUND));
 
-        // 썸네일(Thumb) 수정은 uploadTumb()을 통해 수정
+        // 대표 이미지는 uploadThumb()을 통해 수정
         if (beanImage.getImageType() == ImageType.THUMB) {
             throw new CustomException(THUMB_IMAGE_UPDATE_NOT_ALLOWED);
         }
 
-        String imageUrl = r2ImageService.updateByUrl(file, beanImage.getImageUrl());
-        beanImage.changeImageUrl(imageUrl);
+        String oldImageUrl = beanImage.getImageUrl();
+        Long beanId = beanImage.getBean().getBeanId();
+
+        // 항상 새 규칙 경로로 업로드
+        String newImageUrl = r2ImageService.uploadBeanSubImage(file, beanId);
+
+        // 기존 파일 삭제
+        r2ImageService.deleteByUrl(oldImageUrl);
+
+        beanImage.changeImageUrl(newImageUrl);
 
         return BeanImageResponse.from(beanImage);
     }
@@ -119,14 +139,13 @@ public class BeanImageService {
                 .toList();
     }
 
-
-    // 원두가 존재하는지 확인
+    // 원두 존재 여부 확인
     private Bean getBean(Long beanId) {
         return beansRepository.findById(beanId)
-                .orElseThrow(() -> new CustomException(BEAN_IMAGE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(BEAN_NOT_FOUND));
     }
 
-    // 서브 이미지들을 다시 정렬
+    // 서브 이미지 정렬 재조정
     private void normalizeSubSortOrder(Long beanId) {
         List<BeanImage> subImages = beanImagesRepository
                 .findByBean_BeanIdAndImageTypeOrderBySortOrderAsc(beanId, ImageType.SUB);
