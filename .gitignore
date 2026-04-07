@@ -2,10 +2,12 @@ HELP.md
 application.properties
 application.yaml
 application.yml
+.env
+.env.*
 
+#동일한 버전 관리를 위해 "gradle/wrapper/*, gradlew*"는 공유
 .gradle/
 build/
-gradle/wrapper/*
 !**/src/main/**/build/
 !**/src/test/**/build/
 
@@ -21,8 +23,6 @@ gradle/wrapper/*
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
-
-gradlew*
 
 ### IntelliJ IDEA ###
 .idea
