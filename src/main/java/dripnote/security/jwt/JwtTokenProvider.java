@@ -15,7 +15,9 @@ import dripnote.user.domain.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
 
@@ -28,12 +30,12 @@ public class JwtTokenProvider {
     private final long refreshExp;
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey,
-                            @Value("${jwt.access_expiration_time}") long accessExp,
-                            @Value("${jwt.refresh_expiration_time}") long refreshExp) {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+                            @Value("${jwt.access_expiration_time}") Duration accessExp,
+                            @Value("${jwt.refresh_expiration_time}") Duration refreshExp) {
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.accessExp = accessExp;
-        this.refreshExp = refreshExp;
+        this.accessExp = accessExp.toMillis();
+        this.refreshExp = refreshExp.toMillis();
         }
     /**
      * 외부에서 호출 가능하도록 createTokenSet 구현
@@ -100,10 +102,10 @@ public class JwtTokenProvider {
     /**
      * 토큰에서 Subject(loginId) 추출
      */
-    public String getSubject(String token) {
-        Claims claims = parseClaims(token);
-        return claims.getSubject();
-    }
+//    public String getSubject(String token) {
+//        Claims claims = parseClaims(token);
+//        return claims.getSubject();
+//    }
 
     private Claims parseClaims(String accessToken) {
         try {
