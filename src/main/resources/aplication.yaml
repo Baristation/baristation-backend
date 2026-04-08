@@ -1,0 +1,123 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: dripnote
+  datasource:
+    url: jdbc:mysql://localhost:3306/dripnote?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ssafy
+    password: ssafy
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: [ profile, email ]
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: ${KAKAO_REDIRECT_URI}
+            scope: [ profile_nickname, account_email ]
+            client-name: Kakao
+          naver:
+            client-id: ${NAVER_CLIENT_ID}
+            client-secret: ${NAVER_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            redirect-uri: ${NAVER_REDIRECT_URI}
+            client-name: Naver
+        provider: # 카카오와 네이버는 구글과 달리 '공급자 정보'를 수동으로 적어줘야 합니다.
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+          naver:
+            authorization-uri: https://nid.naver.com/oauth2.0/authorize
+            token-uri: https://nid.naver.com/oauth2.0/token
+            user-info-uri: https://openapi.naver.com/v1/nid/me
+            user-name-attribute: response
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: true
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Seoul
+        format_sql: true
+  sql:
+    init:
+      mode: always
+  data:
+    redis:
+      host: localhost
+      port: 6379
+springdoc:
+  swagger-ui:
+    # swagger-ui 접근 경로. default 값은 /swagger-ui.html이다.
+    path: /swagger-custom-ui.html
+
+    # swagger-ui가 읽을 OpenAPI 문서 경로
+    # 같은 origin 기준으로 /api-docs 를 읽도록 명시
+    url: /api-docs
+
+    # 각 API의 그룹 표시 순서
+    # path, query, body, response 순으로 출력
+    groups-order: DESC
+
+    # 태그 정렬 순서.
+    # alpha: 알파벳 순 정렬
+    # method: OpenAPI specification file에 원하는 태그 정렬 방식 직접 기재
+    tags-sorter: alpha
+
+    # 컨트롤러 정렬 순서.
+    # method는 delete - get - patch - post - put 순으로 정렬된다.
+    # alpha를 사용해 알파벳 순으로 정렬할 수 있다.
+    operations-sorter: method
+
+    # swagger-ui default url인 petstore html의 비활성화 설정
+    disable-swagger-default-url: true
+
+    # swagger-ui에서 try 했을 때 request duration을 알려주는 설정
+    display-request-duration: true
+
+  # openAPI 접근 경로. default 값은 /v3/api-docs 이다.
+  api-docs:
+    path: /api-docs
+
+  # Spring Actuator의 endpoint까지 보여줄 것인지?
+  show-actuator: true
+
+  # request media type 의 기본 값
+  default-consumes-media-type: application/json
+
+  # response media type 의 기본 값
+  default-produces-media-type: application/json
+
+  # 해당 패턴에 매칭되는 controller만 swagger-ui에 노출한다.
+  paths-to-match:
+    - /api/**
+    - /oauth2/**
+
+cloudflare:
+  r2:
+    account-id: ${CLOUDFLARE_R2_ACCOUNT_ID}
+    access-key-id: ${CLOUDFLARE_R2_ACCESS_KEY_ID}
+    secret-access-key: ${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+    bucket-name: ${CLOUDFLARE_R2_BUCKET_NAME}
+    public-base-url: ${CLOUDFLARE_R2_PUBLIC_BASE_URL}
+
+jwt:
+  secret: "드립노트프로젝트의매우안전하고비밀스러운키값입니다하나둘셋야호"
+  #  access_expiration_time: 43200000
+  #  refresh_expiration_time: 2592000000
+  access_expiration_time: 12h    #12시간
+  refresh_expiration_time: 30d   #30일
