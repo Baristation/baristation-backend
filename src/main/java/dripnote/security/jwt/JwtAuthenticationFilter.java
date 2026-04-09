@@ -31,10 +31,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             // 2. 토큰 유효성 검사 및 인증 처리
-            if (token != null && jwtTokenProvider.validateToken(token)) {
-                Authentication authentication = jwtTokenProvider.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(authentication); // 인증 객체 저장
-                log.debug("Security Context에 '{}' 인증 정보를 저장했습니다", authentication.getName());
+            if (token != null) {
+                if (jwtTokenProvider.validateToken(token)) {
+                    // 정상 토큰 -> 인증 객체 저장
+                    Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.debug("Security Context에 '{}' 인증 정보를 저장했습니다", authentication.getName());
+                } else {
+                    // validateToken이 false를 리턴했다는 것은 토큰은 멀쩡한데 로그아웃(블랙리스트) 되었거나,
+                    // Exception으로 안 잡힌 다른 이유로 유효하지 않다는 뜻.
+                    log.info("유효하지 않거나 로그아웃된 토큰입니다.");
+                    request.setAttribute("exception", "LOGGED_OUT_TOKEN"); // 커스텀 예외 코드 추가
+                }
             }
         } catch (ExpiredJwtException e) {
             log.info("만료된 JWT 토큰입니다.");

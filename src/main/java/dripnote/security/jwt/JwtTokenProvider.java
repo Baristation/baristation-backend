@@ -1,5 +1,6 @@
 package dripnote.security.jwt;
 
+import dripnote.common.redis.RedisService;
 import dripnote.security.payload.dto.TokenResponse;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -24,14 +25,16 @@ import java.util.Date;
 @Slf4j
 @Component
 public class JwtTokenProvider {
-
+    private final RedisService redisService;
     private final Key key;
     private final long accessExp;
     private final long refreshExp;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey,
+    public JwtTokenProvider(RedisService redisService,
+                            @Value("${jwt.secret}") String secretKey,
                             @Value("${jwt.access_expiration_time}") Duration accessExp,
                             @Value("${jwt.refresh_expiration_time}") Duration refreshExp) {
+        this.redisService = redisService;
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.accessExp = accessExp.toMillis();
@@ -46,7 +49,13 @@ public class JwtTokenProvider {
 
         return TokenResponse.of(accessToken, refreshToken);
     }
+    public String generateAccessToken(User user) {
+        return createToken(user, accessExp);
+    }
 
+    public String generateRefreshToken(User user) {
+        return createToken(user, refreshExp);
+    }
     // 로그인시 토큰 생성 메서드
     private String createToken(User user, long expTime) {
         // claims - jwt 토큰 속 내용 생성
@@ -81,37 +90,59 @@ public class JwtTokenProvider {
     }
     /**
      * 3. 토큰의 유효성 검증 로직.
-     * 해당 필터가 유효한지 검증
-     * 시큐리티 필터에서 토큰의 유효성을 검증할 때 사용
+     * JWT 자체의 유효성뿐만 아니라 Redis 블랙리스트 여부까지 확인합니다.
      */
     public boolean validateToken(String token) {
         try {
+            // 1. JWT 파싱 및 기본 검증 (서명, 구조, 만료일 등)
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            // TODO: 여기서 Redis를 조회하여 로그아웃된(Blacklist) 토큰인지 확인하는 로직 추가 필요
+
+            // 2. Redis를 조회하여 로그아웃된(Blacklist) 토큰인지 확인
+            if (redisService.hasKeyBlackList(token)) {
+                log.info("로그아웃된 JWT 토큰입니다.");
+                return false; // 블랙리스트에 있으면 유효하지 않은 토큰으로 처리
+            }
+
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-                throw new MalformedJwtException("잘못된 JWT 서명입니다."); // 예외 다시 던짐
-        } catch (ExpiredJwtException e) { // 만료 구분
+            log.info("잘못된 JWT 서명입니다.");
+            throw new MalformedJwtException("잘못된 JWT 서명입니다.");
+        } catch (ExpiredJwtException e) {
             log.info("만료된 JWT 토큰입니다.");
-            throw e; // 예외를 먹지 않고 던져서 필터가 알게 함
+            throw e;
+        } catch (UnsupportedJwtException e) {
+            log.info("지원되지 않는 JWT 토큰입니다.");
+            return false;
+        } catch (IllegalArgumentException e) {
+            log.info("JWT 토큰이 잘못되었습니다.");
+            return false;
         } catch (Exception e) {
             log.info("유효하지 않은 JWT 토큰입니다.");
             return false;
         }
     }
+
+    public long getExpirationToken(String token) {
+        long expirationTime = parseClaims(token).getExpiration().getTime();
+        long currTime = System.currentTimeMillis();
+
+        // 만료 시간에서 현재 시간을 뺐을 때 남은 시간이 음수면 0으로 반환 (이미 만료된 경우)
+        return Math.max(0, expirationTime - currTime);
+    }
+
     /**
      * 토큰에서 Subject(loginId) 추출
      */
-//    public String getSubject(String token) {
-//        Claims claims = parseClaims(token);
-//        return claims.getSubject();
-//    }
+    public String getSubject(String token) {
+        Claims claims = parseClaims(token);
+        return claims.getSubject();
+    }
 
     private Claims parseClaims(String accessToken) {
         try {
             return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
         } catch (ExpiredJwtException e) {
-            return e.getClaims();
+            return e.getClaims(); // 만료 되어도 누구 토큰인지는 알아야 함
         }
     }
 }

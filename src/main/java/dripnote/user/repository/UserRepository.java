@@ -3,6 +3,8 @@ package dripnote.user.repository;
 import dripnote.user.domain.User;
 import dripnote.user.enums.UserProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -10,4 +12,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByProviderAndProviderId(UserProvider provider, String providerId);
 
     boolean existsByNickname(String nickname);
+
+    Optional<User> getUserByUserId(Long userId);
 }
