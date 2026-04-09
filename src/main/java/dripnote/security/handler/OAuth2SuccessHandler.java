@@ -1,5 +1,6 @@
 package dripnote.security.handler;
 
+import dripnote.common.redis.RedisService;
 import dripnote.security.jwt.JwtTokenProvider;
 import dripnote.security.payload.dto.TokenResponse;
 import dripnote.user.domain.User;
@@ -27,10 +28,11 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-
     // OAuth2 로그인 성공 시 처리할 로직
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
+    private final RedisService redisService;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
@@ -59,7 +61,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     new IllegalArgumentException("가입되지 않은 유저입니다."));
 
         TokenResponse tokenResponse = jwtTokenProvider.createTokenSet(user);
-
+        redisService.setRefreshToken(String.valueOf(user.getUserId()), tokenResponse.refreshToken());
         // 리액트로 보낼 url 생성
         String targetUrl = UriComponentsBuilder.fromUriString("https://www.google.com")
                 .queryParam("accessToken", tokenResponse.accessToken())

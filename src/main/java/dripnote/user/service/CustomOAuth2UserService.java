@@ -1,5 +1,6 @@
 package dripnote.user.service;
 
+import dripnote.common.redis.RedisService;
 import dripnote.user.domain.User;
 import dripnote.user.payload.dto.oauth.GoogleUserInfoDTO;
 import dripnote.user.payload.dto.oauth.KakaoUserInfoDTO;
@@ -22,7 +23,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final UserRepository userRepository;
-//    private final RestTemplate restTemplate;
+    private final RedisService redisService;
 
 
     @Override
@@ -59,7 +60,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 userInfo.getProvider(),
                 userInfo.getProviderId()
         );
-
+        // refershToken redis 저장
         if (userOptional.isEmpty()) {
             // 닉네임 중복 방지
             String nickname = generateUniqueNickname(userInfo.getName());
