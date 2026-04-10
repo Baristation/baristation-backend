@@ -34,10 +34,12 @@ public enum ErrorCode {
     // 700xx: 사용자/권한 관련 오류
     USER_INVALID_LOGIN(HttpStatus.BAD_REQUEST, "700-4", "올바르지 않은 로그인"),
     USER_UNAUTHORIZED(HttpStatus.FORBIDDEN, "700-5", "권한이 없습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "700-6", "사용자를 찾을 수 없습니다."),
 
     // 701xx: 토큰 관련 오류
     TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "701-1", "유효하지 않은 토큰입니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "701-2", "토큰이 만료되었습니다."),
+    REFRESH_TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED, "701-3", "Refresh Token이 일치하지 않거나 만료되었습니다."),
 
     // 702xx: 비밀번호 정책
     PASSWORD_SAME_AS_USERID(HttpStatus.BAD_REQUEST, "702-1", "아이디와 동일한 비밀번호는 설정할 수 없습니다."),

@@ -1,5 +1,8 @@
 package dripnote.security.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dripnote.common.exception.ErrorCode;
+import dripnote.common.response.ApiResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -9,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -21,16 +25,17 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // 싱글톤
     private final JwtTokenProvider jwtTokenProvider;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        // 1. 헤더에서 토큰 추출
+        // 헤더에서 토큰 추출
         String token = resolveToken(request);
 
         try {
-            // 2. 토큰 유효성 검사 및 인증 처리
+            // 토큰 유효성 검사 및 인증 처리
             if (token != null) {
                 if (jwtTokenProvider.validateToken(token)) {
                     // 정상 토큰 -> 인증 객체 저장
@@ -41,30 +46,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // validateToken이 false를 리턴했다는 것은 토큰은 멀쩡한데 로그아웃(블랙리스트) 되었거나,
                     // Exception으로 안 잡힌 다른 이유로 유효하지 않다는 뜻.
                     log.info("유효하지 않거나 로그아웃된 토큰입니다.");
-                    request.setAttribute("exception", "LOGGED_OUT_TOKEN"); // 커스텀 예외 코드 추가
+                    sendJsonErrorResponse(response, ErrorCode.TOKEN_INVALID);
+                    return;
                 }
             }
         } catch (ExpiredJwtException e) {
             log.info("만료된 JWT 토큰입니다.");
-            request.setAttribute("exception", "EXPIRED_TOKEN");
+            sendJsonErrorResponse(response, ErrorCode.TOKEN_EXPIRED);
+            return;
         } catch (SecurityException | MalformedJwtException e) {
             // 위조되거나 잘못된 형식
             log.info("잘못된 JWT 서명입니다.");
-            request.setAttribute("exception", "INVALID_TOKEN");
+            sendJsonErrorResponse(response, ErrorCode.TOKEN_INVALID);
+            return;
         } catch (UnsupportedJwtException e) {
             // 지원하지 않는 형식
             log.info("지원되지 않는 JWT 토큰입니다.");
-            request.setAttribute("exception", "UNSUPPORTED_TOKEN");
+            sendJsonErrorResponse(response, ErrorCode.TOKEN_INVALID);
+            return;
         } catch (IllegalArgumentException e) {
             // 토큰이 없는 경우 등
             log.info("JWT 토큰이 잘못되었습니다.");
-            request.setAttribute("exception", "WRONG_TYPE_TOKEN");
+            sendJsonErrorResponse(response, ErrorCode.TOKEN_INVALID);
+            return;
         } catch (Exception e) {
             log.error("JWT 필터 내부 오류: {}", e.getMessage());
-            request.setAttribute("exception", "UNKNOWN_ERROR");
+            sendJsonErrorResponse(response, ErrorCode.TOKEN_INVALID);
+            return;
         }
 
-        // 3. 다음 필터로 넘김 (성공하든 실패하든 넘김)
+        // 다음 필터로 넘김 (성공한 요청만)
         filterChain.doFilter(request, response);
     }
 
@@ -75,5 +86,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7); // "Bearer " 이후의 문자열만 가져옴
         }
         return null;
+    }
+
+    // JSON 형태의 에러 응답 전송
+    private void sendJsonErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
+        response.setStatus(errorCode.getHttpStatus().value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+
+        ApiResponse<Void> errorResponse = ApiResponse.error(errorCode);
+        String jsonResponse = objectMapper.writeValueAsString(errorResponse);
+
+        response.getWriter().write(jsonResponse);
     }
 }
