@@ -1,15 +1,18 @@
 package dripnote.user.service;
 
+import dripnote.common.exception.CustomException;
+import dripnote.common.exception.ErrorCode;
 import dripnote.common.redis.RedisService;
 import dripnote.security.jwt.JwtTokenProvider;
 import dripnote.security.payload.dto.TokenResponse;
 import dripnote.user.domain.User;
+import dripnote.user.payload.dto.UserUpdateRequest;
 import dripnote.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -30,24 +33,49 @@ public class UserService {
         redisService.setBlackList(accessToken, "logout", Duration.ofMillis(expiration));
     }
 
-    public TokenResponse refersh(String refreshToken) {
+    public TokenResponse refresh(String refreshToken) {
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new RuntimeException("유효하지 않은 Refresh Token입니다.");
+            throw new CustomException(ErrorCode.TOKEN_INVALID);
         }
 
         String userId = jwtTokenProvider.getSubject(refreshToken);
         String savedUserRefreshToken = redisService.getRefreshToken(userId);
         if (savedUserRefreshToken == null || !savedUserRefreshToken.equals(refreshToken)) {
-            throw new RuntimeException("Refresh Token이 일치하지 않거나 만료되었습니다.");
+            throw new CustomException(ErrorCode.REFRESH_TOKEN_MISMATCH);
         }
-        Optional<User> optionalUser = userRepository.getUserByUserId(Long.parseLong(userId));
-        if (optionalUser.isEmpty()) {
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        User user = userRepository.getUserByUserId(Long.parseLong(userId))
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        TokenResponse newTokenResponse = jwtTokenProvider.createTokenSet(user);
+        redisService.setRefreshToken(userId, newTokenResponse.refreshToken());
+        return newTokenResponse;
+    }
+
+
+    public void deleteUser(String accessToken) {
+        String userId = jwtTokenProvider.getSubject(accessToken);
+        User user = userRepository.getUserByUserId(Long.parseLong(userId))
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        userRepository.delete(user);
+        redisService.deleteRefreshToken(userId);
+
+        long expiration = jwtTokenProvider.getExpirationToken(accessToken);
+        redisService.setBlackList(accessToken, "delete", Duration.ofMillis(expiration));
+    }
+
+    public boolean updateUser(String accessToken, UserUpdateRequest updateRequest) {
+        String userId = jwtTokenProvider.getSubject(accessToken);
+        Optional<User> userOptional = userRepository.getUserByUserId(Long.parseLong(userId));
+        if (userOptional.isEmpty()) {
+
+            return false;
         }
 
-        TokenResponse newTokenResponse = jwtTokenProvider.createTokenSet(optionalUser.get());
-        redisService.setRefreshToken(userId,
-                newTokenResponse.refreshToken());
-        return newTokenResponse;
+        User user = userOptional.get();
+        if (StringUtils.hasText(updateRequest.nickname())) {
+            user.updateNickname(updateRequest.nickname());
+            return true;
+        }
+        return false;
     }
 }

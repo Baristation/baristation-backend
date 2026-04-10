@@ -53,15 +53,17 @@ public class SecurityConfig {
                                 "/classes/**",
                                 "/oauth2/**",
                                 "/login/**",   // 구글 리디렉션 도착 경로 허용
-                                "/api/**",
+                                "/api/beans/**",
+                                "/api/lessons/**",
                                 // swagger 경로
                                 "/swagger-custom-ui.html",
                                 "/swagger-ui/**",
                                 "/api-docs",
                                 "/api-docs/**"
-
-
                         ).permitAll()
+                        .requestMatchers(
+                                "/api/auth/**"
+                        ).authenticated()  // 인증 필수
                         .requestMatchers(
                                 "/mypage/**"
                         ).authenticated()
