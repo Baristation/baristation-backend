@@ -1,5 +1,6 @@
 services:
   app:
+<<<<<<< HEAD
     image: le3560/dripnote-backend:0.0.1   # Docker Hub에서 가져올 백엔드 이미지
     ports:
       - "8080:8080"                        # 호스트의 8080 포트를 컨테이너 8080에 연결
@@ -36,6 +37,85 @@ services:
   redis:
     image: redis:7-alpine                   # 공식 Redis 경량 이미지 사용
     restart: unless-stopped                 # 수동 중지 전까지 자동 재시작
+=======
+    # 백엔드 앱 이미지
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: le3560/dripnote-backend:0.0.1
 
+    # 로컬에서 백엔드 접속 포트
+    ports:
+      - "8080:8080"
+
+    # 앱 실행에 필요한 환경변수
+    env_file:
+      - .env
+
+    # db가 healthy 상태가 된 뒤 app 시작
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+    restart: unless-stopped
+
+  db:
+    # MySQL 전용 이미지
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile
+    image: le3560/dripnote-mysql:0.0.1
+
+    # MySQL 컨테이너 초기 설정
+    # 여기 값은 .env에서 읽음
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: Asia/Seoul
+
+    ports:
+      - "3307:3306"
+
+    # 문자셋/콜레이션 설정
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
+    # MySQL이 실제로 응답 가능한지 확인
+    # app은 이 healthcheck가 통과된 뒤 시작됨
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+    # DB 데이터 영속화
+    # 컨테이너를 지워도 volume이 남아 있으면 데이터 유지
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    restart: unless-stopped
+>>>>>>> c866200 ([feature] 블루그린 기반 서버 배포 워크플로우 구현)
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+# MySQL 데이터 저장용 named volume
 volumes:
+<<<<<<< HEAD
   mysql_data:                               # MySQL 영구 저장용 Docker 볼륨
+=======
+  mysql_data:
+>>>>>>> c866200 ([feature] 블루그린 기반 서버 배포 워크플로우 구현)

@@ -32,9 +32,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+<<<<<<< HEAD
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+=======
+>>>>>>> c866200 ([feature] 블루그린 기반 서버 배포 워크플로우 구현)
 
 	// 2. 개발 편의 도구
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
