@@ -1,0 +1,20 @@
+### 1. 토큰 재발급 테스트
+POST http://localhost:8080/api/auth/refresh
+Refresh-Token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NzYxMjcyMjMsImV4cCI6MTc3ODcxOTIyM30.8tPmnNVOaQgdLESBT2lzKH2o_DOuqJ7cKm8qh4qPDfg
+
+### 2. 로그아웃 테스트
+POST http://localhost:8080/api/auth/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NzYxMjcyMjMsImV4cCI6MTc3NjE3MDQyM30.tmcw9K3ao1G41MXSpbBzQ0XgIVLLg-DJkgVAt1X2jo0
+
+### 3. 회원 정보 수정 테스트
+PATCH http://localhost:8080/api/auth/update
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NzYxMjcyMjMsImV4cCI6MTc3NjE3MDQyM30.tmcw9K3ao1G41MXSpbBzQ0XgIVLLg-DJkgVAt1X2jo0
+Content-Type: application/json
+
+{
+  "nickname": "새로운닉네임"
+}
+
+### 4. 회원 탈퇴 테스트
+DELETE http://localhost:8080/api/auth/delete
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NzYxMjcyMjMsImV4cCI6MTc3ODcxOTIyM30.8tPmnNVOaQgdLESBT2lzKH2o_DOuqJ7cKm8qh4qPDfg

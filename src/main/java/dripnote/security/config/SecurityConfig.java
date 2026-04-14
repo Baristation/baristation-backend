@@ -55,11 +55,13 @@ public class SecurityConfig {
                                 "/login/**",   // 구글 리디렉션 도착 경로 허용
                                 "/api/beans/**",
                                 "/api/lessons/**",
+                                "/api/auth/refresh",
                                 // swagger 경로
                                 "/swagger-custom-ui.html",
                                 "/swagger-ui/**",
                                 "/api-docs",
                                 "/api-docs/**"
+
                         ).permitAll()
                         .requestMatchers(
                                 "/api/auth/**"
@@ -102,4 +104,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }
