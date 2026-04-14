@@ -68,7 +68,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .queryParam("refreshToken", tokenResponse.refreshToken())
                 .build().toUriString();
 
-        log.info("로그인 성공! JWT 발급 완료. 리액트로 이동합니다: {}", targetUrl);
+        log.info("로그인 성공! JWT 발급 완료. targetUrl: {}", targetUrl);
 
         // url로 리다이렉트
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
