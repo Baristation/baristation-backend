@@ -1,6 +1,7 @@
 package dripnote.user.service;
 
-import dripnote.common.redis.RedisService;
+import dripnote.common.exception.CustomException;
+import dripnote.common.exception.ErrorCode;
 import dripnote.user.domain.User;
 import dripnote.user.payload.dto.oauth.GoogleUserInfoDTO;
 import dripnote.user.payload.dto.oauth.KakaoUserInfoDTO;
@@ -11,6 +12,7 @@ import dripnote.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -21,9 +23,9 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final UserRepository userRepository;
-    private final RedisService redisService;
 
 
     @Override
@@ -36,33 +38,42 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2UserInfo oAuth2UserInfo = null;
         if (registrationId.equals("google")) {
             log.info("구글 로그인 요청");
-            oAuth2UserInfo = new GoogleUserInfoDTO(attributes);
+            oAuth2UserInfo = GoogleUserInfoDTO
+                    .builder()
+                    .attributes(attributes)
+                    .build();
         } else if (registrationId.equals("naver")) {
             log.info("네이버 로그인 요청");
-            oAuth2UserInfo = new NaverUserInfoDTO(attributes);
+            oAuth2UserInfo = NaverUserInfoDTO
+                    .builder()
+                    .attributes(attributes)
+                    .build();
         } else if (registrationId.equals("kakao")) {
             log.info("카카오 로그인 요청");
-            oAuth2UserInfo = new KakaoUserInfoDTO(attributes);
+            oAuth2UserInfo = KakaoUserInfoDTO
+                    .builder()
+                    .attributes(attributes)
+                    .build();
         }
         saveOrUpdateUser(oAuth2UserInfo);
-
-        // 5. 시큐리티 세션에 담기 위해 원본 객체를 그대로 반환합니다.
-        // (이 반환값이 나중에 우리가 만들 SuccessHandler로 고스란히 전달됩니다.)
 
         return oAuth2User;
     }
 
     // Id를 통해 조회하도록 수정하였습니다.
     private void saveOrUpdateUser(OAuth2UserInfo userInfo) {
-        if (userInfo == null) return;
+        // 유효하지 않은 OAuth2UserInfo는 예외 처리
+        if (userInfo == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
 
         Optional<User> userOptional = userRepository.findByProviderAndProviderId(
                 userInfo.getProvider(),
                 userInfo.getProviderId()
         );
-        // refershToken redis 저장
+
         if (userOptional.isEmpty()) {
-            // 닉네임 중복 방지
+            // 복잡한 Retry 없이 사전 검사(while)만으로 닉네임 생성
             String nickname = generateUniqueNickname(userInfo.getName());
 
             User newUser = User.builder()
@@ -73,17 +84,22 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .role(UserRole.USER)
                     .build();
 
+            // 여기서 만약 극악의 확률로 동시성 충돌(UNIQUE 위배)이 발생한다면?
+            // -> 어차피 GlobalExceptionHandler에서 잡아서 처리되도록 내버려 둡니다.
             userRepository.save(newUser);
             log.info("신규 소셜 유저 회원가입 완료! : {} ", userInfo.getName());
         }
     }
+
+    // 이 메서드 하나면 충분합니다.
     private String generateUniqueNickname(String baseName) {
         String nickname = baseName;
-        // 닉네임 중복 확인
+
+        // DB에 해당 닉네임이 존재하는지 확인하고, 있다면 난수 부여 반복
         while (userRepository.existsByNickname(nickname)) {
-            // 중복이라면 뒤에 4자리 난수를 붙여서 다시 체크
             nickname = baseName + "_" + (int)(Math.random() * 9000 + 1000);
         }
+
         return nickname;
     }
 }

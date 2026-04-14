@@ -1,18 +1,17 @@
 package dripnote.security.jwt;
 
 import dripnote.common.redis.RedisService;
+import dripnote.common.exception.CustomException;
+import dripnote.common.exception.ErrorCode;
 import dripnote.security.payload.dto.TokenResponse;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SecurityException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import dripnote.user.domain.User;
-//import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +24,11 @@ import java.util.Date;
 @Slf4j
 @Component
 public class JwtTokenProvider {
+    private static final String TOKEN_TYPE_BEARER = "Bearer";
+    private static final String CLAIM_TYPE = "type";
+    private static final String ACCESS_TOKEN_TYPE = "access";
+    private static final String REFRESH_TOKEN_TYPE = "refresh";
+
     private final RedisService redisService;
     private final Key key;
     private final long accessExp;
@@ -43,24 +47,29 @@ public class JwtTokenProvider {
     /**
      * 외부에서 호출 가능하도록 createTokenSet 구현
      */
-    public TokenResponse createTokenSet(User user) { // TokenResponse DTO 필요
-        String accessToken = createToken(user, accessExp);
-        String refreshToken = createToken(user, refreshExp); // Refresh Token도 동일 로직으로 생성
+    public TokenResponse createTokenSet(User user) {
+        String accessToken = generateAccessToken(user);
+        String refreshToken = generateRefreshToken(user);
 
-        return TokenResponse.of(accessToken, refreshToken);
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType(TOKEN_TYPE_BEARER)
+                .build();
     }
     public String generateAccessToken(User user) {
-        return createToken(user, accessExp);
+        return createToken(user, accessExp, ACCESS_TOKEN_TYPE);
     }
 
     public String generateRefreshToken(User user) {
-        return createToken(user, refreshExp);
+        return createToken(user, refreshExp, REFRESH_TOKEN_TYPE);
     }
     // 로그인시 토큰 생성 메서드
-    private String createToken(User user, long expTime) {
+    private String createToken(User user, long expTime, String tokenType) {
         // claims - jwt 토큰 속 내용 생성
         Claims claims = Jwts.claims().setSubject(String.valueOf(user.getUserId()));
         claims.put("role", user.getRole().name()); // 권한 주입
+        claims.put(CLAIM_TYPE, tokenType);
         /**
          * 압축해서 하나의 문자열로
          * 헤더(어떤 암호화인지),
@@ -88,37 +97,52 @@ public class JwtTokenProvider {
                 Collections.singleton(new SimpleGrantedAuthority(role)));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
-    /**
-     * 3. 토큰의 유효성 검증 로직.
-     * JWT 자체의 유효성뿐만 아니라 Redis 블랙리스트 여부까지 확인합니다.
-     */
-    public boolean validateToken(String token) {
+    // 토큰 검증 계약: 유효하면 정상 종료, 유효하지 않으면 예외 발생
+    public void validateAccessToken(String token) {
+        validateToken(token, ACCESS_TOKEN_TYPE);
+    }
+
+    public void validateRefreshToken(String token) {
+        validateToken(token, REFRESH_TOKEN_TYPE);
+    }
+
+    private void validateToken(String token, String expectedType) {
         try {
             // 1. JWT 파싱 및 기본 검증 (서명, 구조, 만료일 등)
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+
+            // 1-1. 토큰 용도(access/refresh) 검증
+            if (expectedType != null) {
+                String tokenType = claims.get(CLAIM_TYPE, String.class);
+                if (!expectedType.equals(tokenType)) {
+                    log.info("토큰 타입이 올바르지 않습니다. expected={}, actual={}", expectedType, tokenType);
+                    throw new CustomException(ErrorCode.TOKEN_INVALID);
+                }
+            }
 
             // 2. Redis를 조회하여 로그아웃된(Blacklist) 토큰인지 확인
             if (redisService.hasKeyBlackList(token)) {
                 log.info("로그아웃된 JWT 토큰입니다.");
-                return false; // 블랙리스트에 있으면 유효하지 않은 토큰으로 처리
+                throw new CustomException(ErrorCode.TOKEN_INVALID);
             }
-
-            return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
-            throw new MalformedJwtException("잘못된 JWT 서명입니다.");
+            throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (ExpiredJwtException e) {
             log.info("만료된 JWT 토큰입니다.");
-            throw e;
+            throw new CustomException(ErrorCode.TOKEN_EXPIRED);
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰입니다.");
-            return false;
+            throw new CustomException(ErrorCode.TOKEN_INVALID);
+        } catch (CustomException e) {
+            // CustomException(블랙리스트, 타입 불일치 등)은 그대로 전파
+            throw e;
         } catch (IllegalArgumentException e) {
             log.info("JWT 토큰이 잘못되었습니다.");
-            return false;
+            throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (Exception e) {
             log.info("유효하지 않은 JWT 토큰입니다.");
-            return false;
+            throw new CustomException(ErrorCode.TOKEN_INVALID);
         }
     }
 
