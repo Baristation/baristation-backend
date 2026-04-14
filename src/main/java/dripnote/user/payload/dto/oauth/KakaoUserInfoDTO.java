@@ -1,9 +1,11 @@
 package dripnote.user.payload.dto.oauth;
 
 import dripnote.user.enums.UserProvider;
+import lombok.Builder;
 
 import java.util.Map;
 
+@Builder
 public record KakaoUserInfoDTO(Map<String, Object> attributes) implements OAuth2UserInfo {
     @Override
     public UserProvider getProvider() {
@@ -13,12 +15,15 @@ public record KakaoUserInfoDTO(Map<String, Object> attributes) implements OAuth2
     @Override
     public String getProviderId() {
         Object id = attributes.get("id");
-        return id != null ? String.valueOf(id) : null;
+        return String.valueOf(id);
     }
 
     @Override
     public String getEmail() {
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+        if (kakaoAccount == null) {
+            return null;
+        }
         Object email = kakaoAccount.get("email");
         return email != null ? String.valueOf(email) : null;
     }

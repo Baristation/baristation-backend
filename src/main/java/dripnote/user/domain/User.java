@@ -17,7 +17,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(name = "unique_provider_id", columnNames = {"provider", "provider_id"})
+        @UniqueConstraint(name = "unique_provider_id", columnNames = {"provider", "provider_id"}),
+        @UniqueConstraint(name = "unique_nickname", columnNames = {"nickname"})
 })
 public class User {
     /**
@@ -33,6 +34,7 @@ public class User {
     private String email;
 
     // OAuth: google, kakao, naver 등
+    @Enumerated(EnumType.STRING)
     @Column(name = "provider", nullable = false, length = 20)
     private UserProvider provider;
 

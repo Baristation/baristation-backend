@@ -47,12 +47,21 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // provider에 맞는 oauthDTO 받기.
         OAuth2UserInfo userInfo = null;
-        if ("google".equals(provider)) {
-            userInfo = new GoogleUserInfoDTO(attributes);
-        } else if ("naver".equals(provider)) {
-            userInfo = new NaverUserInfoDTO(attributes);
-        } else if ("kakao".equals(provider)) {
-            userInfo = new KakaoUserInfoDTO(attributes);
+        if (provider.equals("google")) {
+            userInfo = GoogleUserInfoDTO
+                    .builder()
+                    .attributes(attributes)
+                    .build();
+        } else if (provider.equals("naver")) {
+            userInfo = NaverUserInfoDTO
+                    .builder()
+                    .attributes(attributes)
+                    .build();
+        } else if (provider.equals("kakao")) {
+            userInfo = KakaoUserInfoDTO
+                    .builder()
+                    .attributes(attributes)
+                    .build();
         } else {
             throw new IllegalArgumentException("지원하지 않는 소셜 로그인입니다.");
         }

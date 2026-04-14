@@ -1,8 +1,11 @@
 package dripnote.user.payload.dto.oauth;
 
 import dripnote.user.enums.UserProvider;
+import lombok.Builder;
+
 import java.util.Map;
 
+@Builder
 public record GoogleUserInfoDTO(Map<String, Object> attributes) implements OAuth2UserInfo {
 
     @Override
