@@ -1,5 +1,7 @@
 package dripnote.user.domain;
 
+import dripnote.common.exception.CustomException;
+import dripnote.common.exception.ErrorCode;
 import dripnote.user.enums.UserProvider;
 import dripnote.user.enums.UserRole;
 import jakarta.persistence.*;
@@ -29,8 +31,8 @@ public class User {
     @Column(name = "user_id")
     private Long userId;
 
-    // Kakao, Naver, Google 전부 이메일을 제공해서 null false로 수정하였습니다.
-    @Column(name = "email", nullable = false, length = 255)
+    // 카카오는 null일 수 있습니다.
+    @Column(name = "email", length = 255)
     private String email;
 
     // OAuth: google, kakao, naver 등
@@ -62,7 +64,7 @@ public class User {
 
     public void updateNickname(String newNickname) {
         if (newNickname == null || newNickname.isBlank()) {
-            throw new IllegalArgumentException("닉네임은 필수 입력값입니다.");
+            throw new CustomException(ErrorCode.USER_NICKNAME_REQUIRED);
         }
 
         // 추후 중복여부 글자수 제한 등 로직 추가
