@@ -1,26 +1,30 @@
-name: Server CD
+﻿name: Server CD
 
 on:
   push:
     branches:
       - main
       - develop
-      - feature/#15-CI-CD
+      - test-CI/CD
 
 concurrency:
   group: server-cd-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-and-push:
+  # develop, test-CI/CD 브랜치는 라즈베리파이용 ARM64 이미지를 빌드합니다.
+  build-and-push-pi:
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/test-CI/CD'
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
+      # 저장소 코드를 가져옵니다.
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Java 21과 Gradle 캐시를 설정합니다.
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -28,46 +32,57 @@ jobs:
           distribution: temurin
           cache: gradle
 
+      # Gradle 환경을 초기화합니다.
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      # gradlew 실행 권한을 부여합니다.
       - name: Grant execute permission
         run: chmod +x ./gradlew
 
+      # Spring Boot jar를 빌드합니다.
       - name: Build jar
         run: ./gradlew clean bootJar --no-daemon
 
+      # ARM64 빌드를 위해 QEMU를 설정합니다.
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
+      # Docker Buildx를 활성화합니다.
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to registry
+      # Docker Registry에 로그인합니다.
+      - name: Login to registry for Raspberry Pi
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push ARM64 image
+      # 라즈베리파이용 ARM64 이미지를 빌드하고 push합니다.
+      - name: Build and push ARM64 image for Raspberry Pi
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           platforms: linux/arm64
-          tags: ${{ secrets.DOCKER_IMAGE }}
+          tags: ${{ secrets.PI_DOCKER_IMAGE }}
 
-  deploy:
+  # develop, test-CI/CD 브랜치는 라즈베리파이 서버로 배포합니다.
+  deploy-pi:
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/test-CI/CD'
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: build-and-push-pi
     permissions:
       contents: read
 
     steps:
+      # 저장소 코드를 가져옵니다.
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare deploy directory
+      # 서버에 deploy 폴더를 준비합니다.
+      - name: Prepare Raspberry Pi deploy directory
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.PI_HOST }}
@@ -77,7 +92,8 @@ jobs:
           script: |
             mkdir -p /home/${{ secrets.PI_USERNAME }}/deploy
 
-      - name: Upload deploy files
+      # deploy 폴더의 파일들을 서버로 업로드합니다.
+      - name: Upload deploy files to Raspberry Pi
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.PI_HOST }}
@@ -88,6 +104,7 @@ jobs:
           target: "/home/${{ secrets.PI_USERNAME }}"
           strip_components: 1
 
+      # 서버에서 최신 이미지를 pull하고 배포 스크립트를 실행합니다.
       - name: Deploy on Raspberry Pi
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -97,10 +114,121 @@ jobs:
           port: ${{ secrets.PI_PORT }}
           script: |
             export USERNAME='${{ secrets.PI_USERNAME }}'
-            export DOCKER_APP_IMAGE='${{ secrets.DOCKER_IMAGE }}'
+            export DOCKER_APP_IMAGE='${{ secrets.PI_DOCKER_IMAGE }}'
             export COMPOSE_FILE='/home/${{ secrets.PI_USERNAME }}/deploy/compose.blue-green.yml'
             export NGINX_CONFIG_PATH='/etc/nginx/sites-available/ssl.conf'
             chmod +x /home/${{ secrets.PI_USERNAME }}/deploy/deploy.sh
-            docker pull '${{ secrets.DOCKER_IMAGE }}'
+            docker pull '${{ secrets.PI_DOCKER_IMAGE }}'
             sudo -E /home/${{ secrets.PI_USERNAME }}/deploy/deploy.sh
             docker image prune -af
+
+  # main 브랜치는 GCP 운영 서버용 이미지를 빌드합니다.
+  build-and-push-gcp:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      # 저장소 코드를 가져옵니다.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Java 21과 Gradle 캐시를 설정합니다.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: gradle
+
+      # Gradle 환경을 초기화합니다.
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # gradlew 실행 권한을 부여합니다.
+      - name: Grant execute permission
+        run: chmod +x ./gradlew
+
+      # Spring Boot jar를 빌드합니다.
+      - name: Build jar
+        run: ./gradlew clean bootJar --no-daemon
+
+      # GCP 인증을 수행합니다.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_GCE_SA_KEY }}
+
+      # gcloud CLI를 설치합니다.
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      # GCP Container Registry 인증을 설정합니다.
+      - name: Configure Docker auth for GCP registry
+        run: gcloud auth configure-docker --quiet
+
+      # GCP에 올릴 이미지를 빌드합니다.
+      - name: Build Docker image for GCP
+        run: docker build -t "${{ secrets.GCP_DOCKER_IMAGE }}" .
+
+      # GCP Registry로 이미지를 push합니다.
+      - name: Push Docker image for GCP
+        run: docker push "${{ secrets.GCP_DOCKER_IMAGE }}"
+
+  # main 브랜치는 GCP 운영 서버로 배포합니다.
+  deploy-gcp:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: build-and-push-gcp
+    permissions:
+      contents: read
+
+    steps:
+      # 저장소 코드를 가져옵니다.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # GCP 인증을 수행합니다.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_GCE_SA_KEY }}
+
+      # gcloud CLI를 설치합니다.
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      # GCP 서버에 deploy 폴더를 준비합니다.
+      - name: Prepare GCP deploy directory
+        run: |
+          gcloud compute ssh "${{ secrets.GCP_INSTANCE_USER }}@${{ secrets.GCP_INSTANCE_NAME }}" \
+            --zone "${{ secrets.GCP_ZONE }}" \
+            --command "mkdir -p /home/${{ secrets.GCP_INSTANCE_USER }}/deploy"
+
+      # deploy 폴더의 파일들을 GCP 서버로 업로드합니다.
+      - name: Upload deploy files to GCP
+        run: |
+          gcloud compute scp --recurse ./deploy \
+            "${{ secrets.GCP_INSTANCE_USER }}@${{ secrets.GCP_INSTANCE_NAME }}:/home/${{ secrets.GCP_INSTANCE_USER }}" \
+            --zone "${{ secrets.GCP_ZONE }}"
+
+      # GCP 서버에서 최신 이미지를 pull하고 배포 스크립트를 실행합니다.
+      - name: Deploy on GCP
+        run: |
+          gcloud compute ssh "${{ secrets.GCP_INSTANCE_USER }}@${{ secrets.GCP_INSTANCE_NAME }}" \
+            --zone "${{ secrets.GCP_ZONE }}" \
+            --command "
+              export USERNAME='${{ secrets.GCP_INSTANCE_USER }}' &&
+              export DOCKER_APP_IMAGE='${{ secrets.GCP_DOCKER_IMAGE }}' &&
+              export COMPOSE_FILE='/home/${{ secrets.GCP_INSTANCE_USER }}/deploy/compose.blue-green.yml' &&
+              export NGINX_CONFIG_PATH='/etc/nginx/sites-available/ssl.conf' &&
+              chmod +x /home/${{ secrets.GCP_INSTANCE_USER }}/deploy/deploy.sh &&
+              docker pull '${{ secrets.GCP_DOCKER_IMAGE }}' &&
+              sudo -E /home/${{ secrets.GCP_INSTANCE_USER }}/deploy/deploy.sh &&
+              docker image prune -af
+            "
