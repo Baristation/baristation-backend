@@ -125,7 +125,7 @@ public class JwtTokenProvider {
                 log.info("로그아웃된 JWT 토큰입니다.");
                 throw new CustomException(ErrorCode.TOKEN_INVALID);
             }
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+        } catch (SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
             throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (ExpiredJwtException e) {
