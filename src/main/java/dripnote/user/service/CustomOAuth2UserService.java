@@ -9,6 +9,7 @@ import dripnote.user.payload.dto.oauth.NaverUserInfoDTO;
 import dripnote.user.payload.dto.oauth.OAuth2UserInfo;
 import dripnote.user.enums.UserRole;
 import dripnote.user.repository.UserRepository;
+import dripnote.user.validator.NicknameValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -26,6 +27,7 @@ import java.util.Optional;
 @Transactional
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final UserRepository userRepository;
+    private final NicknameValidator nicknameValidator;
 
 
     @Override
@@ -91,13 +93,33 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
     }
 
-    // 이 메서드 하나면 충분합니다.
+    /**
+     * 고유한 닉네임 생성
+     * - 기본 닉네임(사용자 이름)이 유효한지 검증
+     * - 중복이면 난수를 붙여서 새로운 닉네임 생성
+     * - 최대 10번 시도 후 실패하면 예외 발생
+     */
     private String generateUniqueNickname(String baseName) {
+        // 기본 닉네임이 유효한 형식인지 확인 (예약어 제외, 특수문자 연속 확인 등)
+        if (!nicknameValidator.isValidFormat(baseName)) {
+            // 기본 닉네임이 불가능하면 "user_" + 난수로 시작
+            baseName = "user_" + (int)(Math.random() * 9000 + 1000);
+        }
+
         String nickname = baseName;
 
-        // DB에 해당 닉네임이 존재하는지 확인하고, 있다면 난수 부여 반복
-        while (userRepository.existsByNickname(nickname)) {
-            nickname = baseName + "_" + (int)(Math.random() * 9000 + 1000);
+        // DB에 해당 닉네임이 존재하는지 확인하고 (대소문자 무시), 있다면 난수 부여 반복
+        int attempts = 0;
+        int maxAttempts = 4;
+
+        while (userRepository.existsByNicknameIgnoreCase(nickname) && attempts < maxAttempts) {
+            nickname = baseName + (int)(Math.random() * 9000 + 1000);
+            attempts++;
+        }
+
+        // 4번 시도 후에도 중복이면 예외 발생
+        if (attempts >= maxAttempts && userRepository.existsByNicknameIgnoreCase(nickname)) {
+            throw new CustomException(ErrorCode.USER_NICKNAME_DUPLICATE);
         }
 
         return nickname;

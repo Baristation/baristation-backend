@@ -31,11 +31,15 @@ public enum ErrorCode {
     FILE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-9", "파일 삭제에 실패하였습니다."),
     WEBHOOK_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "601-11", "웹훅 요청이 올바르지 않습니다."),
 
-    // 700xx: 사용자/권한 관련 오류
-    USER_INVALID_LOGIN(HttpStatus.BAD_REQUEST, "700-4", "올바르지 않은 로그인"),
-    USER_UNAUTHORIZED(HttpStatus.FORBIDDEN, "700-5", "권한이 없습니다."),
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "700-6", "사용자를 찾을 수 없습니다."),
-    USER_NICKNAME_REQUIRED(HttpStatus.BAD_REQUEST, "700-7", "닉네임은 필수 입력값입니다."),
+     // 700xx: 사용자/권한 관련 오류
+     USER_INVALID_LOGIN(HttpStatus.BAD_REQUEST, "700-4", "올바르지 않은 로그인"),
+     USER_UNAUTHORIZED(HttpStatus.FORBIDDEN, "700-5", "권한이 없습니다."),
+     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "700-6", "사용자를 찾을 수 없습니다."),
+     USER_NICKNAME_REQUIRED(HttpStatus.BAD_REQUEST, "700-7", "닉네임은 필수 입력값입니다."),
+     USER_NICKNAME_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "700-8", "닉네임은 2~20자의 한글, 영문, 숫자, 언더바(_), 대시(-)만 사용 가능합니다."),
+     USER_NICKNAME_RESERVED(HttpStatus.BAD_REQUEST, "700-9", "사용할 수 없는 예약어입니다."),
+     USER_NICKNAME_DUPLICATE(HttpStatus.CONFLICT, "700-10", "이미 사용 중인 닉네임입니다."),
+     USER_NICKNAME_INVALID_SPECIAL_CHAR(HttpStatus.BAD_REQUEST, "700-11", "특수문자가 연속되거나 시작/끝에 위치할 수 없습니다."),
 
     // 701xx: 토큰 관련 오류
     TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "701-1", "유효하지 않은 토큰입니다."),

@@ -8,11 +8,11 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJpY
 
 ### 3. 회원 정보 수정 테스트
 PATCH http://localhost:8080/api/auth/update
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NzYxMjcyMjMsImV4cCI6MTc3NjE3MDQyM30.tmcw9K3ao1G41MXSpbBzQ0XgIVLLg-DJkgVAt1X2jo0
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzc2MzA5MzI1LCJleHAiOjE3NzYzNTI1MjV9.jrR9q1nj9Kxnhr9VEHYUAXRA75fNzJ1sqEhYKLvKmhc
 Content-Type: application/json
 
 {
-  "nickname": "새로운닉네임"
+  "nickname": "최성흐에"
 }
 
 ### 4. 회원 탈퇴 테스트
