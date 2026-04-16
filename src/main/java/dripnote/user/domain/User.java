@@ -1,7 +1,6 @@
 package dripnote.user.domain;
 
-import dripnote.common.exception.CustomException;
-import dripnote.common.exception.ErrorCode;
+import dripnote.common.domain.BaseTimeEntity;
 import dripnote.user.enums.UserProvider;
 import dripnote.user.enums.UserRole;
 import jakarta.persistence.*;
@@ -10,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
         @UniqueConstraint(name = "unique_provider_id", columnNames = {"provider", "provider_id"}),
         @UniqueConstraint(name = "unique_nickname", columnNames = {"nickname"})
 })
-public class User {
+public class User extends BaseTimeEntity {
     /**
      * updatedAt, profileImageUrl, status -> 해당 데이터는 현재 불필요할 것 같아서 삭제했습니다!
      */
@@ -57,17 +57,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
     private UserRole role = UserRole.USER;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
+    /**
+     * 닉네임 업데이트 (검증은 Service에서 수행)
+     * 이 메서드는 이미 검증된 닉네임만 받아서 업데이트합니다.
+     */
     public void updateNickname(String newNickname) {
-        if (newNickname == null || newNickname.isBlank()) {
-            throw new CustomException(ErrorCode.USER_NICKNAME_REQUIRED);
-        }
-
-        // 추후 중복여부 글자수 제한 등 로직 추가
         this.nickname = newNickname;
     }
 }

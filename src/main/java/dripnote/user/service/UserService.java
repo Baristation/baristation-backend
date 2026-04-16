@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import dripnote.user.domain.User;
 import dripnote.user.payload.dto.UserUpdateRequest;
 import dripnote.user.repository.UserRepository;
+import dripnote.user.validator.NicknameValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
     private final UserRepository userRepository;
+    private final NicknameValidator nicknameValidator;
 
     public void logout(HttpServletRequest request) {
         String accessToken = resolveToken(request);
@@ -84,6 +86,11 @@ public class UserService {
         log.info("회원 탈퇴 완료. userId: {}", userIdText);
     }
 
+    /**
+     * 회원 정보 수정 (닉네임)
+     * - 닉네임 검증 (형식, 금지어, 특수문자)
+     * - 중복 체크 (대소문자 무시)
+     */
     public void updateUser(HttpServletRequest request, UserUpdateRequest updateRequest) {
         String accessToken = resolveToken(request);
         Long userId = extractUserId(accessToken);
@@ -96,11 +103,22 @@ public class UserService {
             throw new CustomException(ErrorCode.USER_NICKNAME_REQUIRED);
         }
 
-        // updateNickname에서 발생한 IllegalArgumentException은 GlobalExceptionHandler에서 처리
-        user.updateNickname(updateRequest.nickname());
+        String newNickname = updateRequest.nickname();
+
+        // 1. 닉네임 형식 검증 (길이, 허용 문자, 금지어, 특수문자)
+        nicknameValidator.validate(newNickname);
+
+        // 2. 중복 체크 (대소문자 무시, 자신의 현재 닉네임 제외)
+        if (!user.getNickname().equalsIgnoreCase(newNickname)
+                && userRepository.existsByNicknameIgnoreCase(newNickname)) {
+            throw new CustomException(ErrorCode.USER_NICKNAME_DUPLICATE);
+        }
+
+        // 3. 검증 완료된 닉네임 업데이트
+        user.updateNickname(newNickname);
 
         log.info("회원 정보 수정 완료. userId: {}", userId);
-        log.info("수정된 닉네임: {}", updateRequest.nickname());
+        log.info("수정된 닉네임: {}", newNickname);
     }
 
     private String resolveToken(HttpServletRequest request) {
