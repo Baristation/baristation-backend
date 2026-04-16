@@ -1,5 +1,7 @@
 package dripnote.security.handler;
 
+import dripnote.common.exception.CustomException;
+import dripnote.common.exception.ErrorCode;
 import dripnote.common.redis.RedisService;
 import dripnote.security.jwt.JwtTokenProvider;
 import dripnote.security.payload.dto.TokenResponse;
@@ -63,11 +65,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     .attributes(attributes)
                     .build();
         } else {
-            throw new IllegalArgumentException("지원하지 않는 소셜 로그인입니다.");
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
         User user = userRepository.findByProviderAndProviderId(userInfo.getProvider(), userInfo.getProviderId())
                 .orElseThrow(() ->
-                    new IllegalArgumentException("가입되지 않은 유저입니다."));
+                    new CustomException(ErrorCode.USER_NOT_FOUND));
 
         TokenResponse tokenResponse = jwtTokenProvider.createTokenSet(user);
         redisService.setRefreshToken(String.valueOf(user.getUserId()), tokenResponse.refreshToken());
