@@ -1,23 +1,28 @@
 package dripnote.user.domain;
 
+import dripnote.common.domain.BaseTimeEntity;
 import dripnote.user.enums.UserProvider;
 import dripnote.user.enums.UserRole;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(name = "unique_provider_id", columnNames = {"provider", "provider_id"})
+        @UniqueConstraint(name = "unique_provider_id", columnNames = {"provider", "provider_id"}),
+        @UniqueConstraint(name = "unique_nickname", columnNames = {"nickname"})
 })
-public class User {
+public class User extends BaseTimeEntity {
     /**
      * updatedAt, profileImageUrl, status -> 해당 데이터는 현재 불필요할 것 같아서 삭제했습니다!
      */
@@ -26,7 +31,7 @@ public class User {
     @Column(name = "user_id")
     private Long userId;
 
-    // OAuth 정책상 이메일은 선택인 경우가 많아 nullable = true(디폴트)로 변경
+    // 카카오는 null일 수 있습니다.
     @Column(name = "email", length = 255)
     private String email;
 
@@ -52,8 +57,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
     private UserRole role = UserRole.USER;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    /**
+     * 닉네임 업데이트 (검증은 Service에서 수행)
+     * 이 메서드는 이미 검증된 닉네임만 받아서 업데이트합니다.
+     */
+    public void updateNickname(String newNickname) {
+        this.nickname = newNickname;
+    }
 }

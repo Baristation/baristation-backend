@@ -1,7 +1,25 @@
 package dripnote.user.repository;
 
 import dripnote.user.domain.User;
+import dripnote.user.enums.UserProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
+    // Provider별로 ProviderId를 통해 사용자 조회
+    Optional<User> findByProviderAndProviderId(UserProvider provider, String providerId);
+
+    boolean existsByNickname(String nickname);
+
+    /**
+     * 대소문자를 무시하고 닉네임 중복 여부 확인
+     * (예: "SeongWoo"와 "seongwoo"는 동일인으로 간주)
+     */
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE LOWER(u.nickname) = LOWER(:nickname)")
+    boolean existsByNicknameIgnoreCase(@Param("nickname") String nickname);
+
+    Optional<User> getUserByUserId(Long userId);
 }
