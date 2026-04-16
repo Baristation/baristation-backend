@@ -34,10 +34,7 @@ public class HomeService {
         List<HomeTastingsDTO> tastings = getTastings();
         List<HomeBeanDTO> beans = getBeans();
 
-        return HomeResponse.builder()
-                .tastings(tastings)
-                .beans(beans)
-                .build();
+        return new HomeResponse(tastings, beans);
     }
 
     // 향미 목록 조회
