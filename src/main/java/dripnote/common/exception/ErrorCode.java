@@ -31,13 +31,21 @@ public enum ErrorCode {
     FILE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-9", "파일 삭제에 실패하였습니다."),
     WEBHOOK_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "601-11", "웹훅 요청이 올바르지 않습니다."),
 
-    // 700xx: 사용자/권한 관련 오류
-    USER_INVALID_LOGIN(HttpStatus.BAD_REQUEST, "700-4", "올바르지 않은 로그인"),
-    USER_UNAUTHORIZED(HttpStatus.FORBIDDEN, "700-5", "권한이 없습니다."),
+     // 700xx: 사용자/권한 관련 오류
+     USER_INVALID_LOGIN(HttpStatus.BAD_REQUEST, "700-4", "올바르지 않은 로그인"),
+     USER_UNAUTHORIZED(HttpStatus.FORBIDDEN, "700-5", "권한이 없습니다."),
+     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "700-6", "사용자를 찾을 수 없습니다."),
+     USER_NICKNAME_REQUIRED(HttpStatus.BAD_REQUEST, "700-7", "닉네임은 필수 입력값입니다."),
+     USER_NICKNAME_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "700-8", "닉네임은 2~20자의 한글, 영문, 숫자, 언더바(_), 대시(-)만 사용 가능합니다."),
+     USER_NICKNAME_RESERVED(HttpStatus.BAD_REQUEST, "700-9", "사용할 수 없는 예약어입니다."),
+     USER_NICKNAME_DUPLICATE(HttpStatus.CONFLICT, "700-10", "이미 사용 중인 닉네임입니다."),
+     USER_NICKNAME_INVALID_SPECIAL_CHAR(HttpStatus.BAD_REQUEST, "700-11", "특수문자가 연속되거나 시작/끝에 위치할 수 없습니다."),
 
     // 701xx: 토큰 관련 오류
     TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "701-1", "유효하지 않은 토큰입니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "701-2", "토큰이 만료되었습니다."),
+    REFRESH_TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED, "701-3", "Refresh Token이 일치하지 않거나 만료되었습니다."),
+    REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "701-4", "Refresh Token 헤더는 필수입니다."),
 
     // 702xx: 비밀번호 정책
     PASSWORD_SAME_AS_USERID(HttpStatus.BAD_REQUEST, "702-1", "아이디와 동일한 비밀번호는 설정할 수 없습니다."),
@@ -53,7 +61,9 @@ public enum ErrorCode {
 
     // 900xx: 기타 시스템 오류
     AES_CIPHER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "900-1", "암호화 중 오류가 발생했습니다."),
-    APPLICANT_NOT_FOUND(HttpStatus.NOT_FOUND, "900-2", "지원서가 존재하지 않습니다.");
+    APPLICANT_NOT_FOUND(HttpStatus.NOT_FOUND, "900-2", "지원서가 존재하지 않습니다."),
+    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "900-3", "잘못된 요청입니다."),
+    COMMON_INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "900-4", "서버 내부 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
