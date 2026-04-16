@@ -47,10 +47,6 @@ public enum ErrorCode {
     REFRESH_TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED, "701-3", "Refresh Token이 일치하지 않거나 만료되었습니다."),
     REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "701-4", "Refresh Token 헤더는 필수입니다."),
 
-    // 702xx: 비밀번호 정책
-    PASSWORD_SAME_AS_USERID(HttpStatus.BAD_REQUEST, "702-1", "아이디와 동일한 비밀번호는 설정할 수 없습니다."),
-    PASSWORD_SAME_AS_OLD(HttpStatus.BAD_REQUEST,"702-2","이전 비밀번호와 동일한 비밀번호는 설정할 수 없습니다."),
-
     // 800xx: 이미지 관련
     INVALID_IMAGE_URL(HttpStatus.BAD_REQUEST, "800-1", "잘못된 imageUrl 형식입니다."),
     EMPTY_IMAGE_FILE(HttpStatus.BAD_REQUEST, "800-2", "빈 파일은 업로드할 수 없습니다."),

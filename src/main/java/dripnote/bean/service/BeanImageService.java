@@ -49,6 +49,15 @@ public class BeanImageService {
                             .build()
             );
 
+            /**
+             *         return new BeanImageResponse(
+             *                 beanImage.getBeanImageId(),
+             *                 beanImage.getBean().getBeanId(),
+             *                 beanImage.getImageType(),
+             *                 beanImage.getImageUrl(),
+             *                 beanImage.getSortOrder()
+             *         );
+             */
             return BeanImageResponse.from(saved);
         }
 
