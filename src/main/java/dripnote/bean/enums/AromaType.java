@@ -1,5 +1,9 @@
 package dripnote.bean.enums;
 
+/**
+ * TODO 확정나지 않음
+ */
+
 public enum AromaType {
     FLORAL("꽃향기"),
     FRUITY("과일향"),

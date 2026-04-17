@@ -1,6 +1,6 @@
 package dripnote.common.exception;
 
-import dripnote.common.response.ApiResponse;
+import dripnote.common.payload.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
