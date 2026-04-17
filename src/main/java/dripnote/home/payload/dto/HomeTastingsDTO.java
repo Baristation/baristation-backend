@@ -1,10 +1,16 @@
 package dripnote.home.payload.dto;
 
-import lombok.Builder;
+import dripnote.bean.domain.TastingNote;
 
-@Builder
 public record HomeTastingsDTO(
-        String tasting_name,
-        String tasting_link
+        String tastingName,
+        String tastingLink
 ) {
+    // Entity → DTO 변환: 정적 팩토리 메서드 사용
+    public static HomeTastingsDTO from(TastingNote tastingNote, Long tastingNoteId) {
+        return new HomeTastingsDTO(
+                tastingNote.getNameKo(),
+                "/bean?tastingId=" + tastingNoteId
+        );
+    }
 }

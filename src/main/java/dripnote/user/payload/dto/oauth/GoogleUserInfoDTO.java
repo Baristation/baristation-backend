@@ -1,12 +1,14 @@
 package dripnote.user.payload.dto.oauth;
 
 import dripnote.user.enums.UserProvider;
-import lombok.Builder;
 
 import java.util.Map;
 
-@Builder
 public record GoogleUserInfoDTO(Map<String, Object> attributes) implements OAuth2UserInfo {
+    // OAuth2 응답 Map 파싱: 정적 팩토리 메서드 사용
+    public static GoogleUserInfoDTO from(Map<String, Object> attributes) {
+        return new GoogleUserInfoDTO(attributes);
+    }
 
     @Override
     public UserProvider getProvider() {

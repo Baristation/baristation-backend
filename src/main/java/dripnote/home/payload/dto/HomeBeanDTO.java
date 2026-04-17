@@ -1,14 +1,22 @@
 package dripnote.home.payload.dto;
 
-import lombok.Builder;
+import dripnote.bean.domain.Bean;
 
 import java.util.List;
 
-@Builder
 public record HomeBeanDTO(
-        String bean_name,
-        List<String> bean_tasting,
-        String bean_image_link,
-        String bean_link
+        String beanName,
+        List<String> beanTasting,
+        String beanImageLink,
+        String beanLink
 ) {
+    // Entity + 관련 데이터 → DTO 변환: 정적 팩토리 메서드 사용
+    public static HomeBeanDTO of(Bean bean, List<String> tastings, String imageUrl) {
+        return new HomeBeanDTO(
+                bean.getNameKo(),
+                tastings,
+                imageUrl,
+                "/beans/detail/" + bean.getBeanId()
+        );
+    }
 }

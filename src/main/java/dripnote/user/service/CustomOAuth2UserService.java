@@ -40,22 +40,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2UserInfo oAuth2UserInfo = null;
         if (registrationId.equals("google")) {
             log.info("구글 로그인 요청");
-            oAuth2UserInfo = GoogleUserInfoDTO
-                    .builder()
-                    .attributes(attributes)
-                    .build();
+            oAuth2UserInfo = GoogleUserInfoDTO.from(attributes);
         } else if (registrationId.equals("naver")) {
             log.info("네이버 로그인 요청");
-            oAuth2UserInfo = NaverUserInfoDTO
-                    .builder()
-                    .attributes(attributes)
-                    .build();
+            oAuth2UserInfo = NaverUserInfoDTO.from(attributes);
         } else if (registrationId.equals("kakao")) {
             log.info("카카오 로그인 요청");
-            oAuth2UserInfo = KakaoUserInfoDTO
-                    .builder()
-                    .attributes(attributes)
-                    .build();
+            oAuth2UserInfo = KakaoUserInfoDTO.from(attributes);
         }
         saveOrUpdateUser(oAuth2UserInfo);
 
