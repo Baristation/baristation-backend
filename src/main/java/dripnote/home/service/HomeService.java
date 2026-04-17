@@ -45,11 +45,8 @@ public class HomeService {
         List<TastingNote> tastingNotes = tastingNoteRepository.findTop4ByOrderByTastingNoteIdAsc();
 
         return tastingNotes.stream()
-                .map(tastingNote -> HomeTastingsDTO.builder()
-                        .tasting_name(tastingNote.getNameKo())
-                        .tasting_link("/bean?tastingId=" + tastingNote.getTastingNoteId())
-                        .build()
-                ).toList();
+                .map(tastingNote -> HomeTastingsDTO.from(tastingNote, tastingNote.getTastingNoteId()))
+                .toList();
     }
 
     // 원두 목록 조회
@@ -88,12 +85,7 @@ public class HomeService {
         }
 
         return beans.stream()
-                .map(bean -> HomeBeanDTO.builder()
-                        .bean_name(bean.getNameKo())
-                        .bean_tasting(beanTastingMap.getOrDefault(bean.getBeanId(), List.of()))
-                        .bean_link("/beans/detail/" + bean.getBeanId())
-                        .bean_image_link(beanMainImageMap.get(bean.getBeanId()))
-                        .build()
-                ).toList();
+                .map(bean -> HomeBeanDTO.of(bean, beanTastingMap.getOrDefault(bean.getBeanId(), List.of()), beanMainImageMap.get(bean.getBeanId())))
+                .toList();
     }
 }
