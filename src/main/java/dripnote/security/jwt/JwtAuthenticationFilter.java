@@ -2,7 +2,7 @@ package dripnote.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dripnote.common.exception.ErrorCode;
-import dripnote.common.response.ApiResponse;
+import dripnote.common.payload.response.ApiResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;

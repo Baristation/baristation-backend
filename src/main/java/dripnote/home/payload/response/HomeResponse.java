@@ -8,7 +8,6 @@ import java.util.List;
 
 @Builder
 public record HomeResponse(
-        List<HomeTastingsDTO> tastings,
         List<HomeBeanDTO> beans
 ) {
 }

@@ -1,6 +1,6 @@
 package dripnote.user.controller;
 
-import dripnote.common.response.ApiResponse;
+import dripnote.common.payload.response.ApiResponse;
 import dripnote.security.payload.dto.TokenResponse;
 import dripnote.user.payload.dto.UserUpdateRequest;
 import dripnote.user.service.UserService;

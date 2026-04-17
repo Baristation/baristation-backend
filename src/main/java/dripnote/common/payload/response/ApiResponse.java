@@ -1,4 +1,4 @@
-package dripnote.common.response;
+package dripnote.common.payload.response;
 
 import dripnote.common.exception.ErrorCode;
 
