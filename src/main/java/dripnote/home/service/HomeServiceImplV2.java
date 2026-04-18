@@ -4,9 +4,9 @@ import dripnote.bean.repository.BeanImagesRepository;
 import dripnote.bean.repository.BeanTastingNotesRepository;
 import dripnote.bean.repository.BeansRepository;
 import dripnote.bean.repository.TastingNoteRepository;
-import dripnote.home.payload.dto.HomeBeanDTO;
-import dripnote.home.payload.request.BeanSearchRequest;
-import dripnote.home.payload.response.HomeResponse;
+import dripnote.common.payload.response.PageResponse;
+import dripnote.bean.payload.dto.BeanListItemDTO;
+import dripnote.bean.payload.request.BeanSearchRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,12 +24,12 @@ public class HomeServiceImplV2 implements HomeService{
 
 
     @Override
-    public HomeResponse getHome(BeanSearchRequest beanSearchRequest, Pageable pageable) {
+    public PageResponse<BeanListItemDTO> getHome(BeanSearchRequest beanSearchRequest, Pageable pageable) {
         return null;
     }
 
     @Override
-    public List<HomeBeanDTO> getBeans() {
+    public List<BeanListItemDTO> getBeans() {
         return List.of();
     }
 }

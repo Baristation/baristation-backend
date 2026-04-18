@@ -1,13 +1,12 @@
 package dripnote.home.payload.response;
 
 import lombok.Builder;
-import dripnote.home.payload.dto.HomeBeanDTO;
-import dripnote.home.payload.dto.HomeTastingsDTO;
+import dripnote.bean.payload.dto.BeanListItemDTO;
 
 import java.util.List;
 
 @Builder
 public record HomeResponse(
-        List<HomeBeanDTO> beans
+        List<BeanListItemDTO> beans
 ) {
 }

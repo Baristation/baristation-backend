@@ -1,4 +1,4 @@
-package dripnote.home.payload.request;
+package dripnote.bean.payload.request;
 
 import dripnote.bean.enums.AromaType;
 import dripnote.bean.enums.RoastingType;

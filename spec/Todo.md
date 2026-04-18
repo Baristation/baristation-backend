@@ -39,7 +39,6 @@ public record BeanListResponse(
     String origin,
     AromaType representativeAroma, // 대표 아로마
     String roastLevel,
-    Integer price,
     String imageUrl
 ) {}
 ```
