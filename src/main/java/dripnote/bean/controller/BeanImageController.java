@@ -1,7 +1,7 @@
 package dripnote.bean.controller;
 
 import dripnote.bean.payload.response.BeanImageResponse;
-import dripnote.bean.service.BeanImageService;
+import dripnote.bean.service.BeanImageServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/api/beans")
 public class BeanImageController {
 
-    private final BeanImageService beanImageService;
+    private final BeanImageServiceImpl beanImageService;
 
     // 원두 이미지 목록 조회
     @GetMapping("/{beanId}/images")

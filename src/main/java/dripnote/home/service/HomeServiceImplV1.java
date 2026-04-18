@@ -9,12 +9,10 @@ import dripnote.bean.repository.BeanImagesRepository;
 import dripnote.bean.repository.BeanTastingNotesRepository;
 import dripnote.bean.repository.BeansRepository;
 import dripnote.bean.repository.TastingNoteRepository;
-import dripnote.home.payload.dto.HomeBeanDTO;
-import dripnote.home.payload.request.BeanSearchRequest;
+import dripnote.bean.payload.dto.BeanListItemDTO;
 import dripnote.home.payload.response.HomeResponse;
-import dripnote.home.payload.dto.HomeTastingsDTO;
+import dripnote.bean.payload.dto.HomeTastingsDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,26 +30,25 @@ public class HomeServiceImplV1 implements HomeService {
     private final BeanImagesRepository beanImagesRepository;
 
     // 메인 페이지 향미, 원두 정보 전송
-    public HomeResponse getHome(BeanSearchRequest beanSearchRequest,
-                                Pageable pageable) {
+    public HomeResponse getHome() {
 //        List<HomeTastingsDTO> tastings = getTastings();
-        List<HomeBeanDTO> beans = getBeans();
+        List<BeanListItemDTO> beans = getBeans();
 
         return HomeResponse.builder()
                 .beans(beans)
                 .build();
     }
 //    // 향미 목록 조회
-//    public List<HomeTastingsDTO> getTastings() {
-//        List<TastingNote> tastingNotes = tastingNoteRepository.findTop4ByOrderByTastingNoteIdAsc();
-//
-//        return tastingNotes.stream()
-//                .map(tastingNote -> HomeTastingsDTO.from(tastingNote, tastingNote.getTastingNoteId()))
-//                .toList();
-//    }
+    public List<HomeTastingsDTO> getTastings() {
+        List<TastingNote> tastingNotes = tastingNoteRepository.findTop4ByOrderByTastingNoteIdAsc();
+
+        return tastingNotes.stream()
+                .map(tastingNote -> HomeTastingsDTO.from(tastingNote, tastingNote.getTastingNoteId()))
+                .toList();
+    }
 
     // 원두 목록 조회
-    public List<HomeBeanDTO> getBeans() {
+    public List<BeanListItemDTO> getBeans() {
         List<Bean> beans = beansRepository.findTop4ByOrderByCreatedAtDesc();
 
         if (beans.isEmpty()) {
@@ -86,7 +83,7 @@ public class HomeServiceImplV1 implements HomeService {
         }
 
         return beans.stream()
-                .map(bean -> HomeBeanDTO.of(bean, beanTastingMap.getOrDefault(bean.getBeanId(), List.of()), beanMainImageMap.get(bean.getBeanId())))
+                .map(bean -> BeanListItemDTO.of(bean, beanTastingMap.getOrDefault(bean.getBeanId(), List.of()), beanMainImageMap.get(bean.getBeanId())))
                 .toList();
     }
 }

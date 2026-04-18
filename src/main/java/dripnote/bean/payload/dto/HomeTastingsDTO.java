@@ -1,4 +1,4 @@
-package dripnote.home.payload.dto;
+package dripnote.bean.payload.dto;
 
 import dripnote.bean.domain.TastingNote;
 

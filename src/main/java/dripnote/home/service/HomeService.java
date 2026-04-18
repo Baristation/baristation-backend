@@ -1,18 +1,13 @@
 package dripnote.home.service;
 
-import dripnote.home.payload.dto.HomeBeanDTO;
-import dripnote.home.payload.request.BeanSearchRequest;
-import dripnote.home.payload.response.HomeResponse;
+import dripnote.bean.payload.dto.BeanListItemDTO;
+import dripnote.bean.payload.request.BeanSearchRequest;
+import dripnote.common.payload.response.PageResponse;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 public interface HomeService {
     /**
-     * 메인 페이지에 필요한 향미(Tastings)와 원두(Beans) 통합 정보 조회
+     * 원두 목록을 검색 조건에 따라 페이지네이션하여 반환
      */
-    HomeResponse getHome(BeanSearchRequest beanSearchRequest,
-                         Pageable pageable);
-
-    List<HomeBeanDTO> getBeans();
+    PageResponse<BeanListItemDTO> getHome(BeanSearchRequest request, Pageable pageable);
 }
