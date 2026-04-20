@@ -18,6 +18,14 @@ HEALTH_CHECK_ATTEMPTS="${HEALTH_CHECK_ATTEMPTS:-10}"
 HEALTH_CHECK_DELAY="${HEALTH_CHECK_DELAY:-5}"
 BEFORE_HEALTH_CHECK_DELAY="${BEFORE_HEALTH_CHECK_DELAY:-15}"
 
+run_sudo() {
+    if ! sudo -n "$@" 2>/dev/null; then
+        echo "Passwordless sudo is required for this command: $*"
+        echo "Configure sudoers for ${USER:-the deploy user} before running this script."
+        exit 1
+    fi
+}
+
 health_check() {
     local target_url="$1"
 
@@ -62,9 +70,9 @@ switch_container() {
     fi
 
     echo "Switching nginx upstream from ${previous_port} to ${next_port}"
-    sudo sed -i "s/server 127.0.0.1:${previous_port};/server 127.0.0.1:${next_port};/" "${NGINX_CONFIG_PATH}"
-    sudo nginx -t
-    sudo nginx -s reload
+    run_sudo sed -i "s/server 127.0.0.1:${previous_port};/server 127.0.0.1:${next_port};/" "${NGINX_CONFIG_PATH}"
+    run_sudo nginx -t
+    run_sudo nginx -s reload
 
     echo "Stopping previous container ${previous_container}"
     docker rm -f "${previous_container}" >/dev/null 2>&1 || true
