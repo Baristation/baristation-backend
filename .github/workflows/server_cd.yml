@@ -173,7 +173,7 @@ jobs:
 
       # GCP Container Registry 인증을 설정합니다.
       - name: Configure Docker auth for GCP registry
-        run: gcloud auth configure-docker --quiet
+        run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev --quiet
 
       # GCP에 올릴 이미지를 빌드합니다.
       - name: Build Docker image for GCP
