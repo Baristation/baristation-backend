@@ -13,4 +13,6 @@ public interface BeanTastingNotesRepository extends JpaRepository<BeanTastingNot
     // LazyInitializationException이 나지않도록 bean과 tastingNote를 같이 로딩
     @EntityGraph(attributePaths = {"bean", "tastingNote"})
     List<BeanTastingNote> findByBean_BeanIdIn(Collection<Long> beanIds);
+
+
 }

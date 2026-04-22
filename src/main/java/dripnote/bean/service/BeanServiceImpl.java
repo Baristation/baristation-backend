@@ -62,6 +62,12 @@ public class BeanServiceImpl implements BeanService {
         return PageResponse.of(page);
     }
 
+    @Override
+    public BeanListItemDTO getBeanDetail(Long beanId) {
+        // TODO: 원두 상세 조회 구현 (BeanDetailDTO로 변환하여 반환)w
+        return null;
+    }
+
     /**
      * 검색 조건에 맞는 원두 목록을 필터링 (현재는 간단한 구현, ERD 갱신 후 QueryDSL 적용 가능)
      */

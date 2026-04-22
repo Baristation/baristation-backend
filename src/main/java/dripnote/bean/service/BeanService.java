@@ -12,6 +12,7 @@ public interface BeanService {
     PageResponse<BeanListItemDTO> searchBeans(BeanSearchRequest request, Pageable pageable);
     
     /**
-     * (선택) 원두 단건 상세 조회 등 원두와 관련된 추가 비즈니스 로직들...
+     * 원두 단건 상세 조회
      */
+    BeanListItemDTO getBeanDetail(Long beanId);
 }
