@@ -77,6 +77,11 @@ public class MockBeanServiceImpl implements BeanService {
         return PageResponse.of(page);
     }
 
+    @Override
+    public BeanListItemDTO getBeanDetail(Long beanId) {
+        return null;
+    }
+
     private boolean matches(BeanListItemDTO bean, BeanSearchRequest request) {
         if (request == null) {
             return true;
