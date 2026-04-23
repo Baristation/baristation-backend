@@ -1,37 +1,120 @@
 package dripnote.home.service;
 
-import dripnote.bean.payload.dto.BeanListItemDTO;
-import dripnote.bean.payload.request.BeanSearchRequest;
-import dripnote.bean.service.BeanService;
-import dripnote.common.payload.response.PageResponse;
+import dripnote.bean.domain.FlavorNote;
+import dripnote.bean.domain.Product;
+import dripnote.bean.domain.ProductFlavorNote;
+import dripnote.bean.domain.ProductImage;
+import dripnote.bean.enums.ImageType;
+import dripnote.bean.repository.FlavorNoteRepository;
+import dripnote.bean.repository.ProductFlavorNoteRepository;
+import dripnote.bean.repository.ProductImageRepository;
+import dripnote.bean.repository.ProductRepository;
+import dripnote.home.payload.response.HomeFlavorResponse;
+import dripnote.home.payload.response.HomeProductResponse;
+import dripnote.home.payload.response.HomeResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Home 기능 서비스 구현
- * Bean 서비스를 활용하여 원두 목록 및 추천 리스트를 제공
- */
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class HomeServiceImpl implements HomeService {
 
-    @Qualifier("beanServiceImpl")
-    private final BeanService beanService;
+    private final ProductRepository productRepository;
+    private final FlavorNoteRepository flavorNoteRepository;
+    private final ProductFlavorNoteRepository productFlavorNoteRepository;
+    private final ProductImageRepository productImageRepository;
 
     /**
-     * 원두 목록을 검색 조건에 따라 페이지네이션하여 반환
-     * 
-     * @param request 검색 필터 조건
-     * @param pageable 페이지네이션 정보
-     * @return 페이지네이션된 원두 목록
+     * 향미 바로가기와 추천 상품 카드를 조합해 메인 페이지 응답을 생성합니다.
      */
     @Override
-    public PageResponse<BeanListItemDTO> getHome(BeanSearchRequest request, Pageable pageable) {
-        return beanService.searchBeans(request, pageable);
+    public HomeResponse getHome() {
+        List<HomeFlavorResponse> flavors = getFlavors();
+        List<HomeProductResponse> products = getProducts();
+
+        return HomeResponse.builder()
+                .flavors(flavors)
+                .products(products)
+                .build();
+    }
+
+    /**
+     * 메인 페이지 상단에 노출할 향미 바로가기 목록을 조회합니다.
+     */
+    private List<HomeFlavorResponse> getFlavors() {
+        List<FlavorNote> flavorNotes = flavorNoteRepository.findTop8ByOrderByFlavorNoteIdAsc();
+
+        return flavorNotes.stream()
+                .map(HomeFlavorResponse::from)
+                .toList();
+    }
+
+    /**
+     * 최신 추천 상품 목록과 각 상품의 향미, 썸네일 이미지를 함께 조회합니다.
+     */
+    private List<HomeProductResponse> getProducts() {
+        List<Product> products = productRepository.findTop4ByOrderByCreatedAtDesc();
+
+        if (products.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> productIds = products.stream()
+                .map(Product::getProductId)
+                .toList();
+
+        Map<Long, List<String>> productFlavorMap = getProductFlavorMap(productIds);
+        Map<Long, String> productImageMap = getProductImageMap(productIds);
+
+        return products.stream()
+                .map(product -> HomeProductResponse.of(
+                        product,
+                        productFlavorMap.getOrDefault(product.getProductId(), List.of()),
+                        productImageMap.get(product.getProductId())
+                ))
+                .toList();
+    }
+
+    /**
+     * 상품마다 향미를 다시 조회하지 않도록 상품 ID 기준으로 향미 이름을 묶습니다.
+     */
+    private Map<Long, List<String>> getProductFlavorMap(List<Long> productIds) {
+        List<ProductFlavorNote> productFlavorNotes =
+                productFlavorNoteRepository.findByProduct_ProductIdIn(productIds);
+
+        Map<Long, List<String>> productFlavorMap = new LinkedHashMap<>();
+        for (ProductFlavorNote productFlavorNote : productFlavorNotes) {
+            Long productId = productFlavorNote.getProduct().getProductId();
+            String flavorName = productFlavorNote.getFlavorNote().getNameKo();
+
+            productFlavorMap
+                    .computeIfAbsent(productId, key -> new ArrayList<>())
+                    .add(flavorName);
+        }
+
+        return productFlavorMap;
+    }
+
+    /**
+     * 상품별 대표 썸네일 이미지를 하나씩 선택합니다.
+     */
+    private Map<Long, String> getProductImageMap(List<Long> productIds) {
+        List<ProductImage> productImages =
+                productImageRepository.findByProduct_ProductIdInAndImageType(productIds, ImageType.THUMB);
+
+        Map<Long, String> productImageMap = new LinkedHashMap<>();
+        for (ProductImage productImage : productImages) {
+            Long productId = productImage.getProduct().getProductId();
+            productImageMap.putIfAbsent(productId, productImage.getImageUrl());
+        }
+
+        return productImageMap;
     }
 }
-

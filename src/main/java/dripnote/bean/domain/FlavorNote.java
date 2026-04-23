@@ -1,6 +1,5 @@
 package dripnote.bean.domain;
 
-import dripnote.bean.enums.FlavorCategory;
 import dripnote.common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,7 +20,7 @@ public class FlavorNote extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "flavor_category")
-    private FlavorCategory flavorCategory;
+    private dripnote.bean.enums.FlavorNote flavorNote;
 
     @Column(name = "name_ko", nullable = false, length = 50, unique = true)
     private String nameKo;

@@ -11,8 +11,11 @@ import java.util.Optional;
 
 public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
 
-    // beanIds에 있는 beanId를 기반으로 지정한 ImageType에 포함되는 이미지 객체만 리스트 반환
-    List<ProductImage> findByBean_BeanIdInAndImageType(Collection<Long> beanIds, ImageType imageType);
+    // productIds에 있는 productId를 기반으로 지정한 ImageType에 포함되는 이미지 객체만 리스트 반환
+    List<ProductImage> findByProduct_ProductIdInAndImageType(
+            Collection<Long> productIds,
+            ImageType imageType
+    );
 
     List<ProductImage> findByBean_BeanIdOrderBySortOrderAsc(Long beanId);
 

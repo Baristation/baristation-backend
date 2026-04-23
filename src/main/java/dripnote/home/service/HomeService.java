@@ -1,13 +1,11 @@
 package dripnote.home.service;
 
-import dripnote.bean.payload.dto.BeanListItemDTO;
-import dripnote.bean.payload.request.BeanSearchRequest;
-import dripnote.common.payload.response.PageResponse;
-import org.springframework.data.domain.Pageable;
+import dripnote.home.payload.response.HomeResponse;
 
 public interface HomeService {
+
     /**
-     * 원두 목록을 검색 조건에 따라 페이지네이션하여 반환
+     * 메인 페이지에 필요한 향미 바로가기와 추천 상품 정보를 조회합니다.
      */
-    PageResponse<BeanListItemDTO> getHome(BeanSearchRequest request, Pageable pageable);
+    HomeResponse getHome();
 }
