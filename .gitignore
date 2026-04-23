@@ -1,7 +1,8 @@
 HELP.md
 application.properties
 application.yaml
-application.yml
+application-docker.yml
+application-local.yml
 .env
 .env.*
 

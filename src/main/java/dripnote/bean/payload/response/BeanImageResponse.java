@@ -1,6 +1,6 @@
 package dripnote.bean.payload.response;
 
-import dripnote.bean.domain.BeanImage;
+import dripnote.bean.domain.ProductImage;
 import dripnote.bean.enums.ImageType;
 
 public record BeanImageResponse(
@@ -11,13 +11,13 @@ public record BeanImageResponse(
         Integer sortOrder
 ) {
 
-    public static BeanImageResponse from(BeanImage beanImage) {
+    public static BeanImageResponse from(ProductImage productImage) {
         return new BeanImageResponse(
-                beanImage.getBeanImageId(),
-                beanImage.getBean().getBeanId(),
-                beanImage.getImageType(),
-                beanImage.getImageUrl(),
-                beanImage.getSortOrder()
+                productImage.getBeanImageId(),
+                productImage.getBean().getBeanId(),
+                productImage.getImageType(),
+                productImage.getImageUrl(),
+                productImage.getSortOrder()
         );
     }
 }

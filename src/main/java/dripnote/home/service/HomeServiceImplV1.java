@@ -1,13 +1,13 @@
 package dripnote.home.service;
 
 import dripnote.bean.domain.Bean;
-import dripnote.bean.domain.BeanImage;
-import dripnote.bean.domain.BeanTastingNote;
-import dripnote.bean.domain.TastingNote;
+import dripnote.bean.domain.ProductImage;
+import dripnote.bean.domain.ProductFlavorNote;
+import dripnote.bean.domain.FlavorNote;
 import dripnote.bean.enums.ImageType;
 import dripnote.bean.repository.BeanImagesRepository;
 import dripnote.bean.repository.BeanTastingNotesRepository;
-import dripnote.bean.repository.BeansRepository;
+import dripnote.bean.repository.BeanRepository;
 import dripnote.bean.repository.TastingNoteRepository;
 import dripnote.bean.payload.dto.BeanListItemDTO;
 import dripnote.home.payload.response.HomeResponse;
@@ -24,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class HomeServiceImplV1 implements HomeService {
 
-    private final BeansRepository beansRepository;
+    private final BeanRepository beanRepository;
     private final TastingNoteRepository tastingNoteRepository;
     private final BeanTastingNotesRepository beanTastingNotesRepository;
     private final BeanImagesRepository beanImagesRepository;
@@ -40,16 +40,16 @@ public class HomeServiceImplV1 implements HomeService {
     }
 //    // 향미 목록 조회
     public List<HomeTastingsDTO> getTastings() {
-        List<TastingNote> tastingNotes = tastingNoteRepository.findTop4ByOrderByTastingNoteIdAsc();
+        List<FlavorNote> flavorNotes = tastingNoteRepository.findTop4ByOrderByTastingNoteIdAsc();
 
-        return tastingNotes.stream()
-                .map(tastingNote -> HomeTastingsDTO.from(tastingNote, tastingNote.getTastingNoteId()))
+        return flavorNotes.stream()
+                .map(flavorNote -> HomeTastingsDTO.from(flavorNote, flavorNote.getTastingNoteId()))
                 .toList();
     }
 
     // 원두 목록 조회
     public List<BeanListItemDTO> getBeans() {
-        List<Bean> beans = beansRepository.findTop4ByOrderByCreatedAtDesc();
+        List<Bean> beans = beanRepository.findTop4ByOrderByCreatedAtDesc();
 
         if (beans.isEmpty()) {
             return List.of();
@@ -59,16 +59,16 @@ public class HomeServiceImplV1 implements HomeService {
                 .map(Bean::getBeanId)
                 .toList();
 
-        List<BeanTastingNote> beanTastingNotes =
+        List<ProductFlavorNote> productFlavorNotes =
                 beanTastingNotesRepository.findByBean_BeanIdIn(beanIds);
 
-        List<BeanImage> beanImages =
+        List<ProductImage> productImages =
                 beanImagesRepository.findByBean_BeanIdInAndImageType(beanIds, ImageType.THUMB);
 
         Map<Long, List<String>> beanTastingMap = new LinkedHashMap<>();
-        for (BeanTastingNote beanTastingNote : beanTastingNotes) {
-            Long beanId = beanTastingNote.getBean().getBeanId();
-            String tastingName = beanTastingNote.getTastingNote().getNameKo();
+        for (ProductFlavorNote productFlavorNote : productFlavorNotes) {
+            Long beanId = productFlavorNote.getBean().getBeanId();
+            String tastingName = productFlavorNote.getTastingNote().getNameKo();
 
             beanTastingMap
                     .computeIfAbsent(beanId, key -> new ArrayList<>())
@@ -76,10 +76,10 @@ public class HomeServiceImplV1 implements HomeService {
         }
 
         Map<Long, String> beanMainImageMap = new LinkedHashMap<>();
-        for (BeanImage beanImage : beanImages) {
-            Long beanId = beanImage.getBean().getBeanId();
+        for (ProductImage productImage : productImages) {
+            Long beanId = productImage.getBean().getBeanId();
 
-            beanMainImageMap.putIfAbsent(beanId, beanImage.getImageUrl());
+            beanMainImageMap.putIfAbsent(beanId, productImage.getImageUrl());
         }
 
         return beans.stream()

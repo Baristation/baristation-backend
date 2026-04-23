@@ -1,28 +1,26 @@
 package dripnote.bean.domain;
 
 import dripnote.bean.enums.ImageType;
+import dripnote.common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Builder
-@Table(name = "bean_images")
-public class BeanImage {
+@Table(name = "product_images")
+public class ProductImage extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "bean_image_id")
-    private Long beanImageId;
+    @Column(name = "product_image_id")
+    private Long productImageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bean_id", nullable = false)
-    private Bean bean;
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(name = "image_url", nullable = false, length = 500)
     private String imageUrl;
@@ -33,10 +31,6 @@ public class BeanImage {
 
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
 
     public void changeImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;

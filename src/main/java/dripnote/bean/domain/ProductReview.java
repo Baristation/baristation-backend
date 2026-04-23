@@ -1,5 +1,6 @@
 package dripnote.bean.domain;
 
+import dripnote.common.domain.BaseTimeEntity;
 import dripnote.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,33 +15,22 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "bean_reviews")
-public class BeanReview {
+@Table(name = "product_reviews")
+public class ProductReview extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "bean_review_id")
-    private Long beanReviewId;
+    @Column(name = "product_review_id")
+    private Long productReviewId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bean_id", nullable = false)
-    private Bean bean;
-
-    @Column(name = "rating", nullable = false)
-    private Integer rating;
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 }

@@ -1,11 +1,11 @@
 package dripnote.bean.service;
 
 import dripnote.bean.domain.Bean;
-import dripnote.bean.domain.BeanImage;
+import dripnote.bean.domain.ProductImage;
 import dripnote.bean.enums.ImageType;
 import dripnote.bean.payload.response.BeanImageResponse;
 import dripnote.bean.repository.BeanImagesRepository;
-import dripnote.bean.repository.BeansRepository;
+import dripnote.bean.repository.BeanRepository;
 import dripnote.common.exception.CustomException;
 import dripnote.common.r2.R2ImageService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import static dripnote.common.exception.ErrorCode.*;
 @RequiredArgsConstructor
 public class BeanImageServiceImpl {
 
-    private final BeansRepository beansRepository;
+    private final BeanRepository beanRepository;
     private final BeanImagesRepository beanImagesRepository;
     private final R2ImageService r2ImageService;
 
@@ -33,16 +33,16 @@ public class BeanImageServiceImpl {
     public BeanImageResponse uploadThumb(Long beanId, MultipartFile file) throws IOException {
         Bean bean = getBean(beanId);
 
-        BeanImage thumbImage = beanImagesRepository.findByBean_BeanIdAndImageType(beanId, ImageType.THUMB)
+        ProductImage thumbImage = beanImagesRepository.findByBean_BeanIdAndImageType(beanId, ImageType.THUMB)
                 .orElse(null);
 
         // 대표 이미지가 없으면 새로 저장
         if (thumbImage == null) {
             String imageUrl = r2ImageService.uploadBeanThumb(file, beanId);
 
-            BeanImage saved = beanImagesRepository.save(
-                    BeanImage.builder()
-                            .bean(bean)
+            ProductImage saved = beanImagesRepository.save(
+                    ProductImage.builder()
+                            .product(bean)
                             .imageType(ImageType.THUMB)
                             .imageUrl(imageUrl)
                             .sortOrder(THUMB_SORT_ORDER)
@@ -85,30 +85,30 @@ public class BeanImageServiceImpl {
         int nextSortOrder = beanImagesRepository.findMaxSubSortOrder(beanId) + 1;
         String imageUrl = r2ImageService.uploadBeanSubImage(file, beanId);
 
-        BeanImage subImage = BeanImage.builder()
+        ProductImage subImage = ProductImage.builder()
                 .bean(bean)
                 .imageType(ImageType.SUB)
                 .imageUrl(imageUrl)
                 .sortOrder(nextSortOrder)
                 .build();
 
-        BeanImage saved = beanImagesRepository.save(subImage);
+        ProductImage saved = beanImagesRepository.save(subImage);
 
         return BeanImageResponse.from(saved);
     }
 
     // 서브 이미지 교체
     public BeanImageResponse updateImage(Long beanImageId, MultipartFile file) throws IOException {
-        BeanImage beanImage = beanImagesRepository.findById(beanImageId)
+        ProductImage productImage = beanImagesRepository.findById(beanImageId)
                 .orElseThrow(() -> new CustomException(BEAN_IMAGE_NOT_FOUND));
 
         // 대표 이미지는 uploadThumb()을 통해 수정
-        if (beanImage.getImageType() == ImageType.THUMB) {
+        if (productImage.getImageType() == ImageType.THUMB) {
             throw new CustomException(THUMB_IMAGE_UPDATE_NOT_ALLOWED);
         }
 
-        String oldImageUrl = beanImage.getImageUrl();
-        Long beanId = beanImage.getBean().getBeanId();
+        String oldImageUrl = productImage.getImageUrl();
+        Long beanId = productImage.getBean().getBeanId();
 
         // 항상 새 규칙 경로로 업로드
         String newImageUrl = r2ImageService.uploadBeanSubImage(file, beanId);
@@ -116,21 +116,21 @@ public class BeanImageServiceImpl {
         // 기존 파일 삭제
         r2ImageService.deleteByUrl(oldImageUrl);
 
-        beanImage.changeImageUrl(newImageUrl);
+        productImage.changeImageUrl(newImageUrl);
 
-        return BeanImageResponse.from(beanImage);
+        return BeanImageResponse.from(productImage);
     }
 
     // 이미지 삭제
     public void deleteImage(Long beanImageId) {
-        BeanImage beanImage = beanImagesRepository.findById(beanImageId)
+        ProductImage productImage = beanImagesRepository.findById(beanImageId)
                 .orElseThrow(() -> new CustomException(BEAN_IMAGE_NOT_FOUND));
 
-        Long beanId = beanImage.getBean().getBeanId();
-        boolean isSubImage = beanImage.getImageType() == ImageType.SUB;
+        Long beanId = productImage.getBean().getBeanId();
+        boolean isSubImage = productImage.getImageType() == ImageType.SUB;
 
-        r2ImageService.deleteByUrl(beanImage.getImageUrl());
-        beanImagesRepository.delete(beanImage);
+        r2ImageService.deleteByUrl(productImage.getImageUrl());
+        beanImagesRepository.delete(productImage);
 
         if (isSubImage) {
             normalizeSubSortOrder(beanId);
@@ -150,13 +150,13 @@ public class BeanImageServiceImpl {
 
     // 원두 존재 여부 확인
     private Bean getBean(Long beanId) {
-        return beansRepository.findById(beanId)
+        return beanRepository.findById(beanId)
                 .orElseThrow(() -> new CustomException(BEAN_NOT_FOUND));
     }
 
     // 서브 이미지 정렬 재조정
     private void normalizeSubSortOrder(Long beanId) {
-        List<BeanImage> subImages = beanImagesRepository
+        List<ProductImage> subImages = beanImagesRepository
                 .findByBean_BeanIdAndImageTypeOrderBySortOrderAsc(beanId, ImageType.SUB);
 
         for (int i = 0; i < subImages.size(); i++) {
