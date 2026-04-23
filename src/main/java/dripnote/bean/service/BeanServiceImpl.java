@@ -1,14 +1,14 @@
 package dripnote.bean.service;
 
 import dripnote.bean.domain.Bean;
-import dripnote.bean.domain.BeanImage;
-import dripnote.bean.domain.BeanTastingNote;
+import dripnote.bean.domain.ProductImage;
+import dripnote.bean.domain.ProductFlavorNote;
 import dripnote.bean.enums.ImageType;
 import dripnote.bean.payload.dto.BeanListItemDTO;
 import dripnote.bean.payload.request.BeanSearchRequest;
-import dripnote.bean.repository.BeanImagesRepository;
-import dripnote.bean.repository.BeanTastingNotesRepository;
-import dripnote.bean.repository.BeansRepository;
+import dripnote.bean.repository.ProductImageRepository;
+import dripnote.bean.repository.ProductFlavorNoteRepository;
+import dripnote.bean.repository.BeanRepository;
 import dripnote.common.payload.response.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -33,9 +33,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BeanServiceImpl implements BeanService {
 
-    private final BeansRepository beansRepository;
-    private final BeanTastingNotesRepository beanTastingNotesRepository;
-    private final BeanImagesRepository beanImagesRepository;
+    private final BeanRepository beanRepository;
+    private final ProductFlavorNoteRepository productFlavorNoteRepository;
+    private final ProductImageRepository productImageRepository;
 
     /**
      * 조건에 맞는 원두 목록을 검색하고 페이지네이션하여 반환
@@ -74,7 +74,7 @@ public class BeanServiceImpl implements BeanService {
     private List<Bean> filterBeans() {
         // TODO: ERD 갱신 후 QueryDSL을 사용하여 동적 쿼리로 구현
         // 현재는 모든 원두를 조회
-        return beansRepository.findAll();
+        return beanRepository.findAll();
     }
 
     /**
@@ -111,7 +111,7 @@ public class BeanServiceImpl implements BeanService {
      * 원두별 대표 이미지 URL 맵 조회
      */
     private Map<Long, String> getBeanImages(List<Long> beanIds) {
-        List<BeanImage> images = beanImagesRepository.findByBean_BeanIdInAndImageType(
+        List<ProductImage> images = productImageRepository.findByBean_BeanIdInAndImageType(
                 beanIds,
                 ImageType.THUMB
         );
@@ -119,7 +119,7 @@ public class BeanServiceImpl implements BeanService {
         return images.stream()
                 .collect(Collectors.toMap(
                         img -> img.getBean().getBeanId(),
-                        BeanImage::getImageUrl,
+                        ProductImage::getImageUrl,
                         (first, second) -> first // 중복 시 첫 번째 선택
                 ));
     }
@@ -128,9 +128,9 @@ public class BeanServiceImpl implements BeanService {
      * 원두별 맛 노트 리스트 맵 조회
      */
     private Map<Long, List<String>> getBeanTastingNotes(List<Long> beanIds) {
-        List<BeanTastingNote> beanTastingNotes = beanTastingNotesRepository.findByBean_BeanIdIn(beanIds);
+        List<ProductFlavorNote> productFlavorNotes = productFlavorNoteRepository.findByBean_BeanIdIn(beanIds);
 
-        return beanTastingNotes.stream()
+        return productFlavorNotes.stream()
                 .collect(Collectors.groupingBy(
                         btn -> btn.getBean().getBeanId(),
                         Collectors.mapping(
