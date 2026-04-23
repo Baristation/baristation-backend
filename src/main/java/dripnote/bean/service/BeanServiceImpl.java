@@ -6,8 +6,8 @@ import dripnote.bean.domain.ProductFlavorNote;
 import dripnote.bean.enums.ImageType;
 import dripnote.bean.payload.dto.BeanListItemDTO;
 import dripnote.bean.payload.request.BeanSearchRequest;
-import dripnote.bean.repository.BeanImagesRepository;
-import dripnote.bean.repository.BeanTastingNotesRepository;
+import dripnote.bean.repository.ProductImageRepository;
+import dripnote.bean.repository.ProductFlavorNoteRepository;
 import dripnote.bean.repository.BeanRepository;
 import dripnote.common.payload.response.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +34,8 @@ import java.util.stream.Collectors;
 public class BeanServiceImpl implements BeanService {
 
     private final BeanRepository beanRepository;
-    private final BeanTastingNotesRepository beanTastingNotesRepository;
-    private final BeanImagesRepository beanImagesRepository;
+    private final ProductFlavorNoteRepository productFlavorNoteRepository;
+    private final ProductImageRepository productImageRepository;
 
     /**
      * 조건에 맞는 원두 목록을 검색하고 페이지네이션하여 반환
@@ -111,7 +111,7 @@ public class BeanServiceImpl implements BeanService {
      * 원두별 대표 이미지 URL 맵 조회
      */
     private Map<Long, String> getBeanImages(List<Long> beanIds) {
-        List<ProductImage> images = beanImagesRepository.findByBean_BeanIdInAndImageType(
+        List<ProductImage> images = productImageRepository.findByBean_BeanIdInAndImageType(
                 beanIds,
                 ImageType.THUMB
         );
@@ -128,7 +128,7 @@ public class BeanServiceImpl implements BeanService {
      * 원두별 맛 노트 리스트 맵 조회
      */
     private Map<Long, List<String>> getBeanTastingNotes(List<Long> beanIds) {
-        List<ProductFlavorNote> productFlavorNotes = beanTastingNotesRepository.findByBean_BeanIdIn(beanIds);
+        List<ProductFlavorNote> productFlavorNotes = productFlavorNoteRepository.findByBean_BeanIdIn(beanIds);
 
         return productFlavorNotes.stream()
                 .collect(Collectors.groupingBy(

@@ -1,9 +1,9 @@
 package dripnote.home.service;
 
-import dripnote.bean.repository.BeanImagesRepository;
-import dripnote.bean.repository.BeanTastingNotesRepository;
+import dripnote.bean.repository.ProductImageRepository;
+import dripnote.bean.repository.ProductFlavorNoteRepository;
 import dripnote.bean.repository.BeanRepository;
-import dripnote.bean.repository.TastingNoteRepository;
+import dripnote.bean.repository.FlavorNoteRepository;
 import dripnote.common.payload.response.PageResponse;
 import dripnote.bean.payload.dto.BeanListItemDTO;
 import dripnote.bean.payload.request.BeanSearchRequest;
@@ -18,9 +18,9 @@ import java.util.List;
 public class HomeServiceImplV2 implements HomeService{
 
     private final BeanRepository beanRepository;
-    private final TastingNoteRepository tastingNoteRepository;
-    private final BeanTastingNotesRepository beanTastingNotesRepository;
-    private final BeanImagesRepository beanImagesRepository;
+    private final FlavorNoteRepository flavorNoteRepository;
+    private final ProductFlavorNoteRepository productFlavorNoteRepository;
+    private final ProductImageRepository productImageRepository;
 
 
     @Override

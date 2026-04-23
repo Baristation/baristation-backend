@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TastingNoteRepository extends JpaRepository<FlavorNote, Long> {
+public interface FlavorNoteRepository extends JpaRepository<FlavorNote, Long> {
     // ID 기준으로 오름차순 정렬 후 4개 반환
     List<FlavorNote> findTop4ByOrderByTastingNoteIdAsc();
 }

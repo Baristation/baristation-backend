@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Collection;
 import java.util.List;
 
-public interface BeanTastingNotesRepository extends JpaRepository<ProductFlavorNote, Long> {
+public interface ProductFlavorNoteRepository extends JpaRepository<ProductFlavorNote, Long> {
 
     // beanIds에 있는 원두를 조회해서 TastingNote 반환
     // LazyInitializationException이 나지않도록 bean과 tastingNote를 같이 로딩

@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BeanBookmarksRepository extends JpaRepository<ProductBookmark, Long> {
+public interface ProductBookmarkRepository extends JpaRepository<ProductBookmark, Long> {
 }
