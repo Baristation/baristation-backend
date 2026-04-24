@@ -93,14 +93,11 @@ public class BeanServiceImpl implements BeanService {
         // 1. 원두별 대표 이미지 조회 (ImageType.THUMB만 조회)
         Map<Long, String> imageUrlMap = getBeanImages(beanIds);
 
-        // 2. 원두별 맛 노트(Tasting Note) 조회
-        Map<Long, List<String>> tastingNotesMap = getBeanTastingNotes(beanIds);
-
-        // 3. 원두를 DTO로 변환
+        // 2. 원두를 DTO로 변환
         return beans.stream()
                 .map(bean -> BeanListItemDTO.of(
                         bean,
-                        bean.getRoaster().getNameKo(),
+                        null,
                         null,
                         imageUrlMap.get(bean.getBeanId())
                 ))
@@ -111,32 +108,16 @@ public class BeanServiceImpl implements BeanService {
      * 원두별 대표 이미지 URL 맵 조회
      */
     private Map<Long, String> getBeanImages(List<Long> beanIds) {
-        List<ProductImage> images = productImageRepository.findByBean_BeanIdInAndImageType(
+        List<ProductImage> images = productImageRepository.findByProduct_ProductIdInAndImageType(
                 beanIds,
                 ImageType.THUMB
         );
 
         return images.stream()
                 .collect(Collectors.toMap(
-                        img -> img.getBean().getBeanId(),
+                        img -> img.getProduct().getProductId(),
                         ProductImage::getImageUrl,
                         (first, second) -> first // 중복 시 첫 번째 선택
-                ));
-    }
-
-    /**
-     * 원두별 맛 노트 리스트 맵 조회
-     */
-    private Map<Long, List<String>> getBeanTastingNotes(List<Long> beanIds) {
-        List<ProductFlavorNote> productFlavorNotes = productFlavorNoteRepository.findByBean_BeanIdIn(beanIds);
-
-        return productFlavorNotes.stream()
-                .collect(Collectors.groupingBy(
-                        btn -> btn.getBean().getBeanId(),
-                        Collectors.mapping(
-                                btn -> btn.getTastingNote().getNameKo(),
-                                Collectors.toList()
-                        )
                 ));
     }
 }

@@ -3,7 +3,11 @@ package dripnote.bean.domain;
 import dripnote.bean.enums.RoastingType;
 import dripnote.common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor
 @Entity
 @Table(name = "product")
 public class Product extends BaseTimeEntity {

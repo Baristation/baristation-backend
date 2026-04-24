@@ -9,10 +9,9 @@ import java.util.List;
 
 public interface ProductFlavorNoteRepository extends JpaRepository<ProductFlavorNote, Long> {
 
-    // beanIds에 있는 원두를 조회해서 TastingNote 반환
-    // LazyInitializationException이 나지않도록 bean과 tastingNote를 같이 로딩
-    @EntityGraph(attributePaths = {"bean", "tastingNote"})
-    List<ProductFlavorNote> findByBean_BeanIdIn(Collection<Long> beanIds);
-
+    // productIds에 있는 상품을 조회해서 FlavorNote 반환
+    // LazyInitializationException이 나지않도록 product와 flavorNote를 같이 로딩
+    @EntityGraph(attributePaths = {"product", "flavorNote"})
+    List<ProductFlavorNote> findByProduct_ProductIdIn(Collection<Long> productIds);
 
 }

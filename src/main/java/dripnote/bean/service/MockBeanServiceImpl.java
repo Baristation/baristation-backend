@@ -25,6 +25,13 @@ public class MockBeanServiceImpl implements BeanService {
 
     static {
         AromaType[] aromas = AromaType.values();
+        /**
+         *     LIGHT("Light"),
+         *     MEDIUM("Medium"),
+         *     DARK("Dark"),
+         *     MEDIUMLIGHT("MediumLight"),
+         *     MEDIUMDARK("MediumDark");
+         */
         for (int i = 1; i <= 30; i++) {
             RoastingType roasting = switch (i % 3) {
                 case 0 -> RoastingType.DARK;
@@ -32,9 +39,11 @@ public class MockBeanServiceImpl implements BeanService {
                 default -> RoastingType.MEDIUM;
             };
             int bitternessScore = switch (roasting) {
-                case LIGHT -> 2;
+                case LIGHT -> 1;
+                case MEDIUMLIGHT -> 2;
                 case MEDIUM -> 3;
-                case DARK -> 4;
+                case MEDIUMDARK -> 4;
+                case DARK -> 5;
             };
 
             MOCK_DB.add(new BeanListItemDTO(
