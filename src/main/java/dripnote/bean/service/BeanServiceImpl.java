@@ -4,7 +4,7 @@ import dripnote.bean.domain.Bean;
 import dripnote.bean.domain.ProductImage;
 import dripnote.bean.domain.ProductFlavorNote;
 import dripnote.bean.enums.ImageType;
-import dripnote.bean.payload.dto.ProductListItemDTO;
+import dripnote.bean.payload.dto.BeanListItemDTO;
 import dripnote.bean.payload.request.BeanSearchRequest;
 import dripnote.bean.repository.ProductImageRepository;
 import dripnote.bean.repository.ProductFlavorNoteRepository;
@@ -45,7 +45,7 @@ public class BeanServiceImpl implements BeanService {
      * @return 페이지네이션된 BeanListItemDTO 응답
      */
     @Override
-    public PageResponse<ProductListItemDTO> searchBeans(BeanSearchRequest request, Pageable pageable) {
+    public PageResponse<BeanListItemDTO> searchBeans(BeanSearchRequest request, Pageable pageable) {
         // 1. 필터 조건에 맞는 원두 조회
         List<Bean> beans = filterBeans();
         
@@ -55,15 +55,15 @@ public class BeanServiceImpl implements BeanService {
         List<Bean> pagedBeans = beans.subList(start, end);
         
         // 3. DTO 변환 (대량 조회를 위해 관련 데이터를 한 번에 로드)
-        List<ProductListItemDTO> dtos = convertToDTO(pagedBeans);
+        List<BeanListItemDTO> dtos = convertToDTO(pagedBeans);
         
         // 4. Page 객체 생성 후 PageResponse로 변환
-        Page<ProductListItemDTO> page = new PageImpl<>(dtos, pageable, beans.size());
+        Page<BeanListItemDTO> page = new PageImpl<>(dtos, pageable, beans.size());
         return PageResponse.of(page);
     }
 
     @Override
-    public ProductListItemDTO getBeanDetail(Long beanId) {
+    public BeanListItemDTO getBeanDetail(Long beanId) {
         // TODO: 원두 상세 조회 구현 (BeanDetailDTO로 변환하여 반환)w
         return null;
     }
@@ -81,7 +81,7 @@ public class BeanServiceImpl implements BeanService {
      * Bean 엔티티 리스트를 BeanListItemDTO로 변환
      * N+1 문제를 피하기 위해 대량 조회로 최적화
      */
-    private List<ProductListItemDTO> convertToDTO(List<Bean> beans) {
+    private List<BeanListItemDTO> convertToDTO(List<Bean> beans) {
         if (beans.isEmpty()) {
             return Collections.emptyList();
         }
@@ -93,14 +93,11 @@ public class BeanServiceImpl implements BeanService {
         // 1. 원두별 대표 이미지 조회 (ImageType.THUMB만 조회)
         Map<Long, String> imageUrlMap = getBeanImages(beanIds);
 
-        // 2. 원두별 맛 노트(Tasting Note) 조회
-        Map<Long, List<String>> tastingNotesMap = getBeanTastingNotes(beanIds);
-
-        // 3. 원두를 DTO로 변환
+        // 2. 원두를 DTO로 변환
         return beans.stream()
-                .map(bean -> ProductListItemDTO.of(
+                .map(bean -> BeanListItemDTO.of(
                         bean,
-                        bean.getRoaster().getNameKo(),
+                        null,
                         null,
                         imageUrlMap.get(bean.getBeanId())
                 ))
@@ -118,7 +115,7 @@ public class BeanServiceImpl implements BeanService {
 
         return images.stream()
                 .collect(Collectors.toMap(
-                        img -> img.getBean().getBeanId(),
+                        img -> img.getProduct().getProductId(),
                         ProductImage::getImageUrl,
                         (first, second) -> first // 중복 시 첫 번째 선택
                 ));

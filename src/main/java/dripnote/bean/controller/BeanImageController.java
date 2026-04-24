@@ -28,20 +28,20 @@ public class BeanImageController {
     // 대표 이미지 업로드 또는 교체
     @PostMapping(value = "/{productId}/images/thumb", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BeanImageResponse> uploadThumb(
-            @PathVariable Long beanId,
+            @PathVariable Long productId,
             @RequestPart("file") MultipartFile file
     ) throws IOException {
-        BeanImageResponse response = beanImageService.uploadThumb(beanId, file);
+        BeanImageResponse response = beanImageService.uploadThumb(productId, file);
         return ResponseEntity.ok(response);
     }
 
     // 서브 이미지 추가
     @PostMapping(value = "/{productId}/images/sub", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BeanImageResponse> uploadSub(
-            @PathVariable Long beanId,
+            @PathVariable Long productId,
             @RequestPart("file") MultipartFile file
     ) throws IOException {
-        BeanImageResponse response = beanImageService.uploadSub(beanId, file);
+        BeanImageResponse response = beanImageService.uploadSub(productId, file);
         return ResponseEntity.ok(response);
     }
 

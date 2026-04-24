@@ -2,7 +2,7 @@ package dripnote.bean.service;
 
 import dripnote.bean.enums.AromaType;
 import dripnote.bean.enums.RoastingType;
-import dripnote.bean.payload.dto.ProductListItemDTO;
+import dripnote.bean.payload.dto.BeanListItemDTO;
 import dripnote.bean.payload.request.BeanSearchRequest;
 import dripnote.common.payload.response.PageResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +21,17 @@ import java.util.Locale;
 @Profile("test")
 public class MockBeanServiceImpl implements BeanService {
 
-    private static final List<ProductListItemDTO> MOCK_DB = new ArrayList<>();
+    private static final List<BeanListItemDTO> MOCK_DB = new ArrayList<>();
 
     static {
         AromaType[] aromas = AromaType.values();
+        /**
+         *     LIGHT("Light"),
+         *     MEDIUM("Medium"),
+         *     DARK("Dark"),
+         *     MEDIUMLIGHT("MediumLight"),
+         *     MEDIUMDARK("MediumDark");
+         */
         for (int i = 1; i <= 30; i++) {
             RoastingType roasting = switch (i % 3) {
                 case 0 -> RoastingType.DARK;
@@ -32,14 +39,14 @@ public class MockBeanServiceImpl implements BeanService {
                 default -> RoastingType.MEDIUM;
             };
             int bitternessScore = switch (roasting) {
-                case LIGHT -> 2;
+                case LIGHT -> 1;
+                case MEDIUMLIGHT -> 2;
                 case MEDIUM -> 3;
-                case DARK -> 4;
-                case MEDIUMLIGHT -> 5;
-                case MEDIUMDARK -> 6;
+                case MEDIUMDARK -> 4;
+                case DARK -> 5;
             };
 
-            MOCK_DB.add(new ProductListItemDTO(
+            MOCK_DB.add(new BeanListItemDTO(
                     (long) i,
                     "테스트 원두 " + i,
                     "Mock Bean " + i,
@@ -58,33 +65,33 @@ public class MockBeanServiceImpl implements BeanService {
     }
 
     @Override
-    public PageResponse<ProductListItemDTO> searchBeans(BeanSearchRequest request, Pageable pageable) {
+    public PageResponse<BeanListItemDTO> searchBeans(BeanSearchRequest request, Pageable pageable) {
         log.info("Mock BeanService 호출됨: {}", request);
 
-        List<ProductListItemDTO> filtered = MOCK_DB.stream()
+        List<BeanListItemDTO> filtered = MOCK_DB.stream()
                 .filter(bean -> matches(bean, request))
                 .toList();
 
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), filtered.size());
 
-        List<ProductListItemDTO> pageContent;
+        List<BeanListItemDTO> pageContent;
         if (start >= filtered.size()) {
             pageContent = new ArrayList<>(); // 범위를 벗어나면 빈 리스트 반환
         } else {
             pageContent = filtered.subList(start, end);
         }
         // Page 객체 생성 후 PageResponse로 변환
-        Page<ProductListItemDTO> page = new PageImpl<>(pageContent, pageable, filtered.size());
+        Page<BeanListItemDTO> page = new PageImpl<>(pageContent, pageable, filtered.size());
         return PageResponse.of(page);
     }
 
     @Override
-    public ProductListItemDTO getBeanDetail(Long beanId) {
+    public BeanListItemDTO getBeanDetail(Long beanId) {
         return null;
     }
 
-    private boolean matches(ProductListItemDTO bean, BeanSearchRequest request) {
+    private boolean matches(BeanListItemDTO bean, BeanSearchRequest request) {
         if (request == null) {
             return true;
         }
@@ -97,17 +104,17 @@ public class MockBeanServiceImpl implements BeanService {
                 && matchRoasting(bean, request.roastingType());
     }
 
-    private boolean matchKeyword(ProductListItemDTO bean, String keyword) {
+    private boolean matchKeyword(BeanListItemDTO bean, String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return true;
         }
         String q = keyword.toLowerCase(Locale.ROOT);
-        return (bean.productNameKo() != null && bean.productNameKo().toLowerCase(Locale.ROOT).contains(q))
-                || (bean.productNameEn() != null && bean.productNameEn().toLowerCase(Locale.ROOT).contains(q))
+        return (bean.beanNameKo() != null && bean.beanNameKo().toLowerCase(Locale.ROOT).contains(q))
+                || (bean.beanNameEn() != null && bean.beanNameEn().toLowerCase(Locale.ROOT).contains(q))
                 || (bean.region() != null && bean.region().toLowerCase(Locale.ROOT).contains(q));
     }
 
-    private boolean matchAromas(ProductListItemDTO bean, List<AromaType> aromas) {
+    private boolean matchAromas(BeanListItemDTO bean, List<AromaType> aromas) {
         if (aromas == null || aromas.isEmpty()) {
             return true;
         }
@@ -124,11 +131,11 @@ public class MockBeanServiceImpl implements BeanService {
         return max == null || value <= max;
     }
 
-    private boolean matchBody(ProductListItemDTO bean, Integer body) {
+    private boolean matchBody(BeanListItemDTO bean, Integer body) {
         return body == null || (bean.body() != null && bean.body().equals(body));
     }
 
-    private boolean matchRoasting(ProductListItemDTO bean, RoastingType roastingType) {
-        return roastingType == null || roastingType.name().equalsIgnoreCase(bean.roastingType());
+    private boolean matchRoasting(BeanListItemDTO bean, RoastingType roastingType) {
+        return roastingType == null || roastingType.name().equalsIgnoreCase(bean.roastLevelName());
     }
 }

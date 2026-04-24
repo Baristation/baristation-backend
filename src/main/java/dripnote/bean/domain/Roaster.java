@@ -1,5 +1,6 @@
 package dripnote.bean.domain;
 
+import dripnote.common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "roasters")
-public class Roaster {
+public class Roaster extends BaseTimeEntity {
     /**
      * city, country, updatedAt -> 해당 데이터는 현재 불필요할 것 같아서 삭제했습니다!
      */
@@ -35,8 +36,4 @@ public class Roaster {
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
 }

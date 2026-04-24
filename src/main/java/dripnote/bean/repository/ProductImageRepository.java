@@ -17,11 +17,11 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Long
             ImageType imageType
     );
 
-    List<ProductImage> findByBean_BeanIdOrderBySortOrderAsc(Long beanId);
+    List<ProductImage> findByProduct_ProductIdOrderBySortOrderAsc(Long productId);
 
-    Optional<ProductImage> findByBean_BeanIdAndImageType(Long beanId, ImageType imageType);
+    Optional<ProductImage> findByProduct_ProductIdAndImageType(Long productId, ImageType imageType);
 
-    List<ProductImage> findByBean_BeanIdAndImageTypeOrderBySortOrderAsc(Long beanId, ImageType imageType);
+    List<ProductImage> findByProduct_ProductIdAndImageTypeOrderBySortOrderAsc(Long productId, ImageType imageType);
 
     @Query("""
         select coalesce(max(bi.sortOrder), 0)
@@ -29,5 +29,5 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Long
         where bi.product.productId = :productId
           and bi.imageType = dripnote.bean.enums.ImageType.SUB
     """)
-    Integer findMaxSubSortOrder(Long beanId);
+    Integer findMaxSubSortOrder(Long productId);
 }
