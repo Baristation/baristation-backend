@@ -1,8 +1,11 @@
 package dripnote.home.controller;
 
 import dripnote.common.payload.response.ApiResponse;
+import dripnote.common.payload.response.PageResponse;
+import dripnote.bean.payload.dto.BeanListItemDTO;
+import dripnote.bean.payload.request.BeanSearchRequest;
 import dripnote.home.payload.response.HomeResponse;
-import dripnote.home.service.HomeService;
+import dripnote.home.service.HomeServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

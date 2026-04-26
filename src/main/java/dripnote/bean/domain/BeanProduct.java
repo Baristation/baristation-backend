@@ -2,7 +2,11 @@ package dripnote.bean.domain;
 
 import dripnote.common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor
 @Entity
 @Table(name = "bean_product")
 public class BeanProduct extends BaseTimeEntity {
