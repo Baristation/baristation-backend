@@ -1,0 +1,36 @@
+### 1. 원두 목록 기본 조회 (최신순, 1페이지)
+GET http://localhost:8080/api/beans/search?page=0&size=12
+
+### 2. 키워드 검색 (원두명/로스터리명/향미명)
+GET http://localhost:8080/api/beans/search?keyword=ethiopia&page=0&size=12
+
+### 3. FlavorCategory 단일 필터
+GET http://localhost:8080/api/beans/search?flavorCategory=FRUITY&page=0&size=12
+
+### 4. 맛 범위 필터 (산미/단맛/쓴맛)
+GET http://localhost:8080/api/beans/search?minAcidity=2&maxAcidity=4&minSweetness=1&maxSweetness=5&minBitterness=1&maxBitterness=3&page=0&size=12
+
+### 5. 바디 + 로스팅 필터
+GET http://localhost:8080/api/beans/search?body=3&roastingType=MEDIUM&page=0&size=12
+
+### 6. 정렬: 이름순
+GET http://localhost:8080/api/beans/search?sortBy=NAME&page=0&size=12
+
+### 7. 정렬: 로스팅 정도순
+GET http://localhost:8080/api/beans/search?sortBy=ROASTING_LEVEL&page=0&size=12
+
+### 8. 정렬: 산미순
+GET http://localhost:8080/api/beans/search?sortBy=ACIDITY&page=0&size=12
+
+### 9. 정렬: 바디순
+GET http://localhost:8080/api/beans/search?sortBy=BODY&page=0&size=12
+
+### 10. 복합 조건 + 페이지 상태 유지 테스트
+GET http://localhost:8080/api/beans/search?keyword=berry&flavorCategory=FRUITY&minAcidity=2&maxAcidity=5&roastingType=LIGHT&sortBy=ACIDITY&page=0&size=12
+
+### 11. (상태 유지) 다음 페이지 조회
+GET http://localhost:8080/api/beans/search?keyword=berry&flavorCategory=FRUITY&minAcidity=2&maxAcidity=5&roastingType=LIGHT&sortBy=ACIDITY&page=1&size=12
+
+### 12. 필터 초기화 케이스 (페이지/사이즈만)
+GET http://localhost:8080/api/beans/search?page=0&size=12
+
