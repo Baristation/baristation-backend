@@ -26,7 +26,7 @@ public class ClassSchedule {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", nullable = false)
-    private Class aClass;
+    private Lesson aClass;
 
     @Column(name = "class_date", nullable = false)
     private LocalDate classDate;

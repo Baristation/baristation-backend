@@ -22,7 +22,7 @@ public class ClassImage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", nullable = false)
-    private Class aClass;
+    private Lesson aClass;
 
     @Column(name = "image_url", nullable = false, length = 500)
     private String imageUrl;
