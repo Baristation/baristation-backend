@@ -38,7 +38,7 @@ public class R2ImageService {
 
     /**
      * 원두 대표(THUMB) 이미지 업로드
-     * 저장 경로: beans/{beanId}/thumb.webp
+     * 저장 경로: beans/{productId}/thumb.webp
      */
     public String uploadBeanThumb(MultipartFile file, Long beanId) throws IOException {
         return uploadFixedFile(file, buildBeanFolder(beanId), "thumb");
@@ -46,7 +46,7 @@ public class R2ImageService {
 
     /**
      * 원두 서브(SUB) 이미지 업로드
-     * 저장 경로: beans/{beanId}/sub_{uuid}.webp
+     * 저장 경로: beans/{productId}/sub_{uuid}.webp
      */
     public String uploadBeanSubImage(MultipartFile file, Long beanId) throws IOException {
         return uploadUniqueFile(file, buildBeanFolder(beanId), "sub");
