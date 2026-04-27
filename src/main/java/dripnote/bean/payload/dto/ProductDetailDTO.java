@@ -6,8 +6,8 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record BeanDetailDTO (
-        BeanSummaryDTO beanSummary,
+public record ProductDetailDTO(
+        ProductSummaryDTO beanSummary,
         RoasterDTO roaster,
         RoastingType roastingType,
         List<FlavorNoteDTO> flavorNotes,

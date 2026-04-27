@@ -3,7 +3,7 @@ package dripnote.bean.payload.dto;
 import lombok.Builder;
 
 @Builder
-public record BeanSummaryDTO(
+public record ProductSummaryDTO(
         Long beanId,
         String beanNameKo,
         String beanNameEn,

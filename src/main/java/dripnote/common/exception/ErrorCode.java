@@ -9,9 +9,10 @@ public enum ErrorCode {
 
     // 600xx: Bean 관련 오류
     BEAN_NOT_FOUND(HttpStatus.NOT_FOUND, "600-1", "원두를 찾을 수 없습니다."),
-    CLUB_INFORMATION_NOT_FOUND(HttpStatus.NOT_FOUND, "600-2", "동아리 상세 정보가 존재하지 않습니다."),
-    CLUB_FEED_IMAGES_NOT_FOUND(HttpStatus.NOT_FOUND, "600-3", "동아리 피드가 존재하지 않습니다."),
-    CLUB_ID_INVALID(HttpStatus.BAD_REQUEST, "600-4", "올바르지 않은 클럽 요청입니다."),
+    BEAN_SEARCH_INVALID_RANGE(HttpStatus.BAD_REQUEST, "600-2", "검색 조건의 최소값이 최대값보다 클 수 없습니다."), // 600-2 최성우: 잘못된 검색조건 추가.
+    BEAN_SEARCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "600-3", "원두 검색 중 오류가 발생했습니다."), // 600-3 최성우: 검색 시 DB 오류 추가
+
+  CLUB_ID_INVALID(HttpStatus.BAD_REQUEST, "600-4", "올바르지 않은 클럽 요청입니다."),
     CLUB_SEARCH_FAILED(HttpStatus.BAD_REQUEST, "600-5", "검색 중 오류가 발생했습니다."),
     CLUB_DIVISION_INVALID(HttpStatus.BAD_REQUEST, "600-6", "올바르지 않은 분과입니다."),
     CLUB_CATEGORY_INVALID(HttpStatus.BAD_REQUEST, "600-7", "올바르지 않은 분류입니다."),
