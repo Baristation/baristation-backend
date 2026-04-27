@@ -5,6 +5,8 @@ application-docker.yml
 application-local.yml
 .env
 .env.*
+.ai
+.ai.*
 
 #동일한 버전 관리를 위해 "gradle/wrapper/*, gradlew*"는 공유
 .gradle/
