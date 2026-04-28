@@ -18,10 +18,10 @@ public class BeanImageController {
 
     private final BeanImageServiceImpl beanImageService;
 
-    // 원두(Product) 이미지 목록 조회
+    // 원두 이미지 목록 조회
     @GetMapping("/{productId}/images")
-    public ResponseEntity<List<BeanImageResponse>> getImages(@PathVariable Long productId) {
-        List<BeanImageResponse> response = beanImageService.getImages(productId);
+    public ResponseEntity<List<BeanImageResponse>> getImages(@PathVariable Long beanId) {
+        List<BeanImageResponse> response = beanImageService.getImages(beanId);
         return ResponseEntity.ok(response);
     }
 
@@ -48,6 +48,7 @@ public class BeanImageController {
     // 특정 서브 이미지 교체
     @PutMapping(value = "/{productId}/images/{beanImageId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BeanImageResponse> updateImage(
+            @PathVariable Long beanId,
             @PathVariable Long beanImageId,
             @RequestPart("file") MultipartFile file
     ) throws IOException {
@@ -57,6 +58,7 @@ public class BeanImageController {
     // 특정 이미지 삭제
     @DeleteMapping("/{productId}/images/{beanImageId}")
     public ResponseEntity<Void> deleteImage(
+            @PathVariable Long beanId,
             @PathVariable Long beanImageId
     ) {
         beanImageService.deleteImage(beanImageId);
