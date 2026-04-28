@@ -61,6 +61,6 @@ public class BeanImageController {
             @PathVariable Long beanImageId
     ) {
         beanImageService.deleteImage(beanImageId);
-        return ApiResponse.noContent();
+        return ApiResponse.ok(null);
     }
 }
