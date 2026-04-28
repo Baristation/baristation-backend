@@ -69,7 +69,8 @@ public class BeanServiceImpl implements BeanService {
                 throw new CustomException(ErrorCode.BEAN_SEARCH_FAILED);
             }
             return toSummaryDto(
-                    new ListItemSource(beanProduct.getBean(), beanProduct.getProduct()),
+                    beanProduct.getBean(),
+                    beanProduct.getProduct().getProductId(),
                     thumbImageByProductId.get(beanProduct.getProduct().getProductId())
             );
         });
@@ -110,7 +111,7 @@ public class BeanServiceImpl implements BeanService {
 
         // 3. 상세 DTO 조립
         ProductSummaryDTO summary = ProductSummaryDTO.builder()
-                .beanId(bean.getBeanId())
+                .productId(productId)
                 .beanNameKo(bean.getNameKo())
                 .beanNameEn(bean.getNameEn())
                 .origin(bean.getOrigin())
@@ -148,11 +149,12 @@ public class BeanServiceImpl implements BeanService {
                 ));
     }
 
-    private ProductSummaryDTO toSummaryDto(ListItemSource source, ProductImageDTO image) {
-        Bean bean = source.bean();
+    private ProductSummaryDTO toSummaryDto(Bean bean,
+                                           Long productId,
+                                           ProductImageDTO image) {
 
         return ProductSummaryDTO.builder()
-                .beanId(bean.getBeanId())
+                .productId(productId)
                 .beanNameKo(bean.getNameKo())
                 .beanNameEn(bean.getNameEn())
                 .origin(bean.getOrigin())

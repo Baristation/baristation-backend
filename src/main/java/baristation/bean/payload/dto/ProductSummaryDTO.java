@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record ProductSummaryDTO(
-        Long beanId,
+        Long productId,
         String beanNameKo,
         String beanNameEn,
         String origin,
