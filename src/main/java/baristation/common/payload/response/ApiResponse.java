@@ -15,8 +15,8 @@ public record ApiResponse<T>(
     }
 
     // 성공 응답 (메시지 커스텀)
-    public static <T> ResponseEntity<ApiResponse<T>> ok(String message, T data) {
-        return ResponseEntity.ok(new ApiResponse<>("200", message, data));
+    public static <T> ResponseEntity<ApiResponse<T>> ok() {
+        return ResponseEntity.ok().build();
     }
 
     // 실패 응답 (ErrorCode에 정의된 HttpStatus 사용)

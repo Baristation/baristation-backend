@@ -20,13 +20,13 @@ public class UserController {
     public ResponseEntity<ApiResponse<TokenResponse>> refreshUser(
             @RequestHeader(value = "Refresh-Token", required = false) String refreshToken) {
         TokenResponse newTokenResponse = userService.refresh(refreshToken);
-        return ApiResponse.ok("토큰 재발급 성공", newTokenResponse);
+        return ApiResponse.ok(newTokenResponse);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
         userService.logout(request);
-        return ApiResponse.ok("로그아웃 성공", null);
+        return ApiResponse.ok();
     }
 
     // 회원 정보 수정
@@ -35,12 +35,12 @@ public class UserController {
             HttpServletRequest request,
             @RequestBody UserUpdateRequest updateRequest) {
         userService.updateUser(request, updateRequest);
-        return ApiResponse.ok("회원 정보 수정 성공", null);
+        return ApiResponse.ok();
     }
     // 회원 탈퇴
     @DeleteMapping("/delete")
     public ResponseEntity<ApiResponse<Void>> deleteAccount(HttpServletRequest request) {
         userService.deleteUser(request);
-        return ApiResponse.ok("회원 탈퇴 성공", null);
+        return ApiResponse.ok();
     }
 }
