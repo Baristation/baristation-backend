@@ -32,11 +32,4 @@ public record ApiResponse<T>(
                 .status(errorCode.getHttpStatus())
                 .body(new ApiResponse<>(errorCode.getCode(), errorCode.getMessage(), data));
     }
-
-//    // 204
-//    public static ResponseEntity<ApiResponse<Void>> noContent() {
-//        return ResponseEntity
-//                .status(HttpStatus.OK) // 또는 HttpStatus.NO_CONTENT
-//                .body(new ApiResponse<>("204", "No Content", null));
-//    }
 }
