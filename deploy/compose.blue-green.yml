@@ -1,8 +1,6 @@
 x-app: &app
   image: ${DOCKER_APP_IMAGE}
   restart: unless-stopped
-  env_file:
-    - /home/${USERNAME}/app.env
   environment:
     TZ: Asia/Seoul
     SERVER_PORT: 8080
