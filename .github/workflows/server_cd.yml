@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - develop
-      - feature/#15-CI/CD
+      - feature/#15-CI-CD
 
 concurrency:
   group: server-cd-${{ github.ref }}
@@ -14,7 +14,7 @@ concurrency:
 jobs:
   # develop브랜치는 라즈베리파이용 ARM64 이미지를 빌드합니다
   build-and-push-pi:
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/feature/#15-CI/CD'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/feature/#15-CI-CD'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -92,7 +92,7 @@ jobs:
 
   # develop, test-CI/CD 브랜치는 라즈베리파이 서버로 배포합니다.
   deploy-pi:
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/feature/#15-CI/CD'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/feature/#15-CI-CD'
     runs-on: ubuntu-latest
     needs: build-and-push-pi
     permissions:
