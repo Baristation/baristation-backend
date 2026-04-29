@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -17,27 +18,23 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    /* [추가된 부분]
-       - requestMatchers 내부에 "/api/**" 추가하였습니다.
-    */
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final JwtTokenProvider jwtTokenProvider;
-
-// filterChain 메서드 내부 (logout 설정 아래 쯤에 추가)
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
                 // CSRF 비활성화 - 개발 단계 및 OAuth2 연동 테스트 임시 설정
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 적용
 
                 // 세션 설정 - JWT 사용하므로 세션은 Stateless로 설정
@@ -46,32 +43,11 @@ public class SecurityConfig {
                 // 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers(
-                                "/",
-                                "/signin",
-                                "/beans/**",
-                                "/classes/**",
-                                "/oauth2/**",
-                                "/login/**",   // 구글 리디렉션 도착 경로 허용
-                                "/api/beans/**",
-                                "/api/lessons/**",
-                                "/api/auth/refresh",
-                                // swagger 경로
-                                "/swagger-custom-ui.html",
-                                "/swagger-ui/**",
-                                "/api-docs",
-                                "/api-docs/**",
-                                "/actuator/health",
-                                "/actuator/health/**"
-
-                        ).permitAll()
-                        .requestMatchers(
-                                "/api/auth/**"
-                        ).authenticated()  // 인증 필수
-                        .requestMatchers(
-                                "/mypage/**"
-                        ).authenticated()
-                        .anyRequest().authenticated() // 나머지는 로그인한 유저만
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/auth/**").authenticated()  // refresh 제외한 auth는 인증 필수
+                        .requestMatchers("/mypage/**").authenticated()
+                        .anyRequest().permitAll() // 나머지는 모두 공개
                 )
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth -> oauth
@@ -80,13 +56,11 @@ public class SecurityConfig {
                         )
                         // 리액트로 리다이렉트 시키기 위해 SuccessHandler를 연결
                         .successHandler(oAuth2SuccessHandler)
-//                        .defaultSuccessUrl("http://localhost:3000/oauth2/redirect", true)
                 )
 
                 // 로그아웃 설정
                 .logout(logout -> logout
-                        .logoutSuccessUrl("https://dripnote-frontend-web.vercel.app/") // 로그아웃 후 리액트 메인으로
-                        .deleteCookies("JSESSIONID")
+                        .logoutSuccessUrl("https://dripnote-frontend-web.vercel.app") // 로그아웃 후 리액트 메인으로
                 );
 
         http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
@@ -97,10 +71,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("https://dripnote-frontend-web.vercel.app/")); // 리액트 주소 허용
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true); // 쿠키/인증 정보 허용
+        configuration.setAllowedOrigins(Collections.singletonList("https://dripnote-frontend-web.vercel.app")); // 리액트 주소 허용
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
+        configuration.setAllowCredentials(false); // 쿠키 미사용 전제
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
