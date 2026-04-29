@@ -45,6 +45,12 @@ jobs:
           chmod +x ./gradlew
           ./gradlew clean bootJar --no-daemon
 
+      - name: Inspect JAR Contents
+        run: |
+          echo "### JAR 파일 내부 구조 확인 ###"
+          # 빌드된 jar 파일 안에 어떤 파일들이 들어있는지 리스트 출력
+          jar -tf build/libs/*.jar | grep -E 'application|app'
+
       # ARM64 이미지 포장을 위한 최소한의 QEMU 설정
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
