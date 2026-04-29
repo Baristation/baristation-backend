@@ -85,7 +85,7 @@ public class SecurityConfig {
 
                 // 로그아웃 설정
                 .logout(logout -> logout
-                        .logoutSuccessUrl("http://localhost:3000/") // 로그아웃 후 리액트 메인으로
+                        .logoutSuccessUrl("https://dripnote-frontend-web.vercel.app/") // 로그아웃 후 리액트 메인으로
                         .deleteCookies("JSESSIONID")
                 );
 
@@ -97,7 +97,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // 리액트 주소 허용
+        configuration.setAllowedOrigins(Arrays.asList("https://dripnote-frontend-web.vercel.app/")); // 리액트 주소 허용
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true); // 쿠키/인증 정보 허용
