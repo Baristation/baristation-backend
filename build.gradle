@@ -39,11 +39,15 @@ dependencies {
 	// 2. 개발 편의 도구
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	implementation platform("software.amazon.awssdk:bom:2.31.57")
 	implementation "software.amazon.awssdk:s3"
+
+	// lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
 
 	// 3. 데이터베이스 (드라이버)
 	runtimeOnly 'com.mysql:mysql-connector-j'
@@ -59,13 +63,13 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
+def querydslDir = "build/generated/querydsl"
 
 sourceSets {
-	main.java.srcDirs += [ querydslDir ]
+	main.java.srcDirs += file(querydslDir)
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
 	options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
 }
 
