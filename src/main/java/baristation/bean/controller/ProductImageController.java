@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/beans")
-public class BeanImageController {
+public class ProductImageController {
 
     private final BeanImageServiceImpl beanImageService;
 
