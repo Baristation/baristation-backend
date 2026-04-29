@@ -65,7 +65,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         TokenResponse tokenResponse = jwtTokenProvider.createTokenSet(user);
         redisService.setRefreshToken(String.valueOf(user.getUserId()), tokenResponse.refreshToken());
         // 리액트로 보낼 url 생성
-        String targetUrl = UriComponentsBuilder.fromUriString("https://dripnote-frontend-web.vercel.app/")
+        String targetUrl = UriComponentsBuilder.fromUriString("https://dripnote-frontend-web.vercel.app")
                 .build().toUriString();
 
         log.info("로그인 성공! JWT 발급 완료. targetUrl: {}", targetUrl);
