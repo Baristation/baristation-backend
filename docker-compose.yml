@@ -3,8 +3,6 @@ services:
     image: le3560/dripnote-backend:0.0.1 # Docker Hub에서 가져올 백엔드 이미지
     ports:
       - "8080:8080" # 호스트의 8080 포트를 컨테이너 8080에 연결
-    env_file:
-      - .env # 백엔드 실행에 필요한 환경변수 파일 로드
     depends_on:
       db:
         condition: service_healthy # MySQL이 healthcheck 통과 후 app 시작
