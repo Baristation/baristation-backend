@@ -14,7 +14,7 @@ concurrency:
 jobs:
   # develop, test-CI/CD 브랜치는 라즈베리파이용 ARM64 이미지를 빌드합니다
   build-and-push-pi:
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/feature/#15-cicd'
     runs-on: ubuntu-latest
     permissions:
       contents: read
