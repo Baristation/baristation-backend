@@ -3,7 +3,7 @@ package baristation.security.jwt;
 import baristation.common.redis.RedisService;
 import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
-import baristation.security.payload.dto.TokenResponse;
+import baristation.security.payload.dto.TokenPair;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -47,11 +47,11 @@ public class JwtTokenProvider {
     /**
      * 외부에서 호출 가능하도록 createTokenSet 구현
      */
-    public TokenResponse createTokenSet(User user) {
+    public TokenPair createTokenSet(User user) {
         String accessToken = generateAccessToken(user);
         String refreshToken = generateRefreshToken(user);
 
-        return TokenResponse.builder()
+        return TokenPair.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType(TOKEN_TYPE_BEARER)
