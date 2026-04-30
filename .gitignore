@@ -8,6 +8,8 @@ application-local.yml
 .ai
 .ai.*
 
+/src/main/generated/
+
 #동일한 버전 관리를 위해 "gradle/wrapper/*, gradlew*"는 공유
 .gradle/
 build/

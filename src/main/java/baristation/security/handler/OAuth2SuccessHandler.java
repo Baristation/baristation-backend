@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -34,6 +35,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
     private final RedisService redisService;
+
+    @Value("${app.frontend.base-url}")
+    private String frontendBaseUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -65,9 +69,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         TokenResponse tokenResponse = jwtTokenProvider.createTokenSet(user);
         redisService.setRefreshToken(String.valueOf(user.getUserId()), tokenResponse.refreshToken());
         // 리액트로 보낼 url 생성
-        String targetUrl = UriComponentsBuilder.fromUriString("https://localhost:3000/main")
-                .queryParam("accessToken", tokenResponse.accessToken())
-                .queryParam("refreshToken", tokenResponse.refreshToken())
+        String targetUrl = UriComponentsBuilder.fromUriString(frontendBaseUrl)
                 .build().toUriString();
 
         log.info("로그인 성공! JWT 발급 완료. targetUrl: {}", targetUrl);
