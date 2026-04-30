@@ -5,6 +5,7 @@ import baristation.security.jwt.JwtAuthenticationFilter;
 import baristation.security.jwt.JwtTokenProvider;
 import baristation.user.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,9 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Value("${app.frontend.base-url}")
+    private String frontendBaseUrl;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -60,7 +64,7 @@ public class SecurityConfig {
 
                 // 로그아웃 설정
                 .logout(logout -> logout
-                        .logoutSuccessUrl("https://dripnote-frontend-web.vercel.app") // 로그아웃 후 리액트 메인으로
+                        .logoutSuccessUrl(frontendBaseUrl) // 로그아웃 후 리액트 메인으로
                 );
 
         http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
@@ -71,7 +75,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("https://dripnote-frontend-web.vercel.app")); // 리액트 주소 허용
+        configuration.setAllowedOrigins(Collections.singletonList(frontendBaseUrl)); // 리액트 주소 허용
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));
         configuration.setAllowCredentials(false); // 쿠키 미사용 전제
