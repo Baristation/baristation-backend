@@ -4,7 +4,7 @@ import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
 import baristation.common.redis.RedisService;
 import baristation.security.jwt.JwtTokenProvider;
-import baristation.security.payload.dto.TokenResponse;
+import baristation.security.payload.dto.TokenPair;
 import jakarta.servlet.http.HttpServletRequest;
 import baristation.user.domain.User;
 import baristation.user.payload.dto.UserUpdateRequest;
@@ -41,7 +41,7 @@ public class UserService {
         log.info("로그아웃 완료. userId: {}", userIdText);
     }
 
-    public TokenResponse refresh(String refreshToken) {
+    public TokenPair refresh(String refreshToken) {
         // null/blank 체크
         if (!StringUtils.hasText(refreshToken)) {
             throw new CustomException(ErrorCode.REFRESH_TOKEN_REQUIRED);
@@ -62,10 +62,10 @@ public class UserService {
         User user = userRepository.getUserByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        TokenResponse newTokenResponse = jwtTokenProvider.createTokenSet(user);
-        redisService.setRefreshToken(userIdText, newTokenResponse.refreshToken());
+        TokenPair newTokenPair = jwtTokenProvider.createTokenSet(user);
+        redisService.setRefreshToken(userIdText, newTokenPair.refreshToken());
         log.info("회원 refresh 완료. userId: {}", userIdText);
-        return newTokenResponse;
+        return newTokenPair;
     }
 
     public void deleteUser(HttpServletRequest request) {

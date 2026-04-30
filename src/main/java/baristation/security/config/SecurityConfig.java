@@ -78,7 +78,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Collections.singletonList(frontendBaseUrl)); // 리액트 주소 허용
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));
-        configuration.setAllowCredentials(false); // 쿠키 미사용 전제
+        configuration.setAllowCredentials(true); // 쿠키를 사용하여 true로 수정
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
