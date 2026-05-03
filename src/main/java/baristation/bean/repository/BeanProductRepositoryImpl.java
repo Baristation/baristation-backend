@@ -54,6 +54,7 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
         // content 쿼리: 실제 페이지 데이터 조회
         List<BeanProduct> content = queryFactory
                 .selectFrom(beanProduct)
+                .distinct()
                 .join(beanProduct.bean, bean).fetchJoin()
                 .join(beanProduct.product, product).fetchJoin()
                 .leftJoin(product.roaster, roaster).fetchJoin()
@@ -187,6 +188,7 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
 
     private OrderSpecifier<?>[] resolveOrderSpecifiers(ProductSearchRequest request, Pageable pageable) {
         if (request != null && request.sortBy() != null) {
+            // 한국어 기준 정렬 -> 다른 case의 경우 정렬 기준이 같다면 이름으로
             return switch (request.sortBy()) {
                 case NAME -> new OrderSpecifier<?>[]{bean.nameKo.asc(), bean.nameEn.asc(), product.productId.desc()};
                 case ROASTING_LEVEL -> new OrderSpecifier<?>[]{bitternessScoreExpression().asc(), bean.nameKo.asc()};
