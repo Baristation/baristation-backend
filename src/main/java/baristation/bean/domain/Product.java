@@ -52,4 +52,7 @@ public class Product extends BaseTimeEntity {
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "product_url", columnDefinition = "TEXT")
+    private String productUrl;
 }

@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "beans")
+@Table(name = "bean")
 public class Bean extends BaseTimeEntity {
 
     @Id
@@ -33,10 +33,12 @@ public class Bean extends BaseTimeEntity {
     @Column(name = "region", length = 100)
     private String region;
 
-//    원두에 고도를 넣을지 애매해서 주석처리했습니다.
-//    @Column(name = "altitude_min")
-//    private Integer altitudeMin;
-//
-//    @Column(name = "altitude_max")
-//    private Integer altitudeMax;
+    @Column(name = "variety", length = 100)
+    private String variety;
+
+    @Column(name = "altitude_min")
+    private Integer altitudeMin;
+
+    @Column(name = "altitude_max")
+    private Integer altitudeMax;
 }
