@@ -4,6 +4,8 @@
 SET NAMES utf8mb4;
 START TRANSACTION;
 
+-- 실행 순서: roasters → bean → product → flavor_category enum sync → flavor_note → bean_product → product_flavor_note
+
 INSERT INTO roasters (roaster_id, name_ko, name_en, homepage_url, description, created_at, updated_at) VALUES
                                                                                                            (1, 'Manuals', 'Manuals', 'https://manualscoffee.com', 'Manuals roaster imported from seed csv', '2026-05-04 00:00:00', '2026-05-04 00:00:00'),
                                                                                                            (2, 'MOMOS', 'MOMOS', 'https://momos.co.kr', 'MOMOS roaster imported from seed csv', '2026-05-04 00:00:00', '2026-05-04 00:00:00'),
@@ -125,6 +127,30 @@ INSERT INTO product (product_id, roaster_id, name_ko, name_en, roasting_level, a
                                                                                                                                                                                                 (54, 3, '뉴커먼 블렌드', 'NEW COMMON BLEND', 'MEDIUMDARK', 55, 56, 1, NULL, 5, NULL, '로스트피넛, 헤이즐넛, 카카오닙스, 헤비바디', 'https://smartstore.naver.com/connectscoffee/products/3690306705', '2026-05-04 00:00:00', '2026-05-04 00:00:00')
     AS new_row
 ON DUPLICATE KEY UPDATE roaster_id=new_row.roaster_id, name_ko=new_row.name_ko, name_en=new_row.name_en, roasting_level=new_row.roasting_level, agtron_min=new_row.agtron_min, agtron_max=new_row.agtron_max, acidity=new_row.acidity, sweetness=new_row.sweetness, body=new_row.body, balance=new_row.balance, description=new_row.description, product_url=new_row.product_url, updated_at=new_row.updated_at;
+
+
+-- flavor_note 입력 전에 flavor_category enum 정의를 먼저 최신 값으로 맞춥니다.
+-- 기존 DB 볼륨에 예전 ENUM 값이 남아 있으면 FERMENTED, SWEET, BROWN_SUGAR 등에서 Data truncated 오류가 납니다.
+ALTER TABLE flavor_note
+    MODIFY flavor_category ENUM(
+    'FRUITY',
+    'FLORAL',
+    'SWEET',
+    'BROWN_SUGAR',
+    'CHOCOLATY',
+    'NUTTY',
+    'SPICE',
+    'ROASTED',
+    'FERMENTED',
+    'GREEN_VEGETATIVE',
+    'EARTHY',
+    'WOODY',
+    'CHEMICAL',
+    'SAVORY',
+    'MOUTHFEEL',
+    'DEFECT',
+    'OTHER'
+    ) NOT NULL;
 
 INSERT INTO flavor_note (flavor_note_id, flavor_category, name_ko, name_en, flavor_image_url, created_at, updated_at) VALUES
                                                                                                                           (1, 'FRUITY', '체리', NULL, '/images/flavors/default.png', '2026-05-04 00:00:00', '2026-05-04 00:00:00'),
