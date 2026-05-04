@@ -2,9 +2,11 @@ package baristation.lesson.domain;
 
 import baristation.lesson.enums.ScheduleStatus;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,8 +15,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "class_schedules")
 public class ClassSchedule {
@@ -44,10 +47,12 @@ public class ClassSchedule {
     private Integer capacity;
 
     @Column(name = "reserved_count", nullable = false)
+    @Builder.Default
     private Integer reservedCount = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "schedule_status", nullable = false, length = 20)
+    @Builder.Default
     private ScheduleStatus scheduleStatus = ScheduleStatus.OPEN;
 
     @CreationTimestamp

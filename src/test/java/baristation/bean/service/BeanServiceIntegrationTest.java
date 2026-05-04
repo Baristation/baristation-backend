@@ -85,91 +85,101 @@ class BeanServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         // 1. 로스터 생성
-        roaster = new Roaster();
-        roaster.setNameKo("드립노트 로스터리");
-        roaster.setNameEn("Dripnote Roastery");
-        roaster.setHomepageUrl("https://dripnote.example.com");
-        roaster.setDescription("프리미엄 스페셜티 커피 로스터");
+        roaster = Roaster.builder()
+                .nameKo("드립노트 로스터리")
+                .nameEn("Dripnote Roastery")
+                .homepageUrl("https://dripnote.example.com")
+                .description("프리미엄 스페셜티 커피 로스터")
+                .build();
         roaster = roastersRepository.save(roaster);
 
         // 2. 원두 생성
-        ethiopiaBean = new Bean();
-        ethiopiaBean.setNameKo("에티오피아 구지");
-        ethiopiaBean.setNameEn("Ethiopia Guji");
-        ethiopiaBean.setProcess("Washed");
-        ethiopiaBean.setOrigin("Ethiopia");
-        ethiopiaBean.setRegion("Guji");
+        ethiopiaBean = Bean.builder()
+                .nameKo("에티오피아 구지")
+                .nameEn("Ethiopia Guji")
+                .process("Washed")
+                .origin("Ethiopia")
+                .region("Guji")
+                .build();
 
-        kenyaBean = new Bean();
-        kenyaBean.setNameKo("케냐 AA");
-        kenyaBean.setNameEn("Kenya AA");
-        kenyaBean.setProcess("Natural");
-        kenyaBean.setOrigin("Kenya");
-        kenyaBean.setRegion("Nyeri");
+        kenyaBean = Bean.builder()
+                .nameKo("케냐 AA")
+                .nameEn("Kenya AA")
+                .process("Natural")
+                .origin("Kenya")
+                .region("Nyeri")
+                .build();
 
-        colombiaBean = new Bean();
-        colombiaBean.setNameKo("콜롬비아 수프리모");
-        colombiaBean.setNameEn("Colombia Supremo");
-        colombiaBean.setProcess("Washed");
-        colombiaBean.setOrigin("Colombia");
-        colombiaBean.setRegion("Huila");
+        colombiaBean = Bean.builder()
+                .nameKo("콜롬비아 수프리모")
+                .nameEn("Colombia Supremo")
+                .process("Washed")
+                .origin("Colombia")
+                .region("Huila")
+                .build();
 
         beanRepository.saveAll(List.of(ethiopiaBean, kenyaBean, colombiaBean));
 
         // 3. 상품 생성
-        ethiopiaProduct = new Product();
-        ethiopiaProduct.setNameKo("에티오피아 구지 라이트로스트");
-        ethiopiaProduct.setNameEn("Ethiopia Guji Light Roast");
-        ethiopiaProduct.setRoastLevel(RoastingType.LIGHT);
-        ethiopiaProduct.setAcidity(5);
-        ethiopiaProduct.setSweetness(4);
-        ethiopiaProduct.setBody(2);
-        ethiopiaProduct.setBalance(4);
-        ethiopiaProduct.setAgtronMin(70);
-        ethiopiaProduct.setAgtronMax(75);
-        ethiopiaProduct.setRoaster(roaster);
-        ethiopiaProduct.setDescription("밝은 산미와 과일향이 특징");
+        ethiopiaProduct = Product.builder()
+                .nameKo("에티오피아 구지 라이트로스트")
+                .nameEn("Ethiopia Guji Light Roast")
+                .roastLevel(RoastingType.LIGHT)
+                .acidity(5)
+                .sweetness(4)
+                .body(2)
+                .balance(4)
+                .agtronMin(70)
+                .agtronMax(75)
+                .roaster(roaster)
+                .description("밝은 산미와 과일향이 특징")
+                .build();
 
-        kenyaProduct = new Product();
-        kenyaProduct.setNameKo("케냐 AA 미디움로스트");
-        kenyaProduct.setNameEn("Kenya AA Medium Roast");
-        kenyaProduct.setRoastLevel(RoastingType.MEDIUM);
-        kenyaProduct.setAcidity(4);
-        kenyaProduct.setSweetness(4);
-        kenyaProduct.setBody(3);
-        kenyaProduct.setBalance(4);
-        kenyaProduct.setAgtronMin(55);
-        kenyaProduct.setAgtronMax(60);
-        kenyaProduct.setRoaster(roaster);
-        kenyaProduct.setDescription("균형잡힌 산미와 단맛");
+        kenyaProduct = Product.builder()
+                .nameKo("케냐 AA 미디움로스트")
+                .nameEn("Kenya AA Medium Roast")
+                .roastLevel(RoastingType.MEDIUM)
+                .acidity(4)
+                .sweetness(4)
+                .body(3)
+                .balance(4)
+                .agtronMin(55)
+                .agtronMax(60)
+                .roaster(roaster)
+                .description("균형잡힌 산미와 단맛")
+                .build();
 
-        colombiaProduct = new Product();
-        colombiaProduct.setNameKo("콜롬비아 수프리모 다크로스트");
-        colombiaProduct.setNameEn("Colombia Supremo Dark Roast");
-        colombiaProduct.setRoastLevel(RoastingType.DARK);
-        colombiaProduct.setAcidity(2);
-        colombiaProduct.setSweetness(3);
-        colombiaProduct.setBody(4);
-        colombiaProduct.setBalance(3);
-        colombiaProduct.setAgtronMin(35);
-        colombiaProduct.setAgtronMax(40);
-        colombiaProduct.setRoaster(roaster);
-        colombiaProduct.setDescription("초콜릿과 견과류 중심의 진한 맛");
+        colombiaProduct = Product.builder()
+                .nameKo("콜롬비아 수프리모 다크로스트")
+                .nameEn("Colombia Supremo Dark Roast")
+                .roastLevel(RoastingType.DARK)
+                .acidity(2)
+                .sweetness(3)
+                .body(4)
+                .balance(3)
+                .agtronMin(35)
+                .agtronMax(40)
+                .roaster(roaster)
+                .description("초콜릿과 견과류 중심의 진한 맛")
+                .build();
 
         productRepository.saveAll(List.of(ethiopiaProduct, kenyaProduct, colombiaProduct));
 
         // 4. BeanProduct 생성 (원두와 상품 연결)
-        BeanProduct ethiopiaBeanProduct = new BeanProduct();
-        ethiopiaBeanProduct.setBean(ethiopiaBean);
-        ethiopiaBeanProduct.setProduct(ethiopiaProduct);
+        BeanProduct ethiopiaBeanProduct = BeanProduct.builder()
+                .bean(ethiopiaBean)
+                .product(ethiopiaProduct)
+                .build();
 
-        BeanProduct kenyaBeanProduct = new BeanProduct();
-        kenyaBeanProduct.setBean(kenyaBean);
-        kenyaBeanProduct.setProduct(kenyaProduct);
+        BeanProduct kenyaBeanProduct = BeanProduct.builder()
+                .bean(kenyaBean)
+                .product(kenyaProduct)
+                .build();
 
-        BeanProduct colombiaBeanProduct = new BeanProduct();
-        colombiaBeanProduct.setBean(colombiaBean);
-        colombiaBeanProduct.setProduct(colombiaProduct);
+        BeanProduct colombiaBeanProduct = BeanProduct.builder()
+                .bean(colombiaBean)
+                .product(colombiaProduct)
+                .build();
 
         beanProductRepository.saveAll(List.of(ethiopiaBeanProduct, kenyaBeanProduct, colombiaBeanProduct));
 
@@ -212,48 +222,57 @@ class BeanServiceIntegrationTest {
         productImageRepository.saveAll(List.of(ethiopiaThumb, ethiopiaDetail, kenyaThumb, colombiaThumb, colombiaDetail));
 
         // 6. 향미 노트 생성
-        FlavorNote fruitFlavor = new FlavorNote();
-        fruitFlavor.setFlavorCategory(FlavorCategory.FRUITY);
-        fruitFlavor.setNameKo("베리");
-        fruitFlavor.setNameEn("Berry");
+        FlavorNote fruitFlavor = FlavorNote.builder()
+                .flavorCategory(FlavorCategory.FRUITY)
+                .nameKo("베리")
+                .nameEn("Berry")
+                .build();
 
-        FlavorNote floral = new FlavorNote();
-        floral.setFlavorCategory(FlavorCategory.FLORAL);
-        floral.setNameKo("장미");
-        floral.setNameEn("Floral");
+        FlavorNote floral = FlavorNote.builder()
+                .flavorCategory(FlavorCategory.FLORAL)
+                .nameKo("장미")
+                .nameEn("Floral")
+                .build();
 
-        FlavorNote nutty = new FlavorNote();
-        nutty.setFlavorCategory(FlavorCategory.NUTTY);
-        nutty.setNameKo("견과류");
-        nutty.setNameEn("Nutty");
+        FlavorNote nutty = FlavorNote.builder()
+                .flavorCategory(FlavorCategory.NUTTY)
+                .nameKo("견과류")
+                .nameEn("Nutty")
+                .build();
 
-        FlavorNote chocolate = new FlavorNote();
-        chocolate.setFlavorCategory(FlavorCategory.CHOCOLATY);
-        chocolate.setNameKo("초콜릿");
-        chocolate.setNameEn("Chocolate");
+        FlavorNote chocolate = FlavorNote.builder()
+                .flavorCategory(FlavorCategory.CHOCOLATY)
+                .nameKo("초콜릿")
+                .nameEn("Chocolate")
+                .build();
 
         flavorNoteRepository.saveAll(List.of(fruitFlavor, floral, nutty, chocolate));
 
         // 7. ProductFlavorNote 생성 (상품과 향미 연결)
-        ProductFlavorNote ethiopiaFruit = new ProductFlavorNote();
-        ethiopiaFruit.setProduct(ethiopiaProduct);
-        ethiopiaFruit.setFlavorNote(fruitFlavor);
+        ProductFlavorNote ethiopiaFruit = ProductFlavorNote.builder()
+                .product(ethiopiaProduct)
+                .flavorNote(fruitFlavor)
+                .build();
 
-        ProductFlavorNote ethiopiaFloral = new ProductFlavorNote();
-        ethiopiaFloral.setProduct(ethiopiaProduct);
-        ethiopiaFloral.setFlavorNote(floral);
+        ProductFlavorNote ethiopiaFloral = ProductFlavorNote.builder()
+                .product(ethiopiaProduct)
+                .flavorNote(floral)
+                .build();
 
-        ProductFlavorNote kenyaNutty = new ProductFlavorNote();
-        kenyaNutty.setProduct(kenyaProduct);
-        kenyaNutty.setFlavorNote(nutty);
+        ProductFlavorNote kenyaNutty = ProductFlavorNote.builder()
+                .product(kenyaProduct)
+                .flavorNote(nutty)
+                .build();
 
-        ProductFlavorNote colombiaChocolate = new ProductFlavorNote();
-        colombiaChocolate.setProduct(colombiaProduct);
-        colombiaChocolate.setFlavorNote(chocolate);
+        ProductFlavorNote colombiaChocolate = ProductFlavorNote.builder()
+                .product(colombiaProduct)
+                .flavorNote(chocolate)
+                .build();
 
-        ProductFlavorNote colombiaNutty = new ProductFlavorNote();
-        colombiaNutty.setProduct(colombiaProduct);
-        colombiaNutty.setFlavorNote(nutty);
+        ProductFlavorNote colombiaNutty = ProductFlavorNote.builder()
+                .product(colombiaProduct)
+                .flavorNote(nutty)
+                .build();
 
         productFlavorNoteRepository.saveAll(List.of(ethiopiaFruit, ethiopiaFloral, kenyaNutty, colombiaChocolate, colombiaNutty));
     }

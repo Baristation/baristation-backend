@@ -12,6 +12,7 @@ import baristation.bean.enums.FlavorCategory;
 import baristation.bean.enums.ImageType;
 import baristation.bean.enums.RoastingType;
 import baristation.bean.payload.dto.ProductDetailDTO;
+import baristation.bean.payload.dto.ProductImageDTO;
 import baristation.bean.payload.dto.ProductSummaryDTO;
 import baristation.bean.payload.request.ProductSearchRequest;
 import baristation.bean.repository.BeanProductRepository;
@@ -36,7 +37,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -67,11 +67,39 @@ class BeanServiceImplTest {
                 5, RoastingType.LIGHT, BeanSortType.ACIDITY
         );
 
-        Bean bean1 = bean("Ethiopia Guji", "Ethiopia Guji", "Washed", "Ethiopia", "Guji");
-        Bean bean2 = bean("Kenya AA", "Kenya AA", "Natural", "Kenya", "Nyeri");
+        Bean bean1 = Bean.builder()
+                .nameKo("에티오피아 구지")
+                .nameEn("Ethiopia Guji")
+                .process("워시드")
+                .origin("Ethiopia")
+                .region("Guji")
+                .build();
 
-        Product product1 = product(101L, RoastingType.LIGHT, 4, 3, 2, 3);
-        Product product2 = product(102L, RoastingType.MEDIUM, 3, 4, 3, 4);
+        Bean bean2 = Bean.builder()
+                .nameKo("케냐 AA")
+                .nameEn("Keynya AA")
+                .process("내츄럴")
+                .origin("Kenya")
+                .region("Nyeri")
+                .build();
+
+        Product product1 = Product.builder()
+                .productId(101L)
+                .roastLevel(RoastingType.LIGHT)
+                .acidity(4)
+                .sweetness(3)
+                .body(2)
+                .balance(3)
+                .build();
+
+        Product product2 = Product.builder()
+                .productId(102L)
+                .roastLevel(RoastingType.MEDIUM)
+                .acidity(3)
+                .sweetness(4)
+                .body(3)
+                .balance(4)
+                .build();
 
         // mock으로 대체 -> 원두와 상품 가져옴
         BeanProduct beanProduct1 = mock(BeanProduct.class);
@@ -84,7 +112,7 @@ class BeanServiceImplTest {
         when(beanProduct2.getProduct()).thenReturn(product2);
 
         Page<BeanProduct> page = new PageImpl<>(List.of(beanProduct1, beanProduct2), pageable, 2);
-        when(beanProductRepository.searchBeansWithFilters(eq(request), eq(pageable))).thenReturn(page);
+        when(beanProductRepository.searchBeansWithFilters(request, pageable)).thenReturn(page);
 
         ProductImage thumb = ProductImage.builder()
                 .productImageId(9001L)
@@ -94,16 +122,16 @@ class BeanServiceImplTest {
                 .sortOrder(0)
                 .build();
 
-        when(productImageRepository.findByProduct_ProductIdInAndImageType(eq(List.of(101L, 102L)), eq(ImageType.THUMB)))
+        when(productImageRepository.findByProduct_ProductIdInAndImageType(List.of(101L, 102L), ImageType.THUMB))
                 .thenReturn(List.of(thumb));
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
 
         assertThat(response.totalElements()).isEqualTo(2);
         assertThat(response.content()).hasSize(2);
-        assertThat(response.content().get(0).productId()).isEqualTo(101L);
-        assertThat(response.content().get(0).productImage()).isNotNull();
-        assertThat(response.content().get(0).productImage().imageType()).isEqualTo(ImageType.THUMB);
+        assertThat(response.content().getFirst().productId()).isEqualTo(101L);
+        assertThat(response.content().getFirst().productImage()).isNotNull();
+        assertThat(response.content().getFirst().productImage().imageType()).isEqualTo(ImageType.THUMB);
         assertThat(response.content().get(1).productId()).isEqualTo(102L);
         assertThat(response.content().get(1).productImage()).isNull();
     }
@@ -118,8 +146,9 @@ class BeanServiceImplTest {
                 null, null,
                 null, null, null
         );
+        Pageable pageable = PageRequest.of(0, 12);
 
-        assertThatThrownBy(() -> beanService.searchProducts(invalidRequest, PageRequest.of(0, 12)))
+        assertThatThrownBy(() -> beanService.searchProducts(invalidRequest, pageable))
                 .isInstanceOf(CustomException.class)
                 .extracting(ex -> ((CustomException) ex).getErrorCode())
                 .isEqualTo(ErrorCode.BEAN_SEARCH_INVALID_RANGE);
@@ -130,17 +159,32 @@ class BeanServiceImplTest {
     void getProductDetail_withMockEntities_returnsDetail() {
         Long productId = 300L;
 
-        Bean bean = bean("콜롬비아 수프리모", "Colombia Supremo", "Washed", "Colombia", "Huila");
-        Product product = product(productId, RoastingType.MEDIUMDARK, 2, 3, 4, 3);
-        product.setDescription("초콜릿과 견과류 중심의 밸런스 좋은 컵");
+        Bean bean = Bean.builder()
+                .nameKo("콜롬비아 수프리모")
+                .nameEn("Colombia Supremo")
+                .process("Washed")
+                .origin("Colombia")
+                .region("Huila")
+                .build();
 
-        Roaster roaster = new Roaster();
-        roaster.setRoasterId(77L);
-        roaster.setNameKo("바리스테이션 로스터리");
-        roaster.setNameEn("바리스테이션 Roastery");
-        roaster.setHomepageUrl("https://dripnote.example.com");
-        roaster.setDescription("테스트용 로스터리");
-        product.setRoaster(roaster);
+        Roaster roaster = Roaster.builder()
+                .roasterId(77L)
+                .nameKo("바리스테이션 로스터리")
+                .nameEn("바리스테이션 Roastery")
+                .homepageUrl("https://dripnote.example.com")
+                .description("테스트용 로스터리")
+                .build();
+
+        Product product = Product.builder()
+                .productId(productId)
+                .roastLevel(RoastingType.MEDIUMDARK)
+                .acidity(2)
+                .sweetness(3)
+                .body(4)
+                .balance(3)
+                .description("초콜릿과 견과류 중심의 밸런스 좋은 컵")
+                .roaster(roaster)
+                .build();
 
         BeanProduct selected = mock(BeanProduct.class);
         when(selected.getBean()).thenReturn(bean);
@@ -176,15 +220,17 @@ class BeanServiceImplTest {
         when(productImageRepository.findByProduct_ProductIdAndImageTypeOrderBySortOrderAsc(productId, ImageType.THUMB))
                 .thenReturn(List.of(thumb));
 
-        FlavorNote flavorNote = new FlavorNote();
-        flavorNote.setFlavorNoteId(501L);
-        flavorNote.setFlavorCategory(FlavorCategory.NUTTY);
-        flavorNote.setNameKo("헤이즐넛");
-        flavorNote.setNameEn("Hazelnut");
+        FlavorNote flavorNote = FlavorNote.builder()
+                .flavorNoteId(501L)
+                .flavorCategory(FlavorCategory.NUTTY)
+                .nameKo("헤이즐넛")
+                .nameEn("Hazelnut")
+                .build();
 
-        ProductFlavorNote productFlavorNote = new ProductFlavorNote();
-        productFlavorNote.setProduct(product);
-        productFlavorNote.setFlavorNote(flavorNote);
+        ProductFlavorNote productFlavorNote = ProductFlavorNote.builder()
+                .product(product)
+                .flavorNote(flavorNote)
+                .build();
 
         when(productFlavorNoteRepository.findByProduct_ProductIdIn(List.of(productId)))
                 .thenReturn(List.of(productFlavorNote));
@@ -197,10 +243,10 @@ class BeanServiceImplTest {
         assertThat(detail.beanSummary().productImage().imageType()).isEqualTo(ImageType.THUMB);
 
         assertThat(detail.images()).hasSize(2);
-        assertThat(detail.images()).extracting(image -> image.imageType()).doesNotContain(ImageType.THUMB);
+        assertThat(detail.images()).extracting(ProductImageDTO::imageType).doesNotContain(ImageType.THUMB);
 
         assertThat(detail.flavorNotes()).hasSize(1);
-        assertThat(detail.flavorNotes().get(0).nameKo()).isEqualTo("헤이즐넛");
+        assertThat(detail.flavorNotes().getFirst().nameKo()).isEqualTo("헤이즐넛");
         assertThat(detail.roaster().nameKo()).isEqualTo("바리스테이션 로스터리");
     }
 
@@ -215,25 +261,167 @@ class BeanServiceImplTest {
                 .isEqualTo(ErrorCode.BEAN_NOT_FOUND);
     }
 
-    private Bean bean(String nameKo, String nameEn, String process, String origin, String region) {
-        Bean bean = new Bean();
-        bean.setNameKo(nameKo);
-        bean.setNameEn(nameEn);
-        bean.setProcess(process);
-        bean.setOrigin(origin);
-        bean.setRegion(region);
-        return bean;
-    }
+//    @Test
+//    @DisplayName("원두 목록 조회: 조건을 만족하는 상품이 없는 경우")
+//    void searchProducts_withEmptyResponse_returnsPagedSummary() {
+//        Pageable pageable = PageRequest.of(0, 12);
+//        ProductSearchRequest request = new ProductSearchRequest(
+//                "ethiopia", FlavorCategory.CARAMELLY,
+//                2, 4,
+//                4, 4,
+//                1, 1,
+//                5, RoastingType.LIGHT, BeanSortType.ACIDITY
+//        );
+//
+//        Bean bean1 = Bean.builder()
+//                .nameKo("에티오피아 구지")
+//                .nameEn("Ethiopia Guji")
+//                .process("워시드")
+//                .origin("Ethiopia")
+//                .region("Guji")
+//                .build();
+//
+//        Bean bean2 = Bean.builder()
+//                .nameKo("케냐 AA")
+//                .nameEn("Keynya AA")
+//                .process("내츄럴")
+//                .origin("Kenya")
+//                .region("Nyeri")
+//                .build();
+//
+//        Product product1 = Product.builder()
+//                .productId(101L)
+//                .roastLevel(RoastingType.LIGHT)
+//                .acidity(4)
+//                .sweetness(3)
+//                .body(2)
+//                .balance(3)
+//                .build();
+//
+//        Product product2 = Product.builder()
+//                .productId(102L)
+//                .roastLevel(RoastingType.MEDIUM)
+//                .acidity(3)
+//                .sweetness(4)
+//                .body(3)
+//                .balance(4)
+//                .build();
+//
+//        // mock으로 대체 -> 원두와 상품 가져옴
+//        BeanProduct beanProduct1 = mock(BeanProduct.class);
+//        when(beanProduct1.getBean()).thenReturn(bean1);
+//        when(beanProduct1.getProduct()).thenReturn(product1);
+//
+//        // 원두와 상품 2
+//        BeanProduct beanProduct2 = mock(BeanProduct.class);
+//        when(beanProduct2.getBean()).thenReturn(bean2);
+//        when(beanProduct2.getProduct()).thenReturn(product2);
+//
+//        Page<BeanProduct> page = new PageImpl<>(List.of(beanProduct1, beanProduct2), pageable, 2);
+//        when(beanProductRepository.searchBeansWithFilters(request, pageable)).thenReturn(page);
+//
+//        ProductImage thumb = ProductImage.builder()
+//                .productImageId(9001L)
+//                .product(product1)
+//                .imageType(ImageType.THUMB)
+//                .imageUrl("https://cdn.example.com/thumb-101.jpg")
+//                .sortOrder(0)
+//                .build();
+//
+//        when(productImageRepository.findByProduct_ProductIdInAndImageType(List.of(101L, 102L), ImageType.THUMB))
+//                .thenReturn(List.of(thumb));
+//
+//        PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
+//
+//        assertThat(response.totalElements()).isEqualTo(2);
+//        assertThat(response.content()).hasSize(2);
+//        assertThat(response.content().getFirst().productId()).isEqualTo(101L);
+//        assertThat(response.content().getFirst().productImage()).isNotNull();
+//        assertThat(response.content().getFirst().productImage().imageType()).isEqualTo(ImageType.THUMB);
+//        assertThat(response.content().get(1).productId()).isEqualTo(102L);
+//        assertThat(response.content().get(1).productImage()).isNull();
+//    }
+    @Test
+    @DisplayName("원두 목록 조회: 조건이 아예 없는 경우")
+    void searchProducts_withEmptyRequest_returnsPagedSummary() {
+        Pageable pageable = PageRequest.of(0, 12);
+        ProductSearchRequest request = new ProductSearchRequest(
+                null, null,
+                null, null,
+                null, null,
+                null, null,
+                null, null, null
+        );
 
-    private Product product(Long productId, RoastingType roastLevel, Integer acidity, Integer sweetness, Integer body, Integer balance) {
-        Product product = new Product();
-        product.setProductId(productId);
-        product.setRoastLevel(roastLevel);
-        product.setAcidity(acidity);
-        product.setSweetness(sweetness);
-        product.setBody(body);
-        product.setBalance(balance);
-        return product;
+        Bean bean1 = Bean.builder()
+                .nameKo("에티오피아 구지")
+                .nameEn("Ethiopia Guji")
+                .process("워시드")
+                .origin("Ethiopia")
+                .region("Guji")
+                .build();
+
+        Bean bean2 = Bean.builder()
+                .nameKo("케냐 AA")
+                .nameEn("Keynya AA")
+                .process("내츄럴")
+                .origin("Kenya")
+                .region("Nyeri")
+                .build();
+
+        Product product1 = Product.builder()
+                .productId(101L)
+                .roastLevel(RoastingType.LIGHT)
+                .acidity(4)
+                .sweetness(3)
+                .body(2)
+                .balance(3)
+                .build();
+
+        Product product2 = Product.builder()
+                .productId(102L)
+                .roastLevel(RoastingType.MEDIUM)
+                .acidity(3)
+                .sweetness(4)
+                .body(3)
+                .balance(4)
+                .build();
+
+        // mock으로 대체 -> 원두와 상품 가져옴
+        BeanProduct beanProduct1 = mock(BeanProduct.class);
+        when(beanProduct1.getBean()).thenReturn(bean1);
+        when(beanProduct1.getProduct()).thenReturn(product1);
+
+        // 원두와 상품 2
+        BeanProduct beanProduct2 = mock(BeanProduct.class);
+        when(beanProduct2.getBean()).thenReturn(bean2);
+        when(beanProduct2.getProduct()).thenReturn(product2);
+
+        Page<BeanProduct> page = new PageImpl<>(List.of(beanProduct1, beanProduct2), pageable, 2);
+        when(beanProductRepository.searchBeansWithFilters(request, pageable)).thenReturn(page);
+
+        ProductImage thumb = ProductImage.builder()
+                .productImageId(9001L)
+                .product(product1)
+                .imageType(ImageType.THUMB)
+                .imageUrl("https://cdn.example.com/thumb-101.jpg")
+                .sortOrder(0)
+                .build();
+
+        when(productImageRepository.findByProduct_ProductIdInAndImageType(List.of(101L, 102L), ImageType.THUMB))
+                .thenReturn(List.of(thumb));
+
+        PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
+
+        assertThat(response.totalElements()).isEqualTo(2);
+        assertThat(response.content()).hasSize(3);
+        assertThat(response.content().getFirst().productId()).isEqualTo(101L);
+        assertThat(response.content().getFirst().productImage()).isNotNull();
+        assertThat(response.content().getFirst().productImage().imageType()).isEqualTo(ImageType.THUMB);
+        assertThat(response.content().get(1).productId()).isEqualTo(102L);
+        assertThat(response.content().get(1).productImage()).isNull();
+        assertThat(response.content().get(2).productId()).isEqualTo(103L);
+        assertThat(response.content().get(2).productImage()).isNull();
     }
 }
 
