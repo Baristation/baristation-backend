@@ -5,13 +5,21 @@ package baristation.bean.enums;
  */
 
 public enum FlavorCategory {
-    CARAMELLY,
-    WINEY,
-    CHOCOLATY,
     FRUITY,
-    HERBY,
-    MALTY,
-    NUTTY,
     FLORAL,
-    SMOKY;
+    SWEET,
+    BROWN_SUGAR,
+    CHOCOLATY,
+    NUTTY,
+    SPICE,
+    ROASTED,
+    FERMENTED,
+    GREEN_VEGETATIVE,
+    EARTHY,
+    WOODY,
+    CHEMICAL,
+    SAVORY,
+    MOUTHFEEL,
+    DEFECT,
+    OTHER
 }
