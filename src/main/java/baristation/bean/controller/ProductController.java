@@ -26,7 +26,7 @@ public class ProductController {
         return ApiResponse.ok(beanService.searchProducts(request, pageable));
     }
 
-    @GetMapping("/{productId}")
+    @GetMapping("/product/{productId}")
     public ResponseEntity<ApiResponse<ProductDetailDTO>> getProductDetail(@PathVariable Long productId) {
         return ApiResponse.ok(beanService.getProductDetail(productId));
     }
