@@ -54,7 +54,6 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
         // content 쿼리: 실제 페이지 데이터 조회
         List<BeanProduct> content = queryFactory
                 .selectFrom(beanProduct)
-                .distinct()
                 .join(beanProduct.bean, bean).fetchJoin()
                 .join(beanProduct.product, product).fetchJoin()
                 .leftJoin(product.roaster, roaster).fetchJoin()

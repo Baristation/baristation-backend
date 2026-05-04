@@ -201,7 +201,7 @@ class BeanServiceImplTest {
 
         assertThat(detail.flavorNotes()).hasSize(1);
         assertThat(detail.flavorNotes().get(0).nameKo()).isEqualTo("헤이즐넛");
-        assertThat(detail.roaster().nameKo()).isEqualTo("드립노트 로스터리");
+        assertThat(detail.roaster().nameKo()).isEqualTo("바리스테이션 로스터리");
     }
 
     @Test

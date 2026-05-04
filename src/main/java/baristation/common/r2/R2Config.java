@@ -15,6 +15,7 @@ import software.amazon.awssdk.services.s3.S3Configuration;
 
 @Configuration
 @EnableConfigurationProperties(R2Properties.class)
+// 테스트 할 때에 실제 서버에 연결하지 않게 함.
 @ConditionalOnProperty(prefix = "app.r2", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class R2Config {
 
