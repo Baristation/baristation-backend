@@ -36,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             // 토큰 유효성 검사 및 인증 처리
-            if (token != null) {
+            if (token != null && !token.isBlank()) {
                 jwtTokenProvider.validateAccessToken(token);
 
                 // 정상 토큰 -> 인증 객체 저장

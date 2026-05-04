@@ -47,6 +47,15 @@ public class SecurityConfig {
                 // 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/favicon.ico",
+                                "/assets/**",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**"
+                        ).permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers("/api/auth/refresh").permitAll()
                         .requestMatchers("/api/auth/**").authenticated()  // refresh 제외한 auth는 인증 필수
