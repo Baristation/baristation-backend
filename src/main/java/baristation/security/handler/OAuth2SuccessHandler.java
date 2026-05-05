@@ -70,6 +70,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         redisService.setRefreshToken(String.valueOf(user.getUserId()), tokenPair.refreshToken());
 
         String targetUrl = UriComponentsBuilder.fromUriString(frontendBaseUrl)
+                .path("/oauth/success")
                 .build().toUriString();
 
         log.info("로그인 성공! JWT 발급 완료. targetUrl: {}", targetUrl);
