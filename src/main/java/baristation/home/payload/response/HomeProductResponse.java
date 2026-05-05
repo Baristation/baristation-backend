@@ -6,6 +6,9 @@ import baristation.bean.domain.Product;
 import java.util.List;
 
 public record HomeProductResponse(
+        @JsonProperty("product_id")
+        Long productId,
+
         @JsonProperty("product_name")
         String productName,
 
@@ -20,6 +23,7 @@ public record HomeProductResponse(
 ) {
     public static HomeProductResponse of(Product product, List<String> flavors, String imageUrl) {
         return new HomeProductResponse(
+                product.getProductId(),
                 product.getNameKo(),
                 flavors,
                 imageUrl != null ? imageUrl : "/images/default-product.png",
