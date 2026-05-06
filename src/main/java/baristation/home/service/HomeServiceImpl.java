@@ -13,6 +13,7 @@ import baristation.home.payload.response.HomeFlavorResponse;
 import baristation.home.payload.response.HomeProductResponse;
 import baristation.home.payload.response.HomeResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,9 @@ import java.util.Map;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class HomeServiceImpl implements HomeService {
+
+    @Value("${cloudflare.r2.public-base-url}")
+    private String publicBaseUrl;
 
     private final ProductRepository productRepository;
     private final FlavorNoteRepository flavorNoteRepository;
@@ -52,7 +56,10 @@ public class HomeServiceImpl implements HomeService {
         List<FlavorNote> flavorNotes = flavorNoteRepository.findTop8ByOrderByFlavorNoteIdAsc();
 
         return flavorNotes.stream()
-                .map(HomeFlavorResponse::from)
+                .map(flavorNote -> HomeFlavorResponse.of(
+                        flavorNote,
+                        buildImageUrl(flavorNote.getFlavorImageUrl())
+                ))
                 .toList();
     }
 
@@ -116,5 +123,26 @@ public class HomeServiceImpl implements HomeService {
         }
 
         return productImageMap;
+    }
+
+    // flavor ImageUrl 조립
+    private String buildImageUrl(String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return null;
+        }
+
+        if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+            return imagePath;
+        }
+
+        String baseUrl = publicBaseUrl.endsWith("/")
+                ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1)
+                : publicBaseUrl;
+
+        String path = imagePath.startsWith("/")
+                ? imagePath
+                : "/" + imagePath;
+
+        return baseUrl + path;
     }
 }

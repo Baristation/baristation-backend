@@ -162,10 +162,10 @@ public class R2ImageService {
 
     /**
      * 원두 이미지 폴더 경로 생성
-     * 예: beans/3
+     * 예: beans/product-image/3
      */
     private String buildBeanFolder(Long beanId) {
-        return "beans/" + beanId;
+        return "beans/product-image/" + beanId;
     }
 
     /**
