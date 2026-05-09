@@ -3,17 +3,20 @@ package baristation.lesson.domain;
 import baristation.lesson.enums.BookingStatus;
 import baristation.user.domain.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "bookings")
 public class Booking {
@@ -33,6 +36,7 @@ public class Booking {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "booking_status", nullable = false, length = 20)
+    @Builder.Default
     private BookingStatus bookingStatus = BookingStatus.PENDING;
 
     @Column(name = "attendee_name", nullable = false, length = 100)
