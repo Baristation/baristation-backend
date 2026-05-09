@@ -1,6 +1,7 @@
 HELP.md
 application.properties
 application.yaml
+application-test.yaml
 application-docker.yml
 application-local.yml
 .env

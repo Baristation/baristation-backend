@@ -46,13 +46,11 @@ public class BeanServiceImpl implements BeanService {
     public PageResponse<ProductSummaryDTO> searchProducts(ProductSearchRequest request, Pageable pageable) {
         // 조건 검증
         validateSearchRequest(request);
-        if (pageable == null) {
-            throw new CustomException(ErrorCode.BEAN_SEARCH_FAILED);
-        }
 
         Page<BeanProduct> beanProductPage = beanProductRepository.searchBeansWithFilters(request, pageable);
-        if (beanProductPage == null) {
-            throw new CustomException(ErrorCode.BEAN_SEARCH_FAILED);
+        // 검색 조건에 해당하는 상품이 없는 경우
+        if (beanProductPage.isEmpty()) {
+            return PageResponse.of(Page.empty(pageable));
         }
 
         List<Long> productIds = beanProductPage.getContent().stream()
