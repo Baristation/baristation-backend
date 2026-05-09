@@ -1,5 +1,6 @@
 package baristation.bean.repository;
 
+import baristation.bean.enums.BeanSortType;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -187,6 +188,8 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
 
     private OrderSpecifier<?>[] resolveOrderSpecifiers(ProductSearchRequest request, Pageable pageable) {
         if (request != null && request.sortBy() != null) {
+            // 한국어 기준 정렬 -> 다른 case의 경우 정렬 기준이 같다면 이름으로
+
             return switch (request.sortBy()) {
                 case NAME -> new OrderSpecifier<?>[]{bean.nameKo.asc(), bean.nameEn.asc(), product.productId.desc()};
                 case ROASTING_LEVEL -> new OrderSpecifier<?>[]{bitternessScoreExpression().asc(), bean.nameKo.asc()};
