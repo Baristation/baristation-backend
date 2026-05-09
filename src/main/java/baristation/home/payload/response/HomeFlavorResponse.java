@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import baristation.bean.domain.FlavorNote;
 
 public record HomeFlavorResponse(
+        @JsonProperty("flavor_id")
+        Long flavorId,
+
         @JsonProperty("flavor_name")
         String flavorName,
 
@@ -13,10 +16,11 @@ public record HomeFlavorResponse(
         @JsonProperty("flavor_link")
         String flavorLink
 ) {
-    public static HomeFlavorResponse from(FlavorNote flavorNote) {
+    public static HomeFlavorResponse of(FlavorNote flavorNote, String flavorImageUrl) {
         return new HomeFlavorResponse(
+                flavorNote.getFlavorNoteId(),
                 flavorNote.getNameKo(),
-                flavorNote.getFlavorImageUrl(),
+                flavorImageUrl,
                 "/api/products?flavorId=" + flavorNote.getFlavorNoteId()
         );
     }

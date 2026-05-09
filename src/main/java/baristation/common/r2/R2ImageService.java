@@ -2,6 +2,7 @@ package baristation.common.r2;
 
 import baristation.common.exception.CustomException;
 import org.springframework.stereotype.Service;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -15,6 +16,7 @@ import java.util.UUID;
 import static baristation.common.exception.ErrorCode.*;
 
 @Service
+@ConditionalOnProperty(prefix = "app.r2", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class R2ImageService {
 
     // 허용할 이미지 타입
@@ -162,10 +164,10 @@ public class R2ImageService {
 
     /**
      * 원두 이미지 폴더 경로 생성
-     * 예: beans/3
+     * 예: beans/product-image/3
      */
     private String buildBeanFolder(Long beanId) {
-        return "beans/" + beanId;
+        return "beans/product-image/" + beanId;
     }
 
     /**

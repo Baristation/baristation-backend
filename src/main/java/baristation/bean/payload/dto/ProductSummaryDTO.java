@@ -2,6 +2,8 @@ package baristation.bean.payload.dto;
 
 import lombok.Builder;
 
+import java.util.List;
+
 @Builder
 public record ProductSummaryDTO(
         Long productId,
@@ -10,7 +12,8 @@ public record ProductSummaryDTO(
         String origin,
         String region,
         String process,
-        ProductImageDTO productImage
+        ProductImageDTO productImage,
+        FlavorNoteDTO flavorNotes
 ) {
 
 }
