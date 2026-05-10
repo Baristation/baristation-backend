@@ -60,7 +60,7 @@ class BeanServiceImplTest {
     void searchProducts_withMockEntities_returnsPagedSummary() {
         Pageable pageable = PageRequest.of(0, 12);
         ProductSearchRequest request = new ProductSearchRequest(
-                "ethiopia", FlavorCategory.CARAMELLY,
+                "ethiopia", FlavorCategory.CHOCOLATY,
                 2, 4,
                 4, 4,
                 1, 1,
@@ -122,8 +122,34 @@ class BeanServiceImplTest {
                 .sortOrder(0)
                 .build();
 
+        FlavorNote flavorNote1 = FlavorNote.builder()
+                .flavorNoteId(701L)
+                .flavorCategory(FlavorCategory.NUTTY)
+                .nameKo("초콜릿")
+                .nameEn("Chocolate")
+                .build();
+
+        FlavorNote flavorNote2 = FlavorNote.builder()
+                .flavorNoteId(702L)
+                .flavorCategory(FlavorCategory.CHOCOLATY)
+                .nameKo("캐러멜")
+                .nameEn("Caramel")
+                .build();
+
+        ProductFlavorNote productFlavorNote1 = ProductFlavorNote.builder()
+                .product(product1)
+                .flavorNote(flavorNote1)
+                .build();
+
+        ProductFlavorNote productFlavorNote2 = ProductFlavorNote.builder()
+                .product(product2)
+                .flavorNote(flavorNote2)
+                .build();
+
         when(productImageRepository.findByProduct_ProductIdInAndImageType(List.of(101L, 102L), ImageType.THUMB))
                 .thenReturn(List.of(thumb));
+        when(productFlavorNoteRepository.findByProduct_ProductIdIn(List.of(101L, 102L)))
+                .thenReturn(List.of(productFlavorNote1, productFlavorNote2));
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
 
@@ -132,8 +158,12 @@ class BeanServiceImplTest {
         assertThat(response.content().getFirst().productId()).isEqualTo(101L);
         assertThat(response.content().getFirst().productImage()).isNotNull();
         assertThat(response.content().getFirst().productImage().imageType()).isEqualTo(ImageType.THUMB);
+        assertThat(response.content().getFirst().flavorNotes()).isNotNull();
+        assertThat(response.content().getFirst().flavorNotes().nameKo()).isEqualTo("초콜릿");
         assertThat(response.content().get(1).productId()).isEqualTo(102L);
         assertThat(response.content().get(1).productImage()).isNull();
+        assertThat(response.content().get(1).flavorNotes()).isNotNull();
+        assertThat(response.content().get(1).flavorNotes().nameKo()).isEqualTo("캐러멜");
     }
 
     @Test
@@ -261,86 +291,6 @@ class BeanServiceImplTest {
                 .isEqualTo(ErrorCode.BEAN_NOT_FOUND);
     }
 
-//    @Test
-//    @DisplayName("원두 목록 조회: 조건을 만족하는 상품이 없는 경우")
-//    void searchProducts_withEmptyResponse_returnsPagedSummary() {
-//        Pageable pageable = PageRequest.of(0, 12);
-//        ProductSearchRequest request = new ProductSearchRequest(
-//                "ethiopia", FlavorCategory.CARAMELLY,
-//                2, 4,
-//                4, 4,
-//                1, 1,
-//                5, RoastingType.LIGHT, BeanSortType.ACIDITY
-//        );
-//
-//        Bean bean1 = Bean.builder()
-//                .nameKo("에티오피아 구지")
-//                .nameEn("Ethiopia Guji")
-//                .process("워시드")
-//                .origin("Ethiopia")
-//                .region("Guji")
-//                .build();
-//
-//        Bean bean2 = Bean.builder()
-//                .nameKo("케냐 AA")
-//                .nameEn("Keynya AA")
-//                .process("내츄럴")
-//                .origin("Kenya")
-//                .region("Nyeri")
-//                .build();
-//
-//        Product product1 = Product.builder()
-//                .productId(101L)
-//                .roastLevel(RoastingType.LIGHT)
-//                .acidity(4)
-//                .sweetness(3)
-//                .body(2)
-//                .balance(3)
-//                .build();
-//
-//        Product product2 = Product.builder()
-//                .productId(102L)
-//                .roastLevel(RoastingType.MEDIUM)
-//                .acidity(3)
-//                .sweetness(4)
-//                .body(3)
-//                .balance(4)
-//                .build();
-//
-//        // mock으로 대체 -> 원두와 상품 가져옴
-//        BeanProduct beanProduct1 = mock(BeanProduct.class);
-//        when(beanProduct1.getBean()).thenReturn(bean1);
-//        when(beanProduct1.getProduct()).thenReturn(product1);
-//
-//        // 원두와 상품 2
-//        BeanProduct beanProduct2 = mock(BeanProduct.class);
-//        when(beanProduct2.getBean()).thenReturn(bean2);
-//        when(beanProduct2.getProduct()).thenReturn(product2);
-//
-//        Page<BeanProduct> page = new PageImpl<>(List.of(beanProduct1, beanProduct2), pageable, 2);
-//        when(beanProductRepository.searchBeansWithFilters(request, pageable)).thenReturn(page);
-//
-//        ProductImage thumb = ProductImage.builder()
-//                .productImageId(9001L)
-//                .product(product1)
-//                .imageType(ImageType.THUMB)
-//                .imageUrl("https://cdn.example.com/thumb-101.jpg")
-//                .sortOrder(0)
-//                .build();
-//
-//        when(productImageRepository.findByProduct_ProductIdInAndImageType(List.of(101L, 102L), ImageType.THUMB))
-//                .thenReturn(List.of(thumb));
-//
-//        PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
-//
-//        assertThat(response.totalElements()).isEqualTo(2);
-//        assertThat(response.content()).hasSize(2);
-//        assertThat(response.content().getFirst().productId()).isEqualTo(101L);
-//        assertThat(response.content().getFirst().productImage()).isNotNull();
-//        assertThat(response.content().getFirst().productImage().imageType()).isEqualTo(ImageType.THUMB);
-//        assertThat(response.content().get(1).productId()).isEqualTo(102L);
-//        assertThat(response.content().get(1).productImage()).isNull();
-//    }
     @Test
     @DisplayName("원두 목록 조회: 조건이 아예 없는 경우")
     void searchProducts_withEmptyRequest_returnsPagedSummary() {
@@ -408,20 +358,35 @@ class BeanServiceImplTest {
                 .sortOrder(0)
                 .build();
 
+        FlavorNote flavorNote1 = FlavorNote.builder()
+                .flavorNoteId(703L)
+                .flavorCategory(FlavorCategory.NUTTY)
+                .nameKo("견과")
+                .nameEn("Nutty")
+                .build();
+
+        ProductFlavorNote productFlavorNote1 = ProductFlavorNote.builder()
+                .product(product1)
+                .flavorNote(flavorNote1)
+                .build();
+
         when(productImageRepository.findByProduct_ProductIdInAndImageType(List.of(101L, 102L), ImageType.THUMB))
                 .thenReturn(List.of(thumb));
+        when(productFlavorNoteRepository.findByProduct_ProductIdIn(List.of(101L, 102L)))
+                .thenReturn(List.of(productFlavorNote1));
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
 
         assertThat(response.totalElements()).isEqualTo(2);
-        assertThat(response.content()).hasSize(3);
+        assertThat(response.content()).hasSize(2);
         assertThat(response.content().getFirst().productId()).isEqualTo(101L);
         assertThat(response.content().getFirst().productImage()).isNotNull();
         assertThat(response.content().getFirst().productImage().imageType()).isEqualTo(ImageType.THUMB);
+        assertThat(response.content().getFirst().flavorNotes()).isNotNull();
+        assertThat(response.content().getFirst().flavorNotes().nameKo()).isEqualTo("견과");
         assertThat(response.content().get(1).productId()).isEqualTo(102L);
         assertThat(response.content().get(1).productImage()).isNull();
-        assertThat(response.content().get(2).productId()).isEqualTo(103L);
-        assertThat(response.content().get(2).productImage()).isNull();
+        assertThat(response.content().get(1).flavorNotes()).isNull();
     }
 }
 
