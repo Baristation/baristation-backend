@@ -56,7 +56,7 @@ public class TraceLoggingFilter extends OncePerRequestFilter {
                 log.info(RESPONSE_LOG_PATTERN, status, durationMs, traceId);
             }
 
-            MDC.remove(TraceIdUtil.TRACE_ID_KEY);
+            MDC.clear();
         }
     }
 }
