@@ -21,11 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * BeanService 구현체
- * 원두 검색 및 목록 조회 기능을 담당
- */
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -61,15 +56,18 @@ public class BeanServiceImpl implements BeanService {
                 .toList();
 
         Map<Long, ProductImageDTO> thumbImageByProductId = getThumbImages(productIds);
+        Map<Long, FlavorNoteDTO> flavorNoteByProductId = getFlavorNoteMap(productIds);
 
         Page<ProductSummaryDTO> page = beanProductPage.map(beanProduct -> {
             if (beanProduct.getBean() == null || beanProduct.getProduct() == null || beanProduct.getProduct().getProductId() == null) {
                 throw new CustomException(ErrorCode.BEAN_SEARCH_FAILED);
             }
+            Long productId = beanProduct.getProduct().getProductId();
             return toSummaryDto(
                     beanProduct.getBean(),
-                    beanProduct.getProduct().getProductId(),
-                    thumbImageByProductId.get(beanProduct.getProduct().getProductId())
+                    productId,
+                    thumbImageByProductId.get(productId),
+                    flavorNoteByProductId.get(productId)
             );
         });
 
@@ -103,9 +101,7 @@ public class BeanServiceImpl implements BeanService {
                 .map(ProductImageDTO::from)
                 .orElse(null);
 
-        List<FlavorNoteDTO> flavorNotes = productFlavorNoteRepository.findByProduct_ProductIdIn(List.of(resolvedProductId)).stream()
-                .map(productFlavorNote -> FlavorNoteDTO.from(productFlavorNote.getFlavorNote()))
-                .toList();
+        List<FlavorNoteDTO> flavorNotes = getFlavorNotes(resolvedProductId);
 
         // 3. 상세 DTO 조립
         ProductSummaryDTO summary = ProductSummaryDTO.builder()
@@ -133,6 +129,14 @@ public class BeanServiceImpl implements BeanService {
                 .images(images)
                 .build();
     }
+
+    private List<FlavorNoteDTO> getFlavorNotes(Long resolvedProductId) {
+        return productFlavorNoteRepository.findByProduct_ProductIdIn(List.of(resolvedProductId))
+                .stream()
+                .map(productFlavorNote -> FlavorNoteDTO.from(productFlavorNote.getFlavorNote()))
+                .toList();
+    }
+
     private Map<Long, ProductImageDTO> getThumbImages(List<Long> productIds) {
         if (productIds.isEmpty()) {
             return Collections.emptyMap();
@@ -147,9 +151,30 @@ public class BeanServiceImpl implements BeanService {
                 ));
     }
 
+    // In을 써서 한번에 조회
+    private Map<Long, FlavorNoteDTO> getFlavorNoteMap(List<Long> productIds) {
+        if (productIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return productFlavorNoteRepository.findByProduct_ProductIdIn(productIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        productFlavorNote -> productFlavorNote.getProduct().getProductId(),
+                        Collectors.collectingAndThen(
+                                Collectors.mapping(
+                                        productFlavorNote -> FlavorNoteDTO.from(productFlavorNote.getFlavorNote()),
+                                        Collectors.toList()
+                                ),
+                                flavorNotes -> flavorNotes.isEmpty() ? null : flavorNotes.getFirst()
+                        )
+                ));
+    }
+
     private ProductSummaryDTO toSummaryDto(Bean bean,
                                            Long productId,
-                                           ProductImageDTO image) {
+                                           ProductImageDTO image,
+                                           FlavorNoteDTO flavorNote) {
 
         return ProductSummaryDTO.builder()
                 .productId(productId)
@@ -159,6 +184,7 @@ public class BeanServiceImpl implements BeanService {
                 .region(bean.getRegion())
                 .process(bean.getProcess())
                 .productImage(image)
+                .flavorNotes(flavorNote)
                 .build();
     }
 

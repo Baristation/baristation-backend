@@ -294,14 +294,18 @@ class BeanServiceIntegrationTest {
         // 로그 출력
         log.info("[basicSearch] totalElements={} currentPage={} size={} hasNext={} contentSize={}",
                 response.totalElements(), response.currentPage(), response.size(), response.hasNext(), response.content().size());
-        response.content().forEach(dto -> log.info("[basicSearch] item: beanNameKo='{}' productId='{}' imageUrl='{}'",
-                dto.beanNameKo(), dto.productId(), dto.productImage() != null ? dto.productImage().imageUrl() : null));
+        response.content().forEach(dto -> log.info("[basicSearch] item: beanNameKo='{}' productId='{}' imageUrl='{}' flavorNote='{}'",
+                dto.beanNameKo(),
+                dto.productId(),
+                dto.productImage() != null ? dto.productImage().imageUrl() : null,
+                dto.flavorNotes() != null ? dto.flavorNotes().nameKo() : null));
 
         assertThat(response.totalElements()).isEqualTo(3);
         assertThat(response.content()).hasSize(2);
         assertThat(response.hasNext()).isTrue();
         assertThat(response.currentPage()).isEqualTo(0);
         assertThat(response.size()).isEqualTo(2);
+        assertThat(response.content()).allSatisfy(dto -> assertThat(dto.flavorNotes()).isNotNull());
     }
 
     @Test
@@ -320,12 +324,13 @@ class BeanServiceIntegrationTest {
 
         // 로그 출력
         log.info("[keywordFilter] totalElements={} contentSize={}", response.totalElements(), response.content().size());
-        response.content().forEach(dto -> log.info("[keywordFilter] item: beanNameKo='{}' productId='{}'",
-                dto.beanNameKo(), dto.productId()));
+        response.content().forEach(dto -> log.info("[keywordFilter] item: beanNameKo='{}' productId='{}' flavorNote='{}'",
+                dto.beanNameKo(), dto.productId(), dto.flavorNotes() != null ? dto.flavorNotes().nameKo() : null));
 
         assertThat(response.totalElements()).isEqualTo(1);
         assertThat(response.content()).hasSize(1);
         assertThat(response.content().getFirst().beanNameKo()).contains("에티오피아");
+        assertThat(response.content().getFirst().flavorNotes()).isNotNull();
     }
 
     @Test
@@ -345,12 +350,13 @@ class BeanServiceIntegrationTest {
         // 로그 출력
         log.info("[roastingFilter] totalElements={} contentSize={}", response.totalElements(), response.content().size());
 
-        response.content().forEach(dto -> log.info("[roastingFilter] item: beanNameKo='{}' productId='{}'",
-                dto.beanNameKo(), dto.productId()));
+        response.content().forEach(dto -> log.info("[roastingFilter] item: beanNameKo='{}' productId='{}' flavorNote='{}'",
+                dto.beanNameKo(), dto.productId(), dto.flavorNotes() != null ? dto.flavorNotes().nameKo() : null));
 
         assertThat(response.totalElements()).isEqualTo(1);
         assertThat(response.content()).hasSize(1);
         assertThat(response.content().getFirst().beanNameKo()).contains("에티오피아");
+        assertThat(response.content().getFirst().flavorNotes()).isNotNull();
     }
 
     @Test
@@ -370,12 +376,13 @@ class BeanServiceIntegrationTest {
         // 로그 출력
         log.info("[acidityRange] totalElements={} contentSize={}", response.totalElements(), response.content().size());
 
-        response.content().forEach(dto -> log.info("[acidityRange] item: beanNameKo='{}' productId='{}'",
-                dto.beanNameKo(), dto.productId()));
+        response.content().forEach(dto -> log.info("[acidityRange] item: beanNameKo='{}' productId='{}' flavorNote='{}'",
+                dto.beanNameKo(), dto.productId(), dto.flavorNotes() != null ? dto.flavorNotes().nameKo() : null));
 
         assertThat(response.totalElements()).isEqualTo(2);
         assertThat(response.content()).extracting(dto -> dto.beanNameKo())
                 .contains("에티오피아 구지", "케냐 AA");
+        assertThat(response.content()).allSatisfy(dto -> assertThat(dto.flavorNotes()).isNotNull());
     }
 
     @Test
@@ -395,12 +402,15 @@ class BeanServiceIntegrationTest {
         // 로그 출력
         log.info("[flavorCategory] totalElements={} contentSize={}", response.totalElements(), response.content().size());
 
-        response.content().forEach(dto -> log.info("[flavorCategory] item: beanNameKo='{}' productId='{}' productImageUrl='{}'",
-                dto.beanNameKo(), dto.productId(), dto.productImage() != null ? dto.productImage().imageUrl() : null));
+        response.content().forEach(dto -> log.info("[flavorCategory] item: beanNameKo='{}' productId='{}' productImageUrl='{}' flavorNote='{}'",
+                dto.beanNameKo(), dto.productId(),
+                dto.productImage() != null ? dto.productImage().imageUrl() : null,
+                dto.flavorNotes() != null ? dto.flavorNotes().nameKo() : null));
 
         assertThat(response.totalElements()).isEqualTo(2);
         assertThat(response.content()).extracting(dto -> dto.beanNameKo())
                 .contains("케냐 AA", "콜롬비아 수프리모");
+        assertThat(response.content()).allSatisfy(dto -> assertThat(dto.flavorNotes()).isNotNull());
     }
 
     @Test
@@ -419,10 +429,11 @@ class BeanServiceIntegrationTest {
 
         // 로그 출력
         log.info("[nameSort] contentSize={} order={} ", response.content().size(), BeanSortType.NAME);
-        response.content().forEach(dto -> log.info("[nameSort] item: beanNameKo='{}'", dto.beanNameKo()));
+        response.content().forEach(dto -> log.info("[nameSort] item: beanNameKo='{}' flavorNote='{}'", dto.beanNameKo(), dto.flavorNotes() != null ? dto.flavorNotes().nameKo() : null));
 
         assertThat(response.content()).extracting(dto -> dto.beanNameKo())
                 .containsExactly("에티오피아 구지", "케냐 AA", "콜롬비아 수프리모");
+        assertThat(response.content()).allSatisfy(dto -> assertThat(dto.flavorNotes()).isNotNull());
     }
 
     @Test
@@ -442,10 +453,11 @@ class BeanServiceIntegrationTest {
         // 로그 출력
         log.info("[aciditySort] contentSize={} order={} ", response.content().size(), BeanSortType.ACIDITY);
 
-        response.content().forEach(dto -> log.info("[aciditySort] item: beanNameKo='{}' productId='{}'", dto.beanNameKo(), dto.productId()));
+        response.content().forEach(dto -> log.info("[aciditySort] item: beanNameKo='{}' productId='{}' flavorNote='{}'", dto.beanNameKo(), dto.productId(), dto.flavorNotes() != null ? dto.flavorNotes().nameKo() : null));
 
         assertThat(response.content()).extracting(dto -> dto.beanNameKo())
                 .containsExactly("에티오피아 구지", "케냐 AA", "콜롬비아 수프리모");
+        assertThat(response.content()).allSatisfy(dto -> assertThat(dto.flavorNotes()).isNotNull());
     }
 
     @Test
@@ -466,16 +478,19 @@ class BeanServiceIntegrationTest {
         log.info("[thumbnailMapping] contentSize={}", response.content().size());
         response.content().forEach(dto -> {
             if (dto.productImage() != null) {
-                log.info("[thumbnailMapping] productId='{}' imageType='{}' imageUrl='{}'",
-                        dto.productId(), dto.productImage().imageType(), dto.productImage().imageUrl());
+                log.info("[thumbnailMapping] productId='{}' imageType='{}' imageUrl='{}' flavorNote='{}'",
+                        dto.productId(), dto.productImage().imageType(), dto.productImage().imageUrl(),
+                        dto.flavorNotes() != null ? dto.flavorNotes().nameKo() : null);
             } else {
-                log.info("[thumbnailMapping] productId='{}' has no productImage", dto.productId());
+                log.info("[thumbnailMapping] productId='{}' has no productImage flavorNote='{}'",
+                        dto.productId(), dto.flavorNotes() != null ? dto.flavorNotes().nameKo() : null);
             }
         });
 
         assertThat(response.content())
                 .allMatch(dto -> dto.productImage() != null, "모든 결과는 썸네일을 가져야 함")
                 .allMatch(dto -> dto.productImage().imageType() == ImageType.THUMB, "모든 이미지는 THUMB이어야 함");
+        assertThat(response.content()).allSatisfy(dto -> assertThat(dto.flavorNotes()).isNotNull());
     }
 
     @Test
@@ -585,11 +600,12 @@ class BeanServiceIntegrationTest {
         // 로그 출력
         log.info("[combinedFilters] totalElements={} contentSize={}", response.totalElements(), response.content().size());
 
-        response.content().forEach(dto -> log.info("[combinedFilters] item: beanNameKo='{}' productId='{}'",
-                dto.beanNameKo(), dto.productId()));
+        response.content().forEach(dto -> log.info("[combinedFilters] item: beanNameKo='{}' productId='{}' flavorNote='{}'",
+                dto.beanNameKo(), dto.productId(), dto.flavorNotes() != null ? dto.flavorNotes().nameKo() : null));
 
         assertThat(response.totalElements()).isEqualTo(1);
         assertThat(response.content()).extracting(dto -> dto.beanNameKo())
                 .contains("케냐 AA");
+        assertThat(response.content().getFirst().flavorNotes()).isNotNull();
     }
 }
