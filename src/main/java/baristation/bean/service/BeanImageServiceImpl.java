@@ -38,6 +38,9 @@ public class BeanImageServiceImpl {
 
         // 대표 이미지가 없으면 새로 저장
         if (thumbImage == null) {
+                if (r2ImageService == null) {
+                    throw new CustomException(INVALID_IMAGE_URL);
+                }
             String imageUrl = r2ImageService.uploadBeanThumb(file, productId);
 
             ProductImage saved = productImageRepository.save(
@@ -106,7 +109,9 @@ public class BeanImageServiceImpl {
         String newImageUrl = r2ImageService.uploadBeanSubImage(file, productId);
 
         // 기존 파일 삭제
-        r2ImageService.deleteByUrl(oldImageUrl);
+        if (r2ImageService != null) {
+            r2ImageService.deleteByUrl(oldImageUrl);
+        }
 
         productImage.changeImageUrl(newImageUrl);
 
@@ -121,7 +126,9 @@ public class BeanImageServiceImpl {
         Long productId = productImage.getProduct().getProductId();
         boolean isSubImage = productImage.getImageType() == ImageType.SUB;
 
-        r2ImageService.deleteByUrl(productImage.getImageUrl());
+        if (r2ImageService != null) {
+            r2ImageService.deleteByUrl(productImage.getImageUrl());
+        }
         productImageRepository.delete(productImage);
 
         if (isSubImage) {
