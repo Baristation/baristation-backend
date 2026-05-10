@@ -1,5 +1,5 @@
 
-# 🚀 실전 백엔드 로그 최적화 가이드 (Operational Logging Strategy)
+# 백엔드 로그 최적화 가이드 (Operational Logging Strategy)
 
 ## 1. 핵심 원칙: "Less is More, But Traceable"
 *   **성공 로그는 메트릭으로:** "단순 성공" 횟수는 로그가 아닌 메트릭(Prometheus/Grafana)으로 관리합니다.

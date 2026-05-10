@@ -1,5 +1,6 @@
 package baristation.common.exception;
 
+import baristation.common.logging.TraceIdUtil;
 import baristation.common.payload.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ApiResponse<Void>> handleCustomException(CustomException e) {
         ErrorCode errorCode = e.getErrorCode();
-        log.warn("CustomException 발생: {} - {}", errorCode.getCode(), errorCode.getMessage());
+        log.warn("[CustomException] code={}, traceId={}", errorCode.getCode(), TraceIdUtil.getTraceId());
         
         return ApiResponse.error(errorCode);
     }

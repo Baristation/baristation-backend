@@ -38,9 +38,6 @@ public class BeanImageServiceImpl {
 
         // 대표 이미지가 없으면 새로 저장
         if (thumbImage == null) {
-                if (r2ImageService == null) {
-                    throw new CustomException(INVALID_IMAGE_URL);
-                }
             String imageUrl = r2ImageService.uploadBeanThumb(file, productId);
 
             ProductImage saved = productImageRepository.save(
@@ -58,9 +55,6 @@ public class BeanImageServiceImpl {
         // 대표 이미지가 있으면 "기존 URL 경로 재사용"이 아니라
         // 항상 새 규칙 경로로 업로드
         String oldImageUrl = thumbImage.getImageUrl();
-        if (r2ImageService == null) {
-            throw new CustomException(INVALID_IMAGE_URL);
-        }
 
         String newImageUrl = r2ImageService.uploadBeanThumb(file, productId);
 
@@ -81,9 +75,6 @@ public class BeanImageServiceImpl {
         Product product = getProduct(productId);
 
         int nextSortOrder = productImageRepository.findMaxSubSortOrder(productId) + 1;
-        if (r2ImageService == null) {
-            throw new CustomException(INVALID_IMAGE_URL);
-        }
 
         String imageUrl = r2ImageService.uploadBeanSubImage(file, productId);
 
@@ -112,17 +103,10 @@ public class BeanImageServiceImpl {
         String oldImageUrl = productImage.getImageUrl();
         Long productId = productImage.getProduct().getProductId();
 
-        // 항상 새 규칙 경로로 업로드
-        if (r2ImageService == null) {
-            throw new CustomException(INVALID_IMAGE_URL);
-        }
-
         String newImageUrl = r2ImageService.uploadBeanSubImage(file, productId);
 
         // 기존 파일 삭제
-        if (r2ImageService != null) {
-            r2ImageService.deleteByUrl(oldImageUrl);
-        }
+        r2ImageService.deleteByUrl(oldImageUrl);
 
         productImage.changeImageUrl(newImageUrl);
 
@@ -137,9 +121,7 @@ public class BeanImageServiceImpl {
         Long productId = productImage.getProduct().getProductId();
         boolean isSubImage = productImage.getImageType() == ImageType.SUB;
 
-        if (r2ImageService != null) {
-            r2ImageService.deleteByUrl(productImage.getImageUrl());
-        }
+        r2ImageService.deleteByUrl(productImage.getImageUrl());
         productImageRepository.delete(productImage);
 
         if (isSubImage) {
