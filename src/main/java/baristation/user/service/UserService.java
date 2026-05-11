@@ -65,21 +65,6 @@ public class UserService {
         return newTokenPair;
     }
 
-    /**
-     * 주어진 토큰(subject가 userId로 들어있다는 전제)에서 user의 닉네임을 조회합니다.
-     * 주로 TokenResponse를 구성할 때 사용합니다.
-     */
-//    public String getNicknameFromToken(String token) {
-//        if (!StringUtils.hasText(token)) {
-//            throw new CustomException(ErrorCode.TOKEN_INVALID);
-//        }
-//
-//        Long userId = extractUserId(token);
-//        return userRepository.getUserByUserId(userId)
-//                .map(User::getNickname)
-//                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-//    }
-
     public void deleteUser(HttpServletRequest request) {
         String accessToken = resolveToken(request);
         Long userId = extractUserId(accessToken);
