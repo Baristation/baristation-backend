@@ -13,6 +13,7 @@ import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
 import baristation.common.payload.response.PageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,9 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BeanServiceImpl implements BeanService {
+
+    @Value("${cloudflare.r2.public-base-url}")
+    private String publicBaseUrl;
 
     private final BeanProductRepository beanProductRepository;
     private final ProductFlavorNoteRepository productFlavorNoteRepository;
@@ -130,6 +134,27 @@ public class BeanServiceImpl implements BeanService {
                 .build();
     }
 
+    // flavor ImageUrl 조립
+    private String buildImageUrl(String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return null;
+        }
+
+        if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+            return imagePath;
+        }
+
+        String baseUrl = publicBaseUrl.endsWith("/")
+                ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1)
+                : publicBaseUrl;
+
+        String path = imagePath.startsWith("/")
+                ? imagePath
+                : "/" + imagePath;
+
+        return baseUrl + path;
+    }
+
     private List<FlavorNoteDTO> getFlavorNotes(Long resolvedProductId) {
         return productFlavorNoteRepository.findByProduct_ProductIdIn(List.of(resolvedProductId))
                 .stream()
@@ -162,11 +187,13 @@ public class BeanServiceImpl implements BeanService {
                 .collect(Collectors.groupingBy(
                         productFlavorNote -> productFlavorNote.getProduct().getProductId(),
                         Collectors.collectingAndThen(
-                                Collectors.mapping(
-                                        productFlavorNote -> FlavorNoteDTO.from(productFlavorNote.getFlavorNote()),
-                                        Collectors.toList()
-                                ),
-                                flavorNotes -> flavorNotes.isEmpty() ? null : flavorNotes.getFirst()
+                                Collectors.minBy(Comparator.comparing(
+                                        productFlavorNote -> productFlavorNote.getFlavorNote().getFlavorNoteId(),
+                                        Comparator.nullsLast(Long::compareTo)
+                                )),
+                                flavorNote -> flavorNote
+                                        .map(productFlavorNote -> FlavorNoteDTO.from(productFlavorNote.getFlavorNote()))
+                                        .orElse(null)
                         )
                 ));
     }
@@ -176,6 +203,7 @@ public class BeanServiceImpl implements BeanService {
                                            ProductImageDTO image,
                                            FlavorNoteDTO flavorNote) {
 
+
         return ProductSummaryDTO.builder()
                 .productId(productId)
                 .beanNameKo(bean.getNameKo())
@@ -184,7 +212,7 @@ public class BeanServiceImpl implements BeanService {
                 .region(bean.getRegion())
                 .process(bean.getProcess())
                 .productImage(image)
-                .flavorNotes(flavorNote)
+                .flavorNotes(flavorNote.toBuilder().flavorImageUrl(buildImageUrl(flavorNote.flavorImageUrl())).build())
                 .build();
     }
 

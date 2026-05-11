@@ -1,14 +1,16 @@
 package baristation.common.redis;
+import baristation.common.logging.TraceIdUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RedisService {
 
     private final RedisTemplate<String, Object> redisTemplate;
@@ -24,13 +26,17 @@ public class RedisService {
                 refreshToken,            // Value
                 refreshExp  // 시간, 날짜 기준(Duration)
         );
+        log.info("[Redis] set refresh token. userId={}, traceId={}", userId, TraceIdUtil.getTraceId());
     }
 
     /**
      * RefreshToken 조회
      */
     public String getRefreshToken(String userId) {
-        return (String) redisTemplate.opsForValue().get("RT:" + userId);
+        String refreshToken = (String) redisTemplate.opsForValue().get("RT:" + userId);
+        log.info("[Redis] get refresh token. userId={}, exists={}, traceId={}",
+                userId, refreshToken != null, TraceIdUtil.getTraceId());
+        return refreshToken;
     }
 
     /**
@@ -38,6 +44,7 @@ public class RedisService {
      */
     public void deleteRefreshToken(String userId) {
         redisTemplate.delete("RT:" + userId);
+        log.info("[Redis] delete refresh token. userId={}, traceId={}", userId, TraceIdUtil.getTraceId());
     }
 
     /**
@@ -49,12 +56,18 @@ public class RedisService {
                 status,
                 expirationTime
         );
+        log.info("[Redis] set blacklist token. status={}, expiresMs={}, traceId={}",
+                status, expirationTime.toMillis(), TraceIdUtil.getTraceId());
     }
 
     /**
      * 블랙리스트 여부 확인
      */
     public boolean hasKeyBlackList(String accessToken) {
-        return Boolean.TRUE.equals(redisTemplate.hasKey(accessToken));
+        boolean isBlackList = Boolean.TRUE.equals(redisTemplate.hasKey(accessToken));
+        if (isBlackList) {
+            log.warn("[Redis] token is blacklisted. traceId={}", TraceIdUtil.getTraceId());
+        }
+        return isBlackList;
     }
 }

@@ -2,7 +2,9 @@ package baristation.bean.payload.dto;
 
 import baristation.bean.domain.FlavorNote;
 import baristation.bean.enums.FlavorCategory;
+import lombok.Builder;
 
+@Builder(toBuilder = true)
 public record FlavorNoteDTO(
         Long flavorNoteId,
         FlavorCategory flavorCategory,
