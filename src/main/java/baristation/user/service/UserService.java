@@ -55,7 +55,6 @@ public class UserService {
 
         String savedUserRefreshToken = redisService.getRefreshToken(userIdText);
         if (savedUserRefreshToken == null || !savedUserRefreshToken.equals(refreshToken)) {
-            log.warn("[UserService] refresh token mismatch. userId={}, traceId={}", userIdText, TraceIdUtil.getTraceId());
             throw new CustomException(ErrorCode.REFRESH_TOKEN_MISMATCH);
         }
         User user = userRepository.getUserByUserId(userId)
@@ -85,7 +84,6 @@ public class UserService {
         String accessToken = resolveToken(request);
         Long userId = extractUserId(accessToken);
         String userIdText = String.valueOf(userId);
-
 
         User user = userRepository.getUserByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));

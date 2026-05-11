@@ -14,8 +14,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ApiResponse<Void>> handleCustomException(CustomException e) {
         ErrorCode errorCode = e.getErrorCode();
-        log.warn("[CustomException] code={}, traceId={}", errorCode.getCode(), TraceIdUtil.getTraceId());
-        
+
+        // 에러 코드별로 로그 레벨 구분
+        if (errorCode.getHttpStatus().is5xxServerError()) {
+            log.error("[Exception] code={}, message={}, traceId={}",
+                    errorCode.getCode(), errorCode.getMessage(), TraceIdUtil.getTraceId());
+        } else if (errorCode.getHttpStatus().is4xxClientError()) {
+            log.warn("[Exception] code={}, message={}, traceId={}",
+                    errorCode.getCode(), errorCode.getMessage(), TraceIdUtil.getTraceId());
+        }
+
         return ApiResponse.error(errorCode);
     }
 
