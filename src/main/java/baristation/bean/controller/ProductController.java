@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+@RequestMapping("/api/products")
 public class ProductController {
     private final BeanService beanService;
 
@@ -34,7 +35,7 @@ public class ProductController {
         return ApiResponse.ok(response);
     }
 
-    @GetMapping("/product/{productId}")
+    @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse<ProductDetailDTO>> getProductDetail(@PathVariable Long productId) {
         log.info("[Product] getProductDetail start. productId={}, traceId={}", productId, TraceIdUtil.getTraceId());
         ProductDetailDTO response = beanService.getProductDetail(productId);
