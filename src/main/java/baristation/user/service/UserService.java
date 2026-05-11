@@ -2,6 +2,7 @@ package baristation.user.service;
 
 import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
+import baristation.common.logging.TraceIdUtil;
 import baristation.common.redis.RedisService;
 import baristation.security.jwt.JwtTokenProvider;
 import baristation.security.payload.dto.TokenPair;
@@ -33,12 +34,10 @@ public class UserService {
         Long userId = extractUserId(accessToken);
         String userIdText = String.valueOf(userId);
 
-        log.info("회원 로그아웃 요청. userId: {}", userIdText);
-
         redisService.deleteRefreshToken(userIdText);
         long expiration = jwtTokenProvider.getExpirationToken(accessToken);
         redisService.setBlackList(accessToken, "logout", Duration.ofMillis(expiration));
-        log.info("로그아웃 완료. userId: {}", userIdText);
+
     }
 
     public TokenPair refresh(String refreshToken) {
@@ -53,7 +52,6 @@ public class UserService {
         Long userId = extractUserId(refreshToken);
         String userIdText = String.valueOf(userId);
 
-        log.info("회원 refresh 요청. userId: {}", userIdText);
 
         String savedUserRefreshToken = redisService.getRefreshToken(userIdText);
         if (savedUserRefreshToken == null || !savedUserRefreshToken.equals(refreshToken)) {
@@ -64,16 +62,28 @@ public class UserService {
 
         TokenPair newTokenPair = jwtTokenProvider.createTokenSet(user);
         redisService.setRefreshToken(userIdText, newTokenPair.refreshToken());
-        log.info("회원 refresh 완료. userId: {}", userIdText);
         return newTokenPair;
+    }
+
+    /**
+     * 주어진 토큰(subject가 userId로 들어있다는 전제)에서 user의 닉네임을 조회합니다.
+     * 주로 TokenResponse를 구성할 때 사용합니다.
+     */
+    public String getNicknameFromToken(String token) {
+        if (!StringUtils.hasText(token)) {
+            throw new CustomException(ErrorCode.TOKEN_INVALID);
+        }
+
+        Long userId = extractUserId(token);
+        return userRepository.getUserByUserId(userId)
+                .map(User::getNickname)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     public void deleteUser(HttpServletRequest request) {
         String accessToken = resolveToken(request);
         Long userId = extractUserId(accessToken);
         String userIdText = String.valueOf(userId);
-
-        log.info("회원탈퇴 요청. userId: {}", userIdText);
 
         User user = userRepository.getUserByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -83,7 +93,6 @@ public class UserService {
         long expiration = jwtTokenProvider.getExpirationToken(accessToken);
         redisService.setBlackList(accessToken, "delete", Duration.ofMillis(expiration));
 
-        log.info("회원 탈퇴 완료. userId: {}", userIdText);
     }
 
     /**
@@ -94,7 +103,6 @@ public class UserService {
     public void updateUser(HttpServletRequest request, UserUpdateRequest updateRequest) {
         String accessToken = resolveToken(request);
         Long userId = extractUserId(accessToken);
-        log.info("회원 정보 수정 요청. userId: {}", userId);
 
         User user = userRepository.getUserByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -117,8 +125,6 @@ public class UserService {
         // 3. 검증 완료된 닉네임 업데이트
         user.updateNickname(newNickname);
 
-        log.info("회원 정보 수정 완료. userId: {}", userId);
-        log.info("수정된 닉네임: {}", newNickname);
     }
 
     private String resolveToken(HttpServletRequest request) {

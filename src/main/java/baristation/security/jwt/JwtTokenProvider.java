@@ -115,33 +115,24 @@ public class JwtTokenProvider {
             if (expectedType != null) {
                 String tokenType = claims.get(CLAIM_TYPE, String.class);
                 if (!expectedType.equals(tokenType)) {
-                    log.info("토큰 타입이 올바르지 않습니다. expected={}, actual={}", expectedType, tokenType);
                     throw new CustomException(ErrorCode.TOKEN_INVALID);
                 }
             }
 
             // 2. Redis를 조회하여 로그아웃된(Blacklist) 토큰인지 확인
             if (redisService.hasKeyBlackList(token)) {
-                log.info("로그아웃된 JWT 토큰입니다.");
                 throw new CustomException(ErrorCode.TOKEN_INVALID);
             }
         } catch (SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
             throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다.");
             throw new CustomException(ErrorCode.TOKEN_EXPIRED);
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰입니다.");
             throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (CustomException e) {
             // CustomException(블랙리스트, 타입 불일치 등)은 그대로 전파
             throw e;
         } catch (IllegalArgumentException e) {
-            log.info("JWT 토큰이 잘못되었습니다.");
-            throw new CustomException(ErrorCode.TOKEN_INVALID);
-        } catch (Exception e) {
-            log.info("유효하지 않은 JWT 토큰입니다.");
             throw new CustomException(ErrorCode.TOKEN_INVALID);
         }
     }

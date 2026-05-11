@@ -8,6 +8,8 @@ application-local.yml
 .env.*
 .ai
 .ai.*
+/spec/
+/docs/
 
 /src/main/generated/
 

@@ -29,7 +29,7 @@ public class NicknameValidator {
         RESERVED_WORDS.add("root");
         RESERVED_WORDS.add("support");
         RESERVED_WORDS.add("official");
-        RESERVED_WORDS.add("dripnote");
+        RESERVED_WORDS.add("baristation");
         RESERVED_WORDS.add("manager");
         RESERVED_WORDS.add("guest");
         RESERVED_WORDS.add("api");

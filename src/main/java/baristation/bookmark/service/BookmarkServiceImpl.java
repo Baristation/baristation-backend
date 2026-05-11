@@ -4,19 +4,19 @@ import baristation.bean.domain.Product;
 import baristation.bean.domain.ProductBookmark;
 import baristation.bookmark.repository.ProductBookmarkRepository;
 import baristation.bean.repository.ProductRepository;
+import baristation.common.logging.TraceIdUtil;
 import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
 import baristation.user.domain.User;
 import baristation.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookmarkServiceImpl implements BookmarkService {
 
     private final ProductBookmarkRepository productBookmarkRepository;
@@ -33,7 +33,11 @@ public class BookmarkServiceImpl implements BookmarkService {
         // 이미 존재하면 삭제
         productBookmarkRepository.findByUserAndProduct(userProxy, product)
                 .ifPresentOrElse(
-                        bookmark -> productBookmarkRepository.delete(bookmark),
+                        bookmark -> {
+                            productBookmarkRepository.delete(bookmark);
+                            log.info("[Bookmark] removed. userId={}, productId={}, traceId={}",
+                                    userId, productId, TraceIdUtil.getTraceId());
+                        },
                         () -> {
                             ProductBookmark newBookmark = ProductBookmark
                                     .builder()
@@ -41,9 +45,10 @@ public class BookmarkServiceImpl implements BookmarkService {
                                     .product(product)
                                     .build();
                             productBookmarkRepository.save(newBookmark);
+                            log.info("[Bookmark] created. userId={}, productId={}, traceId={}",
+                                    userId, productId, TraceIdUtil.getTraceId());
                         }
                 );
     }
-
 }
 

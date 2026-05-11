@@ -162,11 +162,13 @@ public class BeanServiceImpl implements BeanService {
                 .collect(Collectors.groupingBy(
                         productFlavorNote -> productFlavorNote.getProduct().getProductId(),
                         Collectors.collectingAndThen(
-                                Collectors.mapping(
-                                        productFlavorNote -> FlavorNoteDTO.from(productFlavorNote.getFlavorNote()),
-                                        Collectors.toList()
-                                ),
-                                flavorNotes -> flavorNotes.isEmpty() ? null : flavorNotes.getFirst()
+                                Collectors.minBy(Comparator.comparing(
+                                        productFlavorNote -> productFlavorNote.getFlavorNote().getFlavorNoteId(),
+                                        Comparator.nullsLast(Long::compareTo)
+                                )),
+                                flavorNote -> flavorNote
+                                        .map(productFlavorNote -> FlavorNoteDTO.from(productFlavorNote.getFlavorNote()))
+                                        .orElse(null)
                         )
                 ));
     }

@@ -1,6 +1,8 @@
 package baristation.common.r2;
 
 import baristation.common.exception.CustomException;
+import baristation.common.logging.TraceIdUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +19,7 @@ import static baristation.common.exception.ErrorCode.*;
 
 @Service
 @ConditionalOnProperty(prefix = "app.r2", name = "enabled", havingValue = "true", matchIfMissing = true)
+@Slf4j
 public class R2ImageService {
 
     // 허용할 이미지 타입
@@ -96,6 +99,7 @@ public class R2ImageService {
                 .build();
 
         s3Client.deleteObject(request);
+        log.info("[R2] delete success. objectKey={}, traceId={}", objectKey, TraceIdUtil.getTraceId());
     }
 
     /**
@@ -160,6 +164,8 @@ public class R2ImageService {
                 .build();
 
         s3Client.putObject(request, RequestBody.fromBytes(file.getBytes()));
+        log.info("[R2] put success. objectKey={}, size={}, traceId={}",
+                objectKey, file.getSize(), TraceIdUtil.getTraceId());
     }
 
     /**
