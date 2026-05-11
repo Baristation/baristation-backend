@@ -41,11 +41,7 @@ public class UserController {
         // 쿠키를 생성하여 response 헤더에 저장
         response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(newTokenPair.refreshToken()).toString());
 
-        // refreshToken이 있으면 해당 토큰에서 닉네임을 조회하여 응답에 포함
-        String userName = userService.getNicknameFromToken(refreshToken);
-
         TokenResponse tokenResponse = TokenResponse.builder()
-                .userName(userName)
                 .accessToken(newTokenPair.accessToken())
                 .tokenType(newTokenPair.tokenType())
                 .build();
