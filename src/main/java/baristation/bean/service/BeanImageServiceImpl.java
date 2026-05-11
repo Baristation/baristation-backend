@@ -58,9 +58,6 @@ public class BeanImageServiceImpl {
         // 대표 이미지가 있으면 "기존 URL 경로 재사용"이 아니라
         // 항상 새 규칙 경로로 업로드
         String oldImageUrl = thumbImage.getImageUrl();
-        if (r2ImageService == null) {
-            throw new CustomException(INVALID_IMAGE_URL);
-        }
 
         String newImageUrl = r2ImageService.uploadBeanThumb(file, productId);
 
@@ -81,9 +78,6 @@ public class BeanImageServiceImpl {
         Product product = getProduct(productId);
 
         int nextSortOrder = productImageRepository.findMaxSubSortOrder(productId) + 1;
-        if (r2ImageService == null) {
-            throw new CustomException(INVALID_IMAGE_URL);
-        }
 
         String imageUrl = r2ImageService.uploadBeanSubImage(file, productId);
 
@@ -111,11 +105,6 @@ public class BeanImageServiceImpl {
 
         String oldImageUrl = productImage.getImageUrl();
         Long productId = productImage.getProduct().getProductId();
-
-        // 항상 새 규칙 경로로 업로드
-        if (r2ImageService == null) {
-            throw new CustomException(INVALID_IMAGE_URL);
-        }
 
         String newImageUrl = r2ImageService.uploadBeanSubImage(file, productId);
 

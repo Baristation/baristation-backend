@@ -39,13 +39,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         OAuth2UserInfo oAuth2UserInfo = null;
         if (registrationId.equals("google")) {
-            log.info("구글 로그인 요청");
             oAuth2UserInfo = GoogleUserInfoDTO.from(attributes);
         } else if (registrationId.equals("naver")) {
-            log.info("네이버 로그인 요청");
             oAuth2UserInfo = NaverUserInfoDTO.from(attributes);
         } else if (registrationId.equals("kakao")) {
-            log.info("카카오 로그인 요청");
             oAuth2UserInfo = KakaoUserInfoDTO.from(attributes);
         }
         saveOrUpdateUser(oAuth2UserInfo);
@@ -77,10 +74,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .role(UserRole.USER)
                     .build();
 
-            // 여기서 만약 극악의 확률로 동시성 충돌(UNIQUE 위배)이 발생한다면?
-            // -> 어차피 GlobalExceptionHandler에서 잡아서 처리되도록 내버려 둡니다.
             userRepository.save(newUser);
-            log.info("신규 소셜 유저 회원가입 완료! : {} ", userInfo.getName());
         }
     }
 

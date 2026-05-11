@@ -42,33 +42,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 정상 토큰 -> 인증 객체 저장
                 Authentication authentication = jwtTokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.debug("Security Context에 '{}' 인증 정보를 저장했습니다", authentication.getName());
             }
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다.");
             sendJsonErrorResponse(response, ErrorCode.TOKEN_EXPIRED);
             return;
-        } catch (SecurityException | MalformedJwtException e) {
-            // 위조되거나 잘못된 형식
-            log.info("잘못된 JWT 서명입니다.");
-            sendJsonErrorResponse(response, ErrorCode.TOKEN_INVALID);
-            return;
-        } catch (UnsupportedJwtException e) {
-            // 지원하지 않는 형식
-            log.info("지원되지 않는 JWT 토큰입니다.");
-            sendJsonErrorResponse(response, ErrorCode.TOKEN_INVALID);
-            return;
-        } catch (IllegalArgumentException e) {
-            // 토큰이 없는 경우 등
-            log.info("JWT 토큰이 잘못되었습니다.");
-            sendJsonErrorResponse(response, ErrorCode.TOKEN_INVALID);
-            return;
-        } catch (Exception e) {
-            log.error("JWT 필터 내부 오류: {}", e.getMessage());
+        } catch (SecurityException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
+            // JWT 관련 예외는 모두 GlobalExceptionHandler에서 처리
             sendJsonErrorResponse(response, ErrorCode.TOKEN_INVALID);
             return;
         }
-
         // 다음 필터로 넘김 (성공한 요청만)
         filterChain.doFilter(request, response);
     }
