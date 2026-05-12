@@ -14,11 +14,7 @@ public record ProductSearchRequest(
         // 2. 단맛 (Sweetness)
         Integer minSweetness,
         Integer maxSweetness,
-
-        // 3. 쓴맛 (Bitterness)
-        Integer minBitterness,
-        Integer maxBitterness,
-
+        
         // 바디감
         Integer body,
 
