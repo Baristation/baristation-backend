@@ -4,7 +4,6 @@ import lombok.Builder;
 
 @Builder
 public record TokenResponse(
-    String userName,
     String accessToken,
     String tokenType // "Bearer"
 ) {

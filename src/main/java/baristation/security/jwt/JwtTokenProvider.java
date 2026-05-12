@@ -20,6 +20,7 @@ import java.security.Key;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -57,19 +58,36 @@ public class JwtTokenProvider {
                 .tokenType(TOKEN_TYPE_BEARER)
                 .build();
     }
+
     public String generateAccessToken(User user) {
-        return createToken(user, accessExp, ACCESS_TOKEN_TYPE);
+        return createAccessToken(user);
     }
 
     public String generateRefreshToken(User user) {
-        return createToken(user, refreshExp, REFRESH_TOKEN_TYPE);
+        return createRefreshToken(user);
     }
-    // 로그인시 토큰 생성 메서드
-    private String createToken(User user, long expTime, String tokenType) {
+
+    private String createAccessToken(User user) {
+        Claims claims = Jwts.claims().setSubject(String.valueOf(user.getUserId()));
+        claims.put("role", user.getRole().name()); // 권한 주입
+        claims.put("name", user.getNickname());
+        // 이메일은 null일 수 있음
+        claims.put("email", Optional.ofNullable(user.getEmail()).orElse(""));
+//        claims.put("profile", user.getProfile());
+        claims.put(CLAIM_TYPE, ACCESS_TOKEN_TYPE);
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + accessExp))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    private String createRefreshToken(User user) {
         // claims - jwt 토큰 속 내용 생성
         Claims claims = Jwts.claims().setSubject(String.valueOf(user.getUserId()));
         claims.put("role", user.getRole().name()); // 권한 주입
-        claims.put(CLAIM_TYPE, tokenType);
+        claims.put(CLAIM_TYPE, REFRESH_TOKEN_TYPE);
         /**
          * 압축해서 하나의 문자열로
          * 헤더(어떤 암호화인지),
@@ -79,7 +97,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expTime))
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExp))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -127,13 +145,13 @@ public class JwtTokenProvider {
             throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (ExpiredJwtException e) {
             throw new CustomException(ErrorCode.TOKEN_EXPIRED);
-        } catch (UnsupportedJwtException e) {
-            throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (CustomException e) {
             // CustomException(블랙리스트, 타입 불일치 등)은 그대로 전파
             throw e;
-        } catch (IllegalArgumentException e) {
+        } catch (UnsupportedJwtException e) {
             throw new CustomException(ErrorCode.TOKEN_INVALID);
+        } catch (IllegalArgumentException e) {
+                throw new CustomException(ErrorCode.TOKEN_INVALID);
         }
     }
 
