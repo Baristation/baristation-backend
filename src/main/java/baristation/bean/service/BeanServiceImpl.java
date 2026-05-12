@@ -223,7 +223,6 @@ public class BeanServiceImpl implements BeanService {
 
         validateRange(request.minAcidity(), request.maxAcidity());
         validateRange(request.minSweetness(), request.maxSweetness());
-        validateRange(request.minBitterness(), request.maxBitterness());
     }
 
     private void validateRange(Integer min, Integer max) {

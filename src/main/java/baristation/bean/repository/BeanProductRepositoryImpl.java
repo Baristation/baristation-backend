@@ -45,10 +45,6 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                 request == null ? null : request.minSweetness(),
                 request == null ? null : request.maxSweetness()
         );
-        BooleanExpression bitternessCondition = bitternessBetween(
-                request == null ? null : request.minBitterness(),
-                request == null ? null : request.maxBitterness()
-        );
         BooleanExpression bodyCondition = bodyEq(request == null ? null : request.body());
         BooleanExpression roastingCondition = roastingEq(request == null ? null : request.roastingType());
 
@@ -63,7 +59,6 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                         flavorCategoryCondition,
                         acidityCondition,
                         sweetnessCondition,
-                        bitternessCondition,
                         bodyCondition,
                         roastingCondition
                 )
@@ -84,7 +79,6 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                         flavorCategoryCondition,
                         acidityCondition,
                         sweetnessCondition,
-                        bitternessCondition,
                         bodyCondition,
                         roastingCondition
                 )
@@ -139,20 +133,6 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
 
     private BooleanExpression sweetnessBetween(Integer min, Integer max) {
         return between(product.sweetness, min, max);
-    }
-
-    private BooleanExpression bitternessBetween(Integer min, Integer max) {
-        NumberExpression<Integer> bitternessScore = bitternessScoreExpression();
-        if (min == null && max == null) {
-            return null;
-        }
-        if (min != null && max == null) {
-            return bitternessScore.goe(min);
-        }
-        if (min == null) {
-            return bitternessScore.loe(max);
-        }
-        return bitternessScore.between(min, max);
     }
 
     private BooleanExpression bodyEq(Integer body) {
