@@ -1,5 +1,8 @@
 package baristation.lesson.domain;
 
+import baristation.bean.enums.ImageType;
+import baristation.common.domain.BaseTimeEntity;
+import baristation.lesson.enums.LessonCategory;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,26 +18,26 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "class_images")
-public class ClassImage {
+@Table(name = "lesson_images")
+public class LessonImages extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "class_image_id")
-    private Long classImageId;
+    @Column(name = "lesson_image_id")
+    private Long lessonImageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "class_id", nullable = false)
-    private Lesson aClass;
+    @JoinColumn(name = "lesson_id", nullable = false)
+    private Lesson lesson;
 
     @Column(name = "image_url", nullable = false, length = 500)
     private String imageUrl;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "image_type")
+    private ImageType imageType;
+
     @Column(name = "sort_order", nullable = false)
     @Builder.Default
-    private Integer sortOrder = 1;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Integer sortOrder = 0;
 }
