@@ -14,10 +14,10 @@ public record ProductDetailDTO(
         String description,
         Integer agtronMin,
         Integer agtronMax,
-        Integer acidity,
-        Integer sweetness,
-        Integer body,
-        Integer balance,
+        Double acidity,
+        Double sweetness,
+        Double body,
+        Double balance,
         List<ProductImageDTO> images
 
 ) {
