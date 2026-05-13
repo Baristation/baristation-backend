@@ -1,5 +1,6 @@
 package baristation.lesson.domain;
 
+import baristation.common.domain.BaseTimeEntity;
 import baristation.lesson.enums.ScheduleStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -19,32 +20,29 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "class_schedules")
-public class ClassSchedule {
+@Table(name = "lesson_schedules")
+public class LessonSchedule extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "class_schedule_id")
-    private Long classScheduleId;
+    @Column(name = "lesson_schedule_id")
+    private Long lessonScheduleId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "class_id", nullable = false)
-    private Lesson aClass;
+    @JoinColumn(name = "lesson_id", nullable = false)
+    private Lesson lesson;
 
-    @Column(name = "class_date", nullable = false)
-    private LocalDate classDate;
+    @Column(name = "lesson_date", nullable = false)
+    private LocalDate lessonDate;
 
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
-    @Column(name = "end_time", nullable = false)
-    private LocalTime endTime;
+    @Column(name = "duration")
+    private Integer duration;
 
     @Column(name = "price", nullable = false)
     private Integer price;
-
-    @Column(name = "capacity", nullable = false)
-    private Integer capacity;
 
     @Column(name = "reserved_count", nullable = false)
     @Builder.Default
@@ -54,12 +52,4 @@ public class ClassSchedule {
     @Column(name = "schedule_status", nullable = false, length = 20)
     @Builder.Default
     private ScheduleStatus scheduleStatus = ScheduleStatus.OPEN;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 }
