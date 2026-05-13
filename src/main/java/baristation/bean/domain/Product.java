@@ -38,16 +38,16 @@ public class Product extends BaseTimeEntity {
     private Integer agtronMax;
 
     @Column(name = "acidity")
-    private Integer acidity;
+    private Double acidity;
 
     @Column(name = "sweetness")
-    private Integer sweetness;
+    private Double sweetness;
 
     @Column(name = "body")
-    private Integer body;
+    private Double body;
 
     @Column(name = "balance")
-    private Integer balance;
+    private Double balance;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
