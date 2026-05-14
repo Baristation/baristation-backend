@@ -11,7 +11,6 @@ import baristation.bean.enums.FlavorCategory;
 import baristation.bean.enums.RoastingType;
 import baristation.bean.payload.request.ProductSearchRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
