@@ -27,8 +27,8 @@ public class ProductController {
             @ModelAttribute ProductSearchRequest request,
             @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        log.info("[Product] searchProducts start. page={}, size={}, keyword={}, traceId={}",
-                pageable.getPageNumber(), pageable.getPageSize(), request.keyword(), TraceIdUtil.getTraceId());
+        log.info("[Product] searchProducts start. page={}, size={}, keyword={}, roastingType={}, sortBy={}, traceId={}",
+                pageable.getPageNumber(), pageable.getPageSize(), request.keyword(), request.roastingType(), request.sortBy(), TraceIdUtil.getTraceId());
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
         log.info("[Product] searchProducts done. contentSize={}, totalElements={}, traceId={}",
                 response.content().size(), response.totalElements(), TraceIdUtil.getTraceId());

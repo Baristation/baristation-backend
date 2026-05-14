@@ -11,6 +11,7 @@ import baristation.bean.enums.FlavorCategory;
 import baristation.bean.enums.RoastingType;
 import baristation.bean.payload.request.ProductSearchRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import static baristation.bean.domain.QRoaster.roaster;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
@@ -53,6 +55,9 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                 request == null ? null : request.maxBalance());
         BooleanExpression roastingCondition = roastingEq(request == null ? null : request.roastingType());
 
+        log.info("[QueryDSL Debug] roastingCondition: {}, request.roastingType: {}", roastingCondition,
+                request == null ? "null" : request.roastingType());
+
         // content 쿼리: 실제 페이지 데이터 조회
         List<BeanProduct> content = queryFactory
                 .selectFrom(beanProduct)
@@ -73,6 +78,8 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        log.info("[QueryDSL Debug] content size: {}", content.size());
+
         // count 쿼리: fetch join 없이 전체 개수만 조회
         Long total = queryFactory
                 .select(beanProduct.count())
@@ -86,6 +93,7 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                         acidityCondition,
                         sweetnessCondition,
                         bodyCondition,
+                        balanceCondition,
                         roastingCondition
                 )
                 .fetchOne();
@@ -154,15 +162,20 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
 
     private BooleanExpression between(NumberPath<Double> path, Double min, Double max) {
         if (min == null && max == null) {
-            return null;
+            return null;  // 범위가 없으면 조건 없음
         }
+
+        BooleanExpression rangeExpression;
         if (min != null && max == null) {
-            return path.goe(min);
+            rangeExpression = path.goe(min);  // path >= min
+        } else if (min == null) {
+            rangeExpression = path.loe(max);  // path <= max
+        } else {
+            rangeExpression = path.between(min, max);  // min <= path <= max
         }
-        if (min == null) {
-            return path.loe(max);
-        }
-        return path.between(min, max);
+
+        // NULL 값도 허용하기 위해 OR로 연결
+        return rangeExpression.or(path.isNull());
     }
 
     private NumberExpression<Integer> bitternessScoreExpression() {
