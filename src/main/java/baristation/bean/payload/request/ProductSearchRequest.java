@@ -9,14 +9,19 @@ public record ProductSearchRequest(
         FlavorCategory flavorCategory, // Aroma -> FlavorCategory.
 
         // 1. 산미 (Acidity)
-        Integer minAcidity,
-        Integer maxAcidity,
+        Double minAcidity,
+        Double maxAcidity,
         // 2. 단맛 (Sweetness)
-        Integer minSweetness,
-        Integer maxSweetness,
-        
+        Double minSweetness,
+        Double maxSweetness,
+
         // 바디감
-        Integer body,
+        Double minBody,
+        Double maxBody,
+
+        // 밸런스
+        Double minBalance,
+        Double maxBalance,
 
         // 로스팅 정도
         RoastingType roastingType,

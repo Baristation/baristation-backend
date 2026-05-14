@@ -64,7 +64,8 @@ class BeanServiceImplTest {
                 2, 4,
                 4, 4,
                 1, 1,
-                5, RoastingType.LIGHT, BeanSortType.ACIDITY
+                5, 5,
+                RoastingType.LIGHT, BeanSortType.ACIDITY
         );
 
         Bean bean1 = Bean.builder()
@@ -174,7 +175,8 @@ class BeanServiceImplTest {
                 5, 3,
                 null, null,
                 null, null,
-                null, null, null
+                null, null,
+                null, null
         );
         Pageable pageable = PageRequest.of(0, 12);
 
@@ -300,7 +302,8 @@ class BeanServiceImplTest {
                 null, null,
                 null, null,
                 null, null,
-                null, null, null
+                null, null,
+                null, null
         );
 
         Bean bean1 = Bean.builder()

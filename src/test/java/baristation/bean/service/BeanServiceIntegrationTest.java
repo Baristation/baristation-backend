@@ -286,7 +286,8 @@ class BeanServiceIntegrationTest {
                 null, null,
                 null, null,
                 null, null,
-                null, null, BeanSortType.LATEST
+                null, null,
+                null, BeanSortType.LATEST
         );
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
@@ -317,7 +318,8 @@ class BeanServiceIntegrationTest {
                 null, null,
                 null, null,
                 null, null,
-                null, null, null
+                null, null,
+                null, null
         );
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
@@ -342,7 +344,8 @@ class BeanServiceIntegrationTest {
                 null, null,
                 null, null,
                 null, null,
-                null, RoastingType.LIGHT, null
+                null, null,
+                RoastingType.LIGHT, null
         );
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
@@ -368,7 +371,8 @@ class BeanServiceIntegrationTest {
                 4, 5,
                 null, null,
                 null, null,
-                null, null, null
+                null, null,
+                null, null
         );
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
@@ -394,7 +398,8 @@ class BeanServiceIntegrationTest {
                 null, null,
                 null, null,
                 null, null,
-                null, null, null
+                null, null,
+                null, null
         );
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
@@ -422,7 +427,8 @@ class BeanServiceIntegrationTest {
                 null, null,
                 null, null,
                 null, null,
-                null, null, BeanSortType.NAME
+                null, null,
+                null, BeanSortType.NAME
         );
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
@@ -445,7 +451,8 @@ class BeanServiceIntegrationTest {
                 null, null,
                 null, null,
                 null, null,
-                null, null, BeanSortType.ACIDITY
+                null, null,
+                null, BeanSortType.ACIDITY
         );
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
@@ -469,7 +476,8 @@ class BeanServiceIntegrationTest {
                 null, null,
                 null, null,
                 null, null,
-                null, null, null
+                null, null,
+                null,null
         );
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
@@ -501,7 +509,8 @@ class BeanServiceIntegrationTest {
                 5, 3,
                 null, null,
                 null, null,
-                null, null, null
+                null, null,
+                null, null
         );
 
         log.info("[invalidRange] requesting min=5 max=3 -> expecting BeanSearchInvalidRange exception");
@@ -567,7 +576,8 @@ class BeanServiceIntegrationTest {
                 null, null,
                 null, null,
                 null, null,
-                null, null, null
+                null, null,
+                null, null
         );
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
@@ -592,7 +602,8 @@ class BeanServiceIntegrationTest {
                 3, 5,
                 null, null,
                 null, null,
-                null, RoastingType.MEDIUM, null
+                null,null,
+                RoastingType.MEDIUM, null
         );
 
         PageResponse<ProductSummaryDTO> response = beanService.searchProducts(request, pageable);
