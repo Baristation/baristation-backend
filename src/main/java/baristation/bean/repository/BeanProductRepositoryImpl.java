@@ -30,7 +30,6 @@ import static baristation.bean.domain.QRoaster.roaster;
 
 @Repository
 @RequiredArgsConstructor
-@Slf4j
 public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
@@ -55,9 +54,6 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                 request == null ? null : request.maxBalance());
         BooleanExpression roastingCondition = roastingEq(request == null ? null : request.roastingType());
 
-        log.info("[QueryDSL Debug] roastingCondition: {}, request.roastingType: {}", roastingCondition,
-                request == null ? "null" : request.roastingType());
-
         // content 쿼리: 실제 페이지 데이터 조회
         List<BeanProduct> content = queryFactory
                 .selectFrom(beanProduct)
@@ -77,8 +73,6 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-
-        log.info("[QueryDSL Debug] content size: {}", content.size());
 
         // count 쿼리: fetch join 없이 전체 개수만 조회
         Long total = queryFactory
