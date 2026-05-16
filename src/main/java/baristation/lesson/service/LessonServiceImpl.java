@@ -117,8 +117,7 @@ public class LessonServiceImpl implements LessonService {
             return Collections.emptyMap();
         }
 
-        // "다음 일정"은 현재 시각 이후에 열려 있는 일정만 후보로 본다.
-        // 과거 OPEN 데이터가 남아 있어도 목록 응답의 nextDate가 과거로 내려가지 않게 막는다.
+        // 다음 일정은 현재 시각 이후에 열려 있는 일정만 후보로 본다.
         return lessonScheduleRepository.findByLesson_LessonIdInAndScheduleStatusAndLessonDateGreaterThanEqualOrderByLessonDateAsc(
                         lessonIds,
                         ScheduleStatus.OPEN,
