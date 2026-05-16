@@ -29,8 +29,8 @@ public class LessonController {
             @ModelAttribute LessonSearchRequest request,
             @PageableDefault(size = 12) Pageable pageable
     ) {
-        log.info("[Lesson] searchLessons start. page={}, size={}, keyword={}, region={}, difficulty={}, traceId={}",
-                pageable.getPageNumber(), pageable.getPageSize(), request.keyword(), request.region(), request.difficulty(), TraceIdUtil.getTraceId());
+        log.info("[Lesson] searchLessons start. page={}, size={}, keyword={}, category={}, region={}, difficulty={}, traceId={}",
+                pageable.getPageNumber(), pageable.getPageSize(), request.keyword(), request.category(), request.region(), request.difficulty(), TraceIdUtil.getTraceId());
         PageResponse<LessonDTO> response = lessonService.searchLessons(request, pageable);
         log.info("[Lesson] searchLessons done. contentSize={}, totalElements={}, traceId={}",
                 response.content().size(), response.totalElements(), TraceIdUtil.getTraceId());

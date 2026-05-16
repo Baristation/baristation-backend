@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,9 +46,6 @@ public class LessonServiceImpl implements LessonService {
 
         try {
             Page<Lesson> lessonPage = lessonRepository.searchLessonsWithFilters(request, pageable);
-            if (lessonPage.isEmpty()) {
-                return PageResponse.of(Page.empty(pageable));
-            }
 
             List<Long> lessonIds = lessonPage.getContent().stream()
                     .map(Lesson::getLessonId)
@@ -57,6 +55,8 @@ public class LessonServiceImpl implements LessonService {
             Map<Long, String> thumbImageByLessonId = getThumbImages(lessonIds);
             Map<Long, LessonSchedule> nextScheduleByLessonId = getNextSchedules(lessonIds);
 
+            // content가 비어 있어도 lessonPage.getTotalElements()는 그대로 유지
+            // 마지막 페이지를 넘어선 요청에서 검색 결과 총 개수가 0으로 바뀌는 문제를 막기 위함
             Page<LessonDTO> page = new PageImpl<>(
                     lessonPage.getContent().stream()
                             .map(lesson -> toLessonDto(
@@ -117,9 +117,12 @@ public class LessonServiceImpl implements LessonService {
             return Collections.emptyMap();
         }
 
-        return lessonScheduleRepository.findByLesson_LessonIdInAndScheduleStatusOrderByLessonDateAsc(
+        // "다음 일정"은 현재 시각 이후에 열려 있는 일정만 후보로 본다.
+        // 과거 OPEN 데이터가 남아 있어도 목록 응답의 nextDate가 과거로 내려가지 않게 막는다.
+        return lessonScheduleRepository.findByLesson_LessonIdInAndScheduleStatusAndLessonDateGreaterThanEqualOrderByLessonDateAsc(
                         lessonIds,
-                        ScheduleStatus.OPEN
+                        ScheduleStatus.OPEN,
+                        LocalDateTime.now()
                 )
                 .stream()
                 .collect(Collectors.toMap(

@@ -32,6 +32,7 @@ public enum Region {
         return label;
     }
 
+    // 서울" 같은 화면 표시명을 보내면 label을 기준으로 매칭
     public static Region from(String value) {
         if (value == null || value.isBlank()) {
             return null;

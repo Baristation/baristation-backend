@@ -2,6 +2,7 @@ package baristation.lesson.repository;
 
 import baristation.lesson.domain.Lesson;
 import baristation.lesson.enums.DifficultyLevel;
+import baristation.lesson.enums.LessonCategory;
 import baristation.lesson.enums.Region;
 import baristation.lesson.payload.request.LessonSearchRequest;
 import com.querydsl.core.types.OrderSpecifier;
@@ -28,6 +29,7 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
     @Override
     public Page<Lesson> searchLessonsWithFilters(LessonSearchRequest request, Pageable pageable) {
         BooleanExpression keywordCondition = keywordContains(request == null ? null : request.keyword());
+        BooleanExpression categoryCondition = categoryEq(request == null ? null : request.category());
         BooleanExpression regionCondition = regionEq(request == null ? null : request.region());
         BooleanExpression difficultyCondition = difficultyEq(request == null ? null : request.difficulty());
 
@@ -36,6 +38,7 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
                 .join(lesson.hostUser, user).fetchJoin()
                 .where(
                         keywordCondition,
+                        categoryCondition,
                         regionCondition,
                         difficultyCondition
                 )
@@ -50,6 +53,7 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
                 .join(lesson.hostUser, user)
                 .where(
                         keywordCondition,
+                        categoryCondition,
                         regionCondition,
                         difficultyCondition
                 )
@@ -74,6 +78,16 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
                 .or(lesson.address.containsIgnoreCase(normalized));
     }
 
+    // 카테고리가 정확히 일치하는 클래스를 찾는 조건을 만든다.
+    private BooleanExpression categoryEq(String category) {
+        LessonCategory normalizedCategory = LessonCategory.from(category);
+        if (normalizedCategory == null) {
+            return null;
+        }
+
+        return lesson.lessonCategory.eq(normalizedCategory);
+    }
+
     // 지역에 입력 지역명이 포함된 클래스를 찾는 조건을 만든다.
     private BooleanExpression regionEq(String region) {
         Region normalizedRegion = Region.from(region);
@@ -81,7 +95,9 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
             return null;
         }
 
-        return lesson.region.eq(normalizedRegion.label());
+        // 프론트는 "제주" 같은 표시명을 보내지만, DB lessons.region에는 "JEJU" 같은 enum name이 저장되어 있다.
+        // 입력값은 label로 검증하고, 실제 DB 비교는 저장 형식에 맞춰 enum name으로 수행한다.
+        return lesson.region.eq(normalizedRegion.name());
     }
 
     // 난이도가 정확히 일치하는 클래스를 찾는 조건을 만든다.

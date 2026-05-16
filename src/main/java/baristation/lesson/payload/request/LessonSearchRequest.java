@@ -4,7 +4,7 @@ import baristation.lesson.enums.DifficultyLevel;
 
 public record LessonSearchRequest(
         String keyword,
-
+        String category,
         String region,
         DifficultyLevel difficulty
         ) {
