@@ -3,6 +3,7 @@ package baristation.user.service;
 import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
 import baristation.common.logging.TraceIdUtil;
+import baristation.common.r2.R2ImageService;
 import baristation.common.redis.RedisService;
 import baristation.security.jwt.JwtTokenProvider;
 import baristation.security.payload.dto.TokenPair;
@@ -16,7 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Duration;
 
 @Service
@@ -24,9 +27,11 @@ import java.time.Duration;
 @Transactional
 @Slf4j
 public class UserService {
+
+    private final UserRepository userRepository; // repo
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
-    private final UserRepository userRepository;
+    private final R2ImageService r2ImageService;
     private final NicknameValidator nicknameValidator;
 
     public void logout(HttpServletRequest request) {
@@ -81,14 +86,12 @@ public class UserService {
     }
 
     /**
-     * 회원 정보 수정 (닉네임)
+     * 회원 정보 수정 (닉네임, 이미지)
      * - 닉네임 검증 (형식, 금지어, 특수문자)
      * - 중복 체크 (대소문자 무시)
+     * - 프로필 이미지 처리
      */
-    public void updateUser(HttpServletRequest request, UserUpdateRequest updateRequest) {
-        String accessToken = resolveToken(request);
-        Long userId = extractUserId(accessToken);
-
+    public void updateUser(Long userId, UserUpdateRequest updateRequest, MultipartFile profileImage) {
         User user = userRepository.getUserByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -109,6 +112,21 @@ public class UserService {
 
         // 3. 검증 완료된 닉네임 업데이트
         user.updateNickname(newNickname);
+
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                String oldImageUrl = user.getProfileImageUrl();
+                if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
+                    r2ImageService.deleteByUrl(oldImageUrl);
+                }
+
+                String newImageUrl = r2ImageService.uploadProfileImage(profileImage, userId);
+                user.updateProfileImageUrl(newImageUrl);
+            } catch (IOException e) {
+                throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
+            }
+        }
+
 
     }
 

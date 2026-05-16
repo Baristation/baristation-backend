@@ -43,6 +43,9 @@ public class User extends BaseTimeEntity {
     @Column(name = "nickname", nullable = false, length = 50)
     private String nickname;
 
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
+
     /* 네이버/카카오에서 제공하는 성별, 연령대 등 추가 정보를 저장하고 싶을 때 사용 */
     // @Column(name = "gender", length = 10)
     // private String gender;
@@ -56,9 +59,12 @@ public class User extends BaseTimeEntity {
     private UserRole role = UserRole.USER;
     /**
      * 닉네임 업데이트 (검증은 Service에서 수행)
-     * 이 메서드는 이미 검증된 닉네임만 받아서 업데이트합니다.
+     * 이미 검증된 닉네임만 받아서 업데이트합니다.
      */
     public void updateNickname(String newNickname) {
         this.nickname = newNickname;
+    }
+    public void updateProfileImageUrl(String newProfileImageUrl) {
+        this.profileImageUrl = newProfileImageUrl;
     }
 }

@@ -76,7 +76,7 @@ public class SecurityConfig {
                         .logoutSuccessUrl(frontendBaseUrl) // 로그아웃 후 리액트 메인으로
                 );
 
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+            http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

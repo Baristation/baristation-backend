@@ -3,5 +3,6 @@ package baristation.user.enums;
 public enum UserRole {
     USER,
     HOST,
-    ADMIN
+    ADMIN,
+    BARISTA
 }
