@@ -1,6 +1,8 @@
 package baristation.lesson.domain;
 
+import baristation.common.domain.BaseTimeEntity;
 import baristation.lesson.enums.DifficultyLevel;
+import baristation.lesson.enums.LessonCategory;
 import baristation.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -19,13 +21,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "classes")
-public class Lesson {
+@Table(name = "lessons")
+public class Lesson extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "class_id")
-    private Long classId;
+    @Column(name = "lesson_id")
+    private Long lessonId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "host_user_id", nullable = false)
@@ -37,18 +39,22 @@ public class Lesson {
     @Column(name = "subtitle", length = 255)
     private String subtitle;
 
-    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
-    private String description;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "lesson_category")
+    private LessonCategory lessonCategory;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "difficulty_level", nullable = false, length = 20)
     private DifficultyLevel difficultyLevel;
 
-    @Column(name = "region_name", length = 100)
-    private String regionName;
+    @Column(name = "region", length = 100)
+    private String region;
 
-    @Column(name = "place_name", length = 150)
-    private String placeName;
+    @Column(name = "city", length = 100)
+    private String city;
+
+    @Column(name = "place", length = 150)
+    private String place;
 
     @Column(name = "address", length = 255)
     private String address;
@@ -58,27 +64,4 @@ public class Lesson {
 
     @Column(name = "longitude", precision = 10, scale = 7)
     private BigDecimal longitude;
-
-    @Column(name = "duration_min", nullable = false)
-    private Integer durationMin;
-
-    @Column(name = "supplies_note", length = 255)
-    private String suppliesNote;
-
-    @Column(name = "extra_cost_note", length = 255)
-    private String extraCostNote;
-
-    @Column(name = "refund_policy", columnDefinition = "TEXT")
-    private String refundPolicy;
-
-    @Column(name = "curriculum", columnDefinition = "TEXT")
-    private String curriculum;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 }

@@ -223,13 +223,13 @@ public class BeanServiceImpl implements BeanService {
 
         validateRange(request.minAcidity(), request.maxAcidity());
         validateRange(request.minSweetness(), request.maxSweetness());
-        validateRange(request.minBitterness(), request.maxBitterness());
+        validateRange(request.minBody(), request.maxBody());
+        validateRange(request.minBalance(), request.maxBalance());
     }
 
-    private void validateRange(Integer min, Integer max) {
-        if (min != null && max != null && min > max) {
+    private void validateRange(Double min, Double max) {
+        if (min == null || max == null || min > max || max > 5 || min < 0) 
             throw new CustomException(ErrorCode.BEAN_SEARCH_INVALID_RANGE);
-        }
     }
 
 }
