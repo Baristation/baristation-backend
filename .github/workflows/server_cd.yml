@@ -159,12 +159,24 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      #############################################################
+      # ⭐ 1. auth 부분 수정 (직접 액세스 토큰을 발급받도록 설정)
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          token_format: 'access_token'
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker auth for GCP registry
-        run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev --quiet
+      # ⭐ 2. gcloud 대신 도커 다이렉트 로그인 사용
+      - name: Login to Artifact Registry
+        uses: docker/login-action@v3
+        with:
+          registry: asia-northeast3-docker.pkg.dev
+          username: 'oauth2accesstoken'
+          password: ${{ steps.auth.outputs.access_token }}
+##############################################################
 
       # GCP 전용 빌드 (에뮬레이터 없이 바로 빌드)
       - name: Build Docker image for GCP
