@@ -73,7 +73,7 @@ public class UserController {
         userService.updateUser(userId, updateRequest, profileImage);
 
         log.info("[Auth] updateUserInfo done. traceId={}", TraceIdUtil.getTraceId());
-        return ApiResponse.ok(null);
+        return ApiResponse.ok();
     }
 
     @DeleteMapping("/delete")

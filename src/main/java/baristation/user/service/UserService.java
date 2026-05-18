@@ -123,6 +123,8 @@ public class UserService {
                     r2ImageService.deleteByUrl(oldImageUrl);
                 }
             } catch (IOException e) {
+                String traceId = TraceIdUtil.getTraceId();
+                log.error("프로필 이미지 업로드 실패. traceId={}, userId={}", traceId, userId, e);
                 throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
             }
         }

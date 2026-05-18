@@ -146,9 +146,6 @@ public class JwtTokenProvider {
             throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (ExpiredJwtException e) {
             throw new CustomException(ErrorCode.TOKEN_EXPIRED);
-        } catch (CustomException e) {
-            // CustomException(블랙리스트, 타입 불일치 등)은 그대로 전파
-            throw e;
         } catch (UnsupportedJwtException e) {
             throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (IllegalArgumentException e) {
