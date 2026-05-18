@@ -1,9 +1,11 @@
 package baristation.lesson.payload.dto;
 
 import baristation.lesson.enums.DifficultyLevel;
+import lombok.Builder;
 
 import java.time.LocalDateTime;
 
+@Builder
 public record LessonDTO(
         Long lessonId,
         String lessonImageUrl,

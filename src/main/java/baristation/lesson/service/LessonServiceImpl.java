@@ -139,18 +139,19 @@ public class LessonServiceImpl implements LessonService {
             throw new CustomException(ErrorCode.LESSON_SEARCH_MAPPING_FAILED);
         }
 
-        return new LessonDTO(
-                lesson.getLessonId(),
-                thumbImageUrl,
-                lesson.getTitle(),
-                lesson.getSubtitle(),
-                lesson.getHostUser().getNickname(),
-                null,
-                lesson.getRegion(),
-                lesson.getPlace(),
-                nextSchedule == null ? null : nextSchedule.getLessonDate(),
-                nextSchedule == null ? null : nextSchedule.getPrice(),
-                lesson.getDifficultyLevel()
-        );
+        return LessonDTO.builder()
+                .lessonId(lesson.getLessonId())
+                .lessonImageUrl(thumbImageUrl)
+                .title(lesson.getTitle())
+                .subTitle(lesson.getSubtitle())
+                .hostName(lesson.getHostUser().getNickname())
+                // 현재 user profileUrl이 없어서 마이페이지 merge 후에 수정
+                .region(lesson.getRegion())
+                .place(lesson.getPlace())
+                .nextDate(nextSchedule == null ? null : nextSchedule.getLessonDate())
+                .price(nextSchedule == null ? null : nextSchedule.getPrice())
+                .difficulty(lesson.getDifficultyLevel())
+                .hostProfileUrl(null)
+                .build();
     }
 }

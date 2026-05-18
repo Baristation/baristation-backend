@@ -1,8 +1,9 @@
 package baristation.lesson.payload.dto;
 
 import baristation.lesson.domain.LessonCurriculum;
-import baristation.lesson.domain.LessonImages;
+import lombok.Builder;
 
+@Builder
 public record CurriculumDTO(
         String title,
         String summary,
