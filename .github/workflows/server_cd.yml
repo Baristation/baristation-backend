@@ -16,7 +16,7 @@ jobs:
   # [1] 라즈베리파이용 빌드 및 푸시 (develop)
   # ==========================================
   build-and-push-pi:
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/feature/#15-cicd'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           cat << EOF > ./src/main/resources/application.yml
-          ${{ secrets.APPLICATION_PROPERTIES }}
+          ${{ secrets.APPLICATION_PROPERTIES_DEV }}
           EOF
 
       - name: Grant execute permission and Build jar
@@ -70,7 +70,7 @@ jobs:
   # [2] 라즈베리파이 서버로 배포 (develop)
   # ==========================================
   deploy-pi:
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/feature/#15-cicd'
     runs-on: ubuntu-latest
     needs: build-and-push-pi
     permissions:
