@@ -25,7 +25,7 @@ public enum ErrorCode {
     LESSON_SEARCH_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "601-1", "클래스 검색 요청이 올바르지 않습니다."), // 601-1 이형동: 잘못된 검색 요청
     LESSON_SEARCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-2", "클래스 검색 중 오류가 발생했습니다."), // 601-2 이형동: 검색 처리 중 예상 밖의 서버 오류 (서버 로그 확인)
     LESSON_SEARCH_MAPPING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-3", "클래스 검색 결과를 응답으로 변환할 수 없습니다."), // 601-3 이형동: lesson이 없거나 hostUser가 없을 때
-
+    LESSON_NOT_FOUND(HttpStatus.NOT_FOUND, "601-4", "클래스를 찾을 수 없습니다."), // 601-4 이형동: lesson이 없을 때
      // 700xx: 사용자/권한 관련 오류
      USER_INVALID_LOGIN(HttpStatus.BAD_REQUEST, "700-4", "올바르지 않은 로그인"),
      USER_UNAUTHORIZED(HttpStatus.FORBIDDEN, "700-5", "권한이 없습니다."),
@@ -48,7 +48,8 @@ public enum ErrorCode {
     UNSUPPORTED_IMAGE_TYPE(HttpStatus.BAD_REQUEST, "800-3", "지원하지 않는 이미지 형식입니다."),
     IMAGE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "800-4", "이미지 크기는 5MB 이하여야 합니다."),
     BEAN_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "800-6", "원두 이미지를 찾을 수 없습니다."),
-    THUMB_IMAGE_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "800-7", "대표 이미지는 전용 API를 사용해주세요."),
+    LESSON_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "800-7", "클래스 이미지를 찾을 수 없습니다."), // 800-7 이형동: lesson image가 없을 때
+    THUMB_IMAGE_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "800-8", "대표 이미지는 전용 API를 사용해주세요."),
 
     // 900xx: 기타 시스템 오류
     AES_CIPHER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "900-1", "암호화 중 오류가 발생했습니다."),
