@@ -162,8 +162,6 @@ jobs:
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Configure Docker auth for GCP registry
         run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev --quiet
@@ -198,8 +196,6 @@ jobs:
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Prepare GCP deploy directory
         run: |
