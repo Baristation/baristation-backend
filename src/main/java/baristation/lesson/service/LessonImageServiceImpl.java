@@ -32,7 +32,7 @@ public class LessonImageServiceImpl implements LessonImageService {
     private static final int THUMB_SORT_ORDER = 0;
 
     // 대표 이미지 업로드 또는 교체
-    public LessonImageResponse uploadThumb(Long lessonId, MultipartFile file) throws IOException {
+    public LessonImageResponse uploadThumb(Long lessonId, MultipartFile file) {
         Lesson lesson = getLesson(lessonId);
 
         LessonImage thumbImage = lessonImageRepository.findByLesson_LessonIdAndImageType(lessonId, ImageType.THUMB)
@@ -40,7 +40,7 @@ public class LessonImageServiceImpl implements LessonImageService {
 
         // 대표 이미지가 없으면 새로 저장
         if (thumbImage == null) {
-            String imageUrl = r2ImageService.uploadLessonThumb(file, lessonId);
+            String imageUrl = uploadLessonThumb(file, lessonId);
 
             LessonImage saved = lessonImageRepository.save(
                     LessonImage.builder()
@@ -63,7 +63,7 @@ public class LessonImageServiceImpl implements LessonImageService {
         // 대표 이미지가 있으면 기존 URL 경로 재사용이 아니라 항상 새 규칙 경로로 업로드
         String oldImageUrl = thumbImage.getImageUrl();
 
-        String newImageUrl = r2ImageService.uploadLessonThumb(file, lessonId);
+        String newImageUrl = uploadLessonThumb(file, lessonId);
 
         // 예전 구버전 경로였다면 정리
         // 이미 새 경로였다면 uploadLessonThumb()가 같은 위치를 덮어썼을 수 있으므로 삭제하면 안 됨
@@ -84,12 +84,12 @@ public class LessonImageServiceImpl implements LessonImageService {
     }
 
     // 서브 이미지 추가
-    public LessonImageResponse uploadSub(Long lessonId, MultipartFile file) throws IOException {
+    public LessonImageResponse uploadSub(Long lessonId, MultipartFile file) {
         Lesson lesson = getLesson(lessonId);
 
         int nextSortOrder = lessonImageRepository.findMaxSubSortOrder(lessonId) + 1;
 
-        String imageUrl = r2ImageService.uploadLessonSubImage(file, lessonId);
+        String imageUrl = uploadLessonSubImage(file, lessonId);
 
         LessonImage subImage = LessonImage.builder()
                 .lesson(lesson)
@@ -110,7 +110,7 @@ public class LessonImageServiceImpl implements LessonImageService {
     }
 
     // 서브 이미지 교체
-    public LessonImageResponse updateImage(Long lessonId, Long lessonImageId, MultipartFile file) throws IOException {
+    public LessonImageResponse updateImage(Long lessonId, Long lessonImageId, MultipartFile file) {
         LessonImage lessonImage = lessonImageRepository.findById(lessonImageId)
                 .orElseThrow(() -> new CustomException(LESSON_IMAGE_NOT_FOUND));
         validateLessonImageOwner(lessonImage, lessonId);
@@ -121,7 +121,7 @@ public class LessonImageServiceImpl implements LessonImageService {
         }
 
         String oldImageUrl = lessonImage.getImageUrl();
-        String newImageUrl = r2ImageService.uploadLessonSubImage(file, lessonId);
+        String newImageUrl = uploadLessonSubImage(file, lessonId);
 
         // 기존 파일 삭제
         deletePreviousImageIfManaged(oldImageUrl);
@@ -189,6 +189,24 @@ public class LessonImageServiceImpl implements LessonImageService {
     private void validateLessonImageOwner(LessonImage lessonImage, Long lessonId) {
         if (!lessonImage.getLesson().getLessonId().equals(lessonId)) {
             throw new CustomException(LESSON_IMAGE_NOT_FOUND);
+        }
+    }
+
+    private String uploadLessonThumb(MultipartFile file, Long lessonId) {
+        try {
+            return r2ImageService.uploadLessonThumb(file, lessonId);
+        } catch (IOException e) {
+            log.error("Lesson thumb image upload failed. lessonId={}", lessonId, e);
+            throw new CustomException(IMAGE_UPLOAD_FAILED);
+        }
+    }
+
+    private String uploadLessonSubImage(MultipartFile file, Long lessonId) {
+        try {
+            return r2ImageService.uploadLessonSubImage(file, lessonId);
+        } catch (IOException e) {
+            log.error("Lesson sub image upload failed. lessonId={}", lessonId, e);
+            throw new CustomException(IMAGE_UPLOAD_FAILED);
         }
     }
 

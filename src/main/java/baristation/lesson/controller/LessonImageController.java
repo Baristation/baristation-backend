@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -37,7 +36,7 @@ public class LessonImageController {
     public ResponseEntity<ApiResponse<LessonImageResponse>> uploadThumb(
             @PathVariable("lessonId") Long lessonId,
             @RequestPart("file") MultipartFile file
-    ) throws IOException {
+    ) {
         log.info("[LessonImage] uploadThumb start. lessonId={}, fileSize={}, traceId={}",
                 lessonId, file.getSize(), TraceIdUtil.getTraceId());
         LessonImageResponse response = lessonImageService.uploadThumb(lessonId, file);
@@ -51,7 +50,7 @@ public class LessonImageController {
     public ResponseEntity<ApiResponse<LessonImageResponse>> uploadSub(
             @PathVariable("lessonId") Long lessonId,
             @RequestPart("file") MultipartFile file
-    ) throws IOException {
+    ) {
         log.info("[LessonImage] uploadSub start. lessonId={}, fileSize={}, traceId={}",
                 lessonId, file.getSize(), TraceIdUtil.getTraceId());
         LessonImageResponse response = lessonImageService.uploadSub(lessonId, file);
@@ -66,7 +65,7 @@ public class LessonImageController {
             @PathVariable("lessonId") Long lessonId,
             @PathVariable("lessonImageId") Long lessonImageId,
             @RequestPart("file") MultipartFile file
-    ) throws IOException {
+    ) {
         log.info("[LessonImage] updateImage start. lessonId={}, lessonImageId={}, fileSize={}, traceId={}",
                 lessonId, lessonImageId, file.getSize(), TraceIdUtil.getTraceId());
         LessonImageResponse response = lessonImageService.updateImage(lessonId, lessonImageId, file);

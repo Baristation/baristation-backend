@@ -50,6 +50,7 @@ public enum ErrorCode {
     BEAN_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "800-6", "원두 이미지를 찾을 수 없습니다."),
     LESSON_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "800-7", "클래스 이미지를 찾을 수 없습니다."), // 800-7 이형동: lesson image가 없을 때
     THUMB_IMAGE_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "800-8", "대표 이미지는 전용 API를 사용해주세요."),
+    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "800-9", "이미지 업로드 중 오류가 발생했습니다."), // 800-9 이형동: 이미지 업로드 중 불미스러운 사고
 
     // 900xx: 기타 시스템 오류
     AES_CIPHER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "900-1", "암호화 중 오류가 발생했습니다."),
