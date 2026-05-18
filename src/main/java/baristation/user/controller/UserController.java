@@ -13,13 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -66,10 +63,15 @@ public class UserController {
 
     @PatchMapping("/update")
     public ResponseEntity<ApiResponse<Void>> updateUserInfo(
-            HttpServletRequest request,
-            @RequestBody UserUpdateRequest updateRequest) {
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestPart(value = "data") UserUpdateRequest updateRequest,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
+
         log.info("[Auth] updateUserInfo start. traceId={}", TraceIdUtil.getTraceId());
-        userService.updateUser(request, updateRequest);
+
+        Long userId = Long.valueOf(userDetails.getUsername());
+        userService.updateUser(userId, updateRequest, profileImage);
+
         log.info("[Auth] updateUserInfo done. traceId={}", TraceIdUtil.getTraceId());
         return ApiResponse.ok();
     }

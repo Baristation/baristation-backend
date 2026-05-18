@@ -125,10 +125,10 @@ class BeanServiceIntegrationTest {
                 .nameKo("에티오피아 구지 라이트로스트")
                 .nameEn("Ethiopia Guji Light Roast")
                 .roastLevel(RoastingType.LIGHT)
-                .acidity(5)
-                .sweetness(4)
-                .body(2)
-                .balance(4)
+                .acidity(5.0)
+                .sweetness(4.0)
+                .body(2.0)
+                .balance(4.0)
                 .agtronMin(70)
                 .agtronMax(75)
                 .roaster(roaster)
@@ -139,10 +139,10 @@ class BeanServiceIntegrationTest {
                 .nameKo("케냐 AA 미디움로스트")
                 .nameEn("Kenya AA Medium Roast")
                 .roastLevel(RoastingType.MEDIUM)
-                .acidity(4)
-                .sweetness(4)
-                .body(3)
-                .balance(4)
+                .acidity(4.0)
+                .sweetness(4.0)
+                .body(3.0)
+                .balance(4.0)
                 .agtronMin(55)
                 .agtronMax(60)
                 .roaster(roaster)
@@ -153,10 +153,10 @@ class BeanServiceIntegrationTest {
                 .nameKo("콜롬비아 수프리모 다크로스트")
                 .nameEn("Colombia Supremo Dark Roast")
                 .roastLevel(RoastingType.DARK)
-                .acidity(2)
-                .sweetness(3)
-                .body(4)
-                .balance(3)
+                .acidity(2.0)
+                .sweetness(3.0)
+                .body(4.0)
+                .balance(3.0)
                 .agtronMin(35)
                 .agtronMax(40)
                 .roaster(roaster)
@@ -368,7 +368,7 @@ class BeanServiceIntegrationTest {
         Pageable pageable = PageRequest.of(0, 12);
         ProductSearchRequest request = new ProductSearchRequest(
                 null, null,
-                4, 5,
+                4.0, 5.0,
                 null, null,
                 null, null,
                 null, null,
@@ -506,7 +506,7 @@ class BeanServiceIntegrationTest {
     void searchProducts_invalidRange_throwsError() {
         ProductSearchRequest invalidRequest = new ProductSearchRequest(
                 null, null,
-                5, 3,
+                5.0, 3.0,
                 null, null,
                 null, null,
                 null, null,
@@ -552,8 +552,8 @@ class BeanServiceIntegrationTest {
                 .contains("베리", "장미");
 
         assertThat(detail.roaster().nameKo()).isEqualTo("드립노트 로스터리");
-        assertThat(detail.acidity()).isEqualTo(5);
-        assertThat(detail.body()).isEqualTo(2);
+        assertThat(detail.acidity()).isEqualTo(5.0);
+        assertThat(detail.body()).isEqualTo(2.0);
     }
 
     @Test
@@ -599,7 +599,7 @@ class BeanServiceIntegrationTest {
         Pageable pageable = PageRequest.of(0, 12);
         ProductSearchRequest request = new ProductSearchRequest(
                 null, null,
-                3, 5,
+                3.0, 5.0,
                 null, null,
                 null, null,
                 null,null,

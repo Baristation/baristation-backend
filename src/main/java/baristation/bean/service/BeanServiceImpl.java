@@ -228,7 +228,7 @@ public class BeanServiceImpl implements BeanService {
     }
 
     private void validateRange(Double min, Double max) {
-        if (min == null || max == null || min > max || max > 5 || min < 0) 
+        if (min == null || max == null || min > max || max > 5 || min < 0)
             throw new CustomException(ErrorCode.BEAN_SEARCH_INVALID_RANGE);
     }
 

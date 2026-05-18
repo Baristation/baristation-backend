@@ -61,10 +61,10 @@ class BeanServiceImplTest {
         Pageable pageable = PageRequest.of(0, 12);
         ProductSearchRequest request = new ProductSearchRequest(
                 "ethiopia", FlavorCategory.CHOCOLATY,
-                2, 4,
-                4, 4,
-                1, 1,
-                5, 5,
+                2.0, 4.0,
+                4.0, 4.0,
+                1.0, 1.0,
+                5.0, 5.0,
                 RoastingType.LIGHT, BeanSortType.ACIDITY
         );
 
@@ -87,19 +87,19 @@ class BeanServiceImplTest {
         Product product1 = Product.builder()
                 .productId(101L)
                 .roastLevel(RoastingType.LIGHT)
-                .acidity(4)
-                .sweetness(3)
-                .body(2)
-                .balance(3)
+                .acidity(4.0)
+                .sweetness(3.0)
+                .body(2.0)
+                .balance(3.0)
                 .build();
 
         Product product2 = Product.builder()
                 .productId(102L)
                 .roastLevel(RoastingType.MEDIUM)
-                .acidity(3)
-                .sweetness(4)
-                .body(3)
-                .balance(4)
+                .acidity(3.0)
+                .sweetness(4.0)
+                .body(3.0)
+                .balance(4.0)
                 .build();
 
         // mock으로 대체 -> 원두와 상품 가져옴
@@ -172,7 +172,7 @@ class BeanServiceImplTest {
     void searchProducts_invalidRange_throwsCustomException() {
         ProductSearchRequest invalidRequest = new ProductSearchRequest(
                 null, null,
-                5, 3,
+                5.0, 3.0,
                 null, null,
                 null, null,
                 null, null,
@@ -210,10 +210,10 @@ class BeanServiceImplTest {
         Product product = Product.builder()
                 .productId(productId)
                 .roastLevel(RoastingType.MEDIUMDARK)
-                .acidity(2)
-                .sweetness(3)
-                .body(4)
-                .balance(3)
+                .acidity(2.0)
+                .sweetness(3.0)
+                .body(4.0)
+                .balance(3.0)
                 .description("초콜릿과 견과류 중심의 밸런스 좋은 컵")
                 .roaster(roaster)
                 .build();
@@ -325,19 +325,19 @@ class BeanServiceImplTest {
         Product product1 = Product.builder()
                 .productId(101L)
                 .roastLevel(RoastingType.LIGHT)
-                .acidity(4)
-                .sweetness(3)
-                .body(2)
-                .balance(3)
+                .acidity(4.0)
+                .sweetness(3.0)
+                .body(2.0)
+                .balance(3.0)
                 .build();
 
         Product product2 = Product.builder()
                 .productId(102L)
                 .roastLevel(RoastingType.MEDIUM)
-                .acidity(3)
-                .sweetness(4)
-                .body(3)
-                .balance(4)
+                .acidity(3.0)
+                .sweetness(4.0)
+                .body(3.0)
+                .balance(4.0)
                 .build();
 
         // mock으로 대체 -> 원두와 상품 가져옴
