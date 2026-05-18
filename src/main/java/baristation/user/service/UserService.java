@@ -116,12 +116,12 @@ public class UserService {
         if (profileImage != null && !profileImage.isEmpty()) {
             try {
                 String oldImageUrl = user.getProfileImageUrl();
+                String newImageUrl = r2ImageService.uploadProfileImage(profileImage, userId);
+                user.updateProfileImageUrl(newImageUrl);
+
                 if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
                     r2ImageService.deleteByUrl(oldImageUrl);
                 }
-
-                String newImageUrl = r2ImageService.uploadProfileImage(profileImage, userId);
-                user.updateProfileImageUrl(newImageUrl);
             } catch (IOException e) {
                 throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
             }
