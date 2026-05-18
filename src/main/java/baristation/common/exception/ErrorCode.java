@@ -21,16 +21,10 @@ public enum ErrorCode {
     TOO_LONG_INTRODUCTION(HttpStatus.BAD_REQUEST, "600-10", "소개는 최대 24글자까지 입력할 수 있습니다."),
     CLUB_NAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "600-11", "이미 사용 중인 동아리 이름입니다."),
 
-    // 601xx: Class 관련 오류
-    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-1", "이미지 업로드에 실패하였습니다."),
-    FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "601-2", "이미지 파일을 찾을 수 없습니다."),
-    IMAGE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-4", "이미지 삭제에 실패하였습니다"),
-    KOREAN_FILE_NAME(HttpStatus.INTERNAL_SERVER_ERROR, "601-5", "파일명의 한국어를 인코딩할 수 없습니다."),
-    FILE_TRANSFER_ERROR(HttpStatus.BAD_REQUEST, "601-6", "파일을 올바른 형식으로 변경할 수 없습니다."),
-    UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "601-7", "파일의 확장자가 올바르지 않습니다."),
-    INVALID_FILE_URL(HttpStatus.BAD_REQUEST, "601-8", "올바르지 않은 파일 URL입니다."),
-    FILE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-9", "파일 삭제에 실패하였습니다."),
-    WEBHOOK_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "601-11", "웹훅 요청이 올바르지 않습니다."),
+    // 601xx: Lesson 관련 오류
+    LESSON_SEARCH_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "601-1", "클래스 검색 요청이 올바르지 않습니다."), // 601-1 이형동: 잘못된 검색 요청
+    LESSON_SEARCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-2", "클래스 검색 중 오류가 발생했습니다."), // 601-2 이형동: 검색 처리 중 예상 밖의 서버 오류 (서버 로그 확인)
+    LESSON_SEARCH_MAPPING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-3", "클래스 검색 결과를 응답으로 변환할 수 없습니다."), // 601-3 이형동: lesson이 없거나 hostUser가 없을 때
 
      // 700xx: 사용자/권한 관련 오류
      USER_INVALID_LOGIN(HttpStatus.BAD_REQUEST, "700-4", "올바르지 않은 로그인"),

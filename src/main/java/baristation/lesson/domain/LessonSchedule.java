@@ -8,8 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,7 +31,7 @@ public class LessonSchedule extends BaseTimeEntity {
     private Lesson lesson;
 
     @Column(name = "lesson_date", nullable = false)
-    private LocalDate lessonDate;
+    private LocalDateTime lessonDate;
 
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
