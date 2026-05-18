@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - feature/#15-cicd
 
 concurrency:
   group: server-cd-${{ github.ref }}
@@ -36,7 +37,7 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           cat << EOF > ./src/main/resources/application.yml
-          ${{ secrets.APPLICATION_PROPERTIES }}
+          ${{ secrets.APPLICATION_PROPERTIES_DEV }}
           EOF
 
       - name: Grant execute permission and Build jar
@@ -110,12 +111,13 @@ jobs:
           port: ${{ secrets.PI_PORT }}
           script_stop: true
           script: |
-            export USERNAME='${{ secrets.PI_USERNAME }}'
-            export DOCKER_APP_IMAGE='${{ secrets.PI_DOCKER_IMAGE }}'
-            export COMPOSE_FILE='/home/${{ secrets.PI_USERNAME }}/deploy/compose.blue-green.yml'
-            export NGINX_CONFIG_PATH='/etc/nginx/sites-available/ssl.conf'
-            chmod +x /home/${{ secrets.PI_USERNAME }}/deploy/deploy.sh
-            /home/${{ secrets.PI_USERNAME }}/deploy/deploy.sh
+            export USERNAME='${{ secrets.PI_USERNAME }}' && 
+            export DOCKER_APP_IMAGE='${{ secrets.PI_DOCKER_IMAGE }}' && 
+            export COMPOSE_FILE='/home/${{ secrets.PI_USERNAME }}/deploy/compose.blue-green.yml' &&
+            export NGINX_CONFIG_PATH='/etc/nginx/sites-available/ssl.conf' &&
+            export COMPOSE_SHARED_NETWORK='baristation-network' &&
+            chmod +x /home/${{ secrets.PI_USERNAME }}/deploy/deploy.sh &&
+            /home/${{ secrets.PI_USERNAME }}/deploy/deploy.sh &&
             docker image prune -af
 
   # ==========================================
@@ -144,7 +146,7 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           cat << EOF > ./src/main/resources/application.yml
-          ${{ secrets.APPLICATION_PROPERTIES }}
+          ${{ secrets.APPLICATION_PROPERTIES_PROD }}
           EOF
 
       # 호스트(GitHub Runner)에서 직접 JAR 빌드
@@ -154,18 +156,19 @@ jobs:
           ./gradlew clean bootJar --no-daemon
 
       - name: Authenticate to Google Cloud
+        id: auth
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          token_format: 'access_token'
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+      - name: Login to Artifact Registry
+        uses: docker/login-action@v3
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-      - name: Configure Docker auth for GCP registry
-        run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev --quiet
+          registry: asia-northeast3-docker.pkg.dev
+          username: 'oauth2accesstoken'
+          password: ${{ steps.auth.outputs.access_token }}
 
       # GCP 전용 빌드 (에뮬레이터 없이 바로 빌드)
       - name: Build Docker image for GCP
@@ -197,8 +200,6 @@ jobs:
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Prepare GCP deploy directory
         run: |
@@ -221,6 +222,7 @@ jobs:
               export DOCKER_APP_IMAGE='${{ secrets.GCP_DOCKER_IMAGE }}' &&
               export COMPOSE_FILE='/home/${{ secrets.GCP_INSTANCE_USER }}/deploy/compose.blue-green.yml' &&
               export NGINX_CONFIG_PATH='/etc/nginx/sites-available/ssl.conf' &&
+              export COMPOSE_SHARED_NETWORK=${{ secrets.DOCKER_NETWORK }} &&
               chmod +x /home/${{ secrets.GCP_INSTANCE_USER }}/deploy/deploy.sh &&
               /home/${{ secrets.GCP_INSTANCE_USER }}/deploy/deploy.sh &&
               docker image prune -af
