@@ -1,8 +1,11 @@
 package baristation.lesson.payload.dto;
 
+import lombok.Builder;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Builder
 public record LessonDetailDTO(
         Long lessonId,
         List<LessonImageDTO> lessonImages,

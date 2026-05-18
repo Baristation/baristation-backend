@@ -43,9 +43,4 @@ public class ProductController {
                 productId, response != null, TraceIdUtil.getTraceId());
         return ApiResponse.ok(response);
     }
-
-
-
-
-
 }

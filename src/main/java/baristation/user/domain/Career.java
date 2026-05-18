@@ -2,8 +2,10 @@ package baristation.user.domain;
 
 import baristation.common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
+@Getter
 @Table(name = "career")
 public class Career extends BaseTimeEntity {
     @Id
@@ -13,7 +15,7 @@ public class Career extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User userId;
+    private User user;
 
     @Column(name = "title")
     private String title;

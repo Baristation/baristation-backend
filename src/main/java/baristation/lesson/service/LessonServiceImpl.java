@@ -8,12 +8,16 @@ import baristation.lesson.domain.Lesson;
 import baristation.lesson.domain.LessonImage;
 import baristation.lesson.domain.LessonSchedule;
 import baristation.lesson.enums.ScheduleStatus;
+import baristation.lesson.payload.dto.CurriculumDTO;
 import baristation.lesson.payload.dto.LessonDTO;
 import baristation.lesson.payload.dto.LessonDetailDTO;
+import baristation.lesson.payload.dto.LessonImageDTO;
 import baristation.lesson.payload.request.LessonSearchRequest;
 import baristation.lesson.repository.LessonImageRepository;
 import baristation.lesson.repository.LessonRepository;
 import baristation.lesson.repository.LessonScheduleRepository;
+import baristation.user.domain.Career;
+import baristation.user.repository.CareerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,6 +32,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static baristation.common.exception.ErrorCode.LESSON_NOT_FOUND;
+
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -36,6 +42,7 @@ public class LessonServiceImpl implements LessonService {
     private final LessonRepository lessonRepository;
     private final LessonImageRepository lessonImageRepository;
     private final LessonScheduleRepository lessonScheduleRepository;
+    private final CareerRepository careerRepository;
 
     /**
      * 검색 조건에 맞는 클래스 목록을 조회하고, 썸네일 이미지와 가장 빠른 OPEN 일정을 함께 응답으로 조립
@@ -80,7 +87,39 @@ public class LessonServiceImpl implements LessonService {
     // 추후 구현
     @Override
     public LessonDetailDTO getLessonDetail(Long lessonId) {
-        return null;
+
+        Lesson lesson = getLesson(lessonId);
+        List<LessonImageDTO> lessonImages = getLessonImages(lessonId);
+        List<String> careers = careerRepository.findByUser_UserId(lesson.getHostUser().getUserId())
+                .stream()
+                .map(Career::getTitle)
+                .toList();
+
+        List<LocalDateTime> schedules =
+        List<CurriculumDTO> curriculum
+        return LessonDetailDTO.bui
+    }
+
+    // 클래스 이미지 조회
+    @Transactional(readOnly = true)
+    public List<LessonImageDTO> getLessonImages(Long lessonId) {
+        getLesson(lessonId);
+
+        return lessonImageRepository.findByLesson_LessonIdOrderBySortOrderAsc(lessonId)
+                .stream()
+                .map(image -> LessonImageDTO.builder()
+                        .lessonImageId(image.getLessonImageId())
+                        .imageType(image.getImageType())
+                        .imageUrl(image.getImageUrl())
+                        .sortOrder(image.getSortOrder())
+                        .build())
+                .toList();
+    }
+
+    // 클래스 존재 여부 확인
+    private Lesson getLesson(Long lessonId) {
+        return lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new CustomException(LESSON_NOT_FOUND));
     }
 
     /**
@@ -145,13 +184,12 @@ public class LessonServiceImpl implements LessonService {
                 .title(lesson.getTitle())
                 .subTitle(lesson.getSubtitle())
                 .hostName(lesson.getHostUser().getNickname())
-                // 현재 user profileUrl이 없어서 마이페이지 merge 후에 수정
                 .region(lesson.getRegion())
                 .place(lesson.getPlace())
                 .nextDate(nextSchedule == null ? null : nextSchedule.getLessonDate())
                 .price(nextSchedule == null ? null : nextSchedule.getPrice())
                 .difficulty(lesson.getDifficultyLevel())
-                .hostProfileUrl(null)
+                .hostProfileUrl(lesson.getHostUser().getProfileImageUrl())
                 .build();
     }
 }
