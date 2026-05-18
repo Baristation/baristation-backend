@@ -1,9 +1,9 @@
 package baristation.bean.repository;
-
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import baristation.bean.domain.BeanProduct;
@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -44,11 +45,12 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                 request == null ? null : request.minSweetness(),
                 request == null ? null : request.maxSweetness()
         );
-        BooleanExpression bitternessCondition = bitternessBetween(
-                request == null ? null : request.minBitterness(),
-                request == null ? null : request.maxBitterness()
-        );
-        BooleanExpression bodyCondition = bodyEq(request == null ? null : request.body());
+        BooleanExpression bodyCondition = bodyBetween(
+                request == null ? null : request.minBody(),
+                request == null ? null : request.maxBody());
+        BooleanExpression balanceCondition = balanceBetween(
+                request == null ? null : request.minBalance(),
+                request == null ? null : request.maxBalance());
         BooleanExpression roastingCondition = roastingEq(request == null ? null : request.roastingType());
 
         // content 쿼리: 실제 페이지 데이터 조회
@@ -62,8 +64,8 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                         flavorCategoryCondition,
                         acidityCondition,
                         sweetnessCondition,
-                        bitternessCondition,
                         bodyCondition,
+                        balanceCondition,
                         roastingCondition
                 )
                 .orderBy(resolveOrderSpecifiers(request, pageable))
@@ -83,8 +85,8 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                         flavorCategoryCondition,
                         acidityCondition,
                         sweetnessCondition,
-                        bitternessCondition,
                         bodyCondition,
+                        balanceCondition,
                         roastingCondition
                 )
                 .fetchOne();
@@ -132,47 +134,41 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                 .exists();
     }
 
-    private BooleanExpression acidityBetween(Integer min, Integer max) {
+    private BooleanExpression acidityBetween(Double min, Double max) {
         return between(product.acidity, min, max);
     }
 
-    private BooleanExpression sweetnessBetween(Integer min, Integer max) {
+    private BooleanExpression sweetnessBetween(Double min, Double max) {
         return between(product.sweetness, min, max);
     }
 
-    private BooleanExpression bitternessBetween(Integer min, Integer max) {
-        NumberExpression<Integer> bitternessScore = bitternessScoreExpression();
-        if (min == null && max == null) {
-            return null;
-        }
-        if (min != null && max == null) {
-            return bitternessScore.goe(min);
-        }
-        if (min == null) {
-            return bitternessScore.loe(max);
-        }
-        return bitternessScore.between(min, max);
+    private BooleanExpression bodyBetween(Double min, Double max) {
+        return between(product.body, min, max);
     }
 
-    private BooleanExpression bodyEq(Integer body) {
-        return body == null ? null : product.body.eq(body);
+    private BooleanExpression balanceBetween(Double min, Double max) {
+        return between(product.balance, min, max);
     }
-
     private BooleanExpression roastingEq(RoastingType type) {
         return type != null ? product.roastLevel.eq(type) : null;
     }
 
-    private BooleanExpression between(com.querydsl.core.types.dsl.NumberPath<Integer> path, Integer min, Integer max) {
+    private BooleanExpression between(NumberPath<Double> path, Double min, Double max) {
         if (min == null && max == null) {
-            return null;
+            return null;  // 범위가 없으면 조건 없음
         }
+
+        BooleanExpression rangeExpression;
         if (min != null && max == null) {
-            return path.goe(min);
+            rangeExpression = path.goe(min);  // path >= min
+        } else if (min == null) {
+            rangeExpression = path.loe(max);  // path <= max
+        } else {
+            rangeExpression = path.between(min, max);  // min <= path <= max
         }
-        if (min == null) {
-            return path.loe(max);
-        }
-        return path.between(min, max);
+
+        // NULL 값도 허용하기 위해 OR로 연결
+        return rangeExpression.or(path.isNull());
     }
 
     private NumberExpression<Integer> bitternessScoreExpression() {
@@ -187,17 +183,29 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
 
     private OrderSpecifier<?>[] resolveOrderSpecifiers(ProductSearchRequest request, Pageable pageable) {
         if (request != null && request.sortBy() != null) {
+            // 한국어 기준 정렬 -> 다른 case의 경우 정렬 기준이 같다면 이름으로
+            /**
+             *     LATEST,         // 최신순
+             *     NAME,           // 이름순
+             *     ROASTING_LEVEL, // 로스팅 정도순
+             *     ACIDITY,        // 산미순
+             *     SWEETNESS,      // 단맛순
+             *     BODY,           // 바디순
+             *     BALANCE        // 밸런스순
+             */
             return switch (request.sortBy()) {
                 case NAME -> new OrderSpecifier<?>[]{bean.nameKo.asc(), bean.nameEn.asc(), product.productId.desc()};
                 case ROASTING_LEVEL -> new OrderSpecifier<?>[]{bitternessScoreExpression().asc(), bean.nameKo.asc()};
                 case ACIDITY -> new OrderSpecifier<?>[]{product.acidity.desc().nullsLast(), bean.nameKo.asc()};
+                case SWEETNESS -> new OrderSpecifier<?>[]{product.sweetness.desc().nullsLast(), bean.nameKo.asc()};
                 case BODY -> new OrderSpecifier<?>[]{product.body.desc().nullsLast(), bean.nameKo.asc()};
                 case LATEST -> new OrderSpecifier<?>[]{product.createdAt.desc().nullsLast(), product.productId.desc().nullsLast()};
+                case BALANCE -> new OrderSpecifier<?>[]{product.balance.desc().nullsLast(), bean.nameKo.asc()};
             };
         }
 
         if (pageable != null && pageable.getSort().isSorted()) {
-            Sort.Order order = pageable.getSort().stream().findFirst().orElse(null);
+            Order order = pageable.getSort().stream().findFirst().orElse(null);
             if (order != null) {
                 return orderFromPageable(order);
             }
@@ -206,7 +214,7 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
         return new OrderSpecifier<?>[]{product.createdAt.desc().nullsLast(), product.productId.desc().nullsLast()};
     }
 
-    private OrderSpecifier<?>[] orderFromPageable(Sort.Order order) {
+    private OrderSpecifier<?>[] orderFromPageable(Order order) {
         boolean asc = order.getDirection() == Sort.Direction.ASC;
 
         return switch (order.getProperty()) {
@@ -222,6 +230,12 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
             case "body" -> asc
                     ? new OrderSpecifier<?>[]{product.body.asc().nullsLast(), bean.nameKo.asc()}
                     : new OrderSpecifier<?>[]{product.body.desc().nullsLast(), bean.nameKo.asc()};
+            case "balance" -> asc
+                    ? new OrderSpecifier<?>[]{product.balance.asc().nullsLast(), bean.nameKo.asc()}
+                    : new OrderSpecifier<?>[]{product.balance.desc().nullsLast(), bean.nameKo.asc()};
+            case "sweetness" -> asc
+                    ? new OrderSpecifier<?>[]{product.sweetness.asc().nullsLast(), bean.nameKo.asc()}
+                    : new OrderSpecifier<?>[]{product.sweetness.desc().nullsLast(), bean.nameKo.asc()};
             default -> asc
                     ? new OrderSpecifier<?>[]{product.createdAt.asc().nullsLast(), product.productId.asc().nullsLast()}
                     : new OrderSpecifier<?>[]{product.createdAt.desc().nullsLast(), product.productId.desc().nullsLast()};

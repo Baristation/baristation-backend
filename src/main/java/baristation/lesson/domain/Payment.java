@@ -3,17 +3,20 @@ package baristation.lesson.domain;
 import baristation.lesson.enums.PaymentProvider;
 import baristation.lesson.enums.PaymentStatus;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "payments")
 public class Payment {
@@ -42,6 +45,7 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false, length = 30)
+    @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.READY;
 
     @Column(name = "requested_at")
@@ -57,9 +61,11 @@ public class Payment {
     private Integer amount;
 
     @Column(name = "cancel_amount", nullable = false)
+    @Builder.Default
     private Integer cancelAmount = 0;
 
     @Column(name = "currency", nullable = false, length = 10)
+    @Builder.Default
     private String currency = "KRW";
 
     @Column(name = "failure_code", length = 100)

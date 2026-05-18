@@ -13,6 +13,7 @@ import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
 import baristation.common.payload.response.PageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,15 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * BeanService 구현체
- * 원두 검색 및 목록 조회 기능을 담당
- */
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BeanServiceImpl implements BeanService {
+
+    @Value("${cloudflare.r2.public-base-url}")
+    private String publicBaseUrl;
 
     private final BeanProductRepository beanProductRepository;
     private final ProductFlavorNoteRepository productFlavorNoteRepository;
@@ -46,13 +45,11 @@ public class BeanServiceImpl implements BeanService {
     public PageResponse<ProductSummaryDTO> searchProducts(ProductSearchRequest request, Pageable pageable) {
         // 조건 검증
         validateSearchRequest(request);
-        if (pageable == null) {
-            throw new CustomException(ErrorCode.BEAN_SEARCH_FAILED);
-        }
 
         Page<BeanProduct> beanProductPage = beanProductRepository.searchBeansWithFilters(request, pageable);
-        if (beanProductPage == null) {
-            throw new CustomException(ErrorCode.BEAN_SEARCH_FAILED);
+        // 검색 조건에 해당하는 상품이 없는 경우
+        if (beanProductPage.isEmpty()) {
+            return PageResponse.of(Page.empty(pageable));
         }
 
         List<Long> productIds = beanProductPage.getContent().stream()
@@ -63,15 +60,18 @@ public class BeanServiceImpl implements BeanService {
                 .toList();
 
         Map<Long, ProductImageDTO> thumbImageByProductId = getThumbImages(productIds);
+        Map<Long, FlavorNoteDTO> flavorNoteByProductId = getFlavorNoteMap(productIds);
 
         Page<ProductSummaryDTO> page = beanProductPage.map(beanProduct -> {
             if (beanProduct.getBean() == null || beanProduct.getProduct() == null || beanProduct.getProduct().getProductId() == null) {
                 throw new CustomException(ErrorCode.BEAN_SEARCH_FAILED);
             }
+            Long productId = beanProduct.getProduct().getProductId();
             return toSummaryDto(
                     beanProduct.getBean(),
-                    beanProduct.getProduct().getProductId(),
-                    thumbImageByProductId.get(beanProduct.getProduct().getProductId())
+                    productId,
+                    thumbImageByProductId.get(productId),
+                    flavorNoteByProductId.get(productId)
             );
         });
 
@@ -105,9 +105,7 @@ public class BeanServiceImpl implements BeanService {
                 .map(ProductImageDTO::from)
                 .orElse(null);
 
-        List<FlavorNoteDTO> flavorNotes = productFlavorNoteRepository.findByProduct_ProductIdIn(List.of(resolvedProductId)).stream()
-                .map(productFlavorNote -> FlavorNoteDTO.from(productFlavorNote.getFlavorNote()))
-                .toList();
+        List<FlavorNoteDTO> flavorNotes = getFlavorNotes(resolvedProductId);
 
         // 3. 상세 DTO 조립
         ProductSummaryDTO summary = ProductSummaryDTO.builder()
@@ -135,6 +133,35 @@ public class BeanServiceImpl implements BeanService {
                 .images(images)
                 .build();
     }
+
+    // flavor ImageUrl 조립
+    private String buildImageUrl(String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return null;
+        }
+
+        if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+            return imagePath;
+        }
+
+        String baseUrl = publicBaseUrl.endsWith("/")
+                ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1)
+                : publicBaseUrl;
+
+        String path = imagePath.startsWith("/")
+                ? imagePath
+                : "/" + imagePath;
+
+        return baseUrl + path;
+    }
+
+    private List<FlavorNoteDTO> getFlavorNotes(Long resolvedProductId) {
+        return productFlavorNoteRepository.findByProduct_ProductIdIn(List.of(resolvedProductId))
+                .stream()
+                .map(productFlavorNote -> FlavorNoteDTO.from(productFlavorNote.getFlavorNote()))
+                .toList();
+    }
+
     private Map<Long, ProductImageDTO> getThumbImages(List<Long> productIds) {
         if (productIds.isEmpty()) {
             return Collections.emptyMap();
@@ -149,9 +176,33 @@ public class BeanServiceImpl implements BeanService {
                 ));
     }
 
+    // In을 써서 한번에 조회
+    private Map<Long, FlavorNoteDTO> getFlavorNoteMap(List<Long> productIds) {
+        if (productIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return productFlavorNoteRepository.findByProduct_ProductIdIn(productIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        productFlavorNote -> productFlavorNote.getProduct().getProductId(),
+                        Collectors.collectingAndThen(
+                                Collectors.minBy(Comparator.comparing(
+                                        productFlavorNote -> productFlavorNote.getFlavorNote().getFlavorNoteId(),
+                                        Comparator.nullsLast(Long::compareTo)
+                                )),
+                                flavorNote -> flavorNote
+                                        .map(productFlavorNote -> FlavorNoteDTO.from(productFlavorNote.getFlavorNote()))
+                                        .orElse(null)
+                        )
+                ));
+    }
+
     private ProductSummaryDTO toSummaryDto(Bean bean,
                                            Long productId,
-                                           ProductImageDTO image) {
+                                           ProductImageDTO image,
+                                           FlavorNoteDTO flavorNote) {
+
 
         return ProductSummaryDTO.builder()
                 .productId(productId)
@@ -161,6 +212,7 @@ public class BeanServiceImpl implements BeanService {
                 .region(bean.getRegion())
                 .process(bean.getProcess())
                 .productImage(image)
+                .flavorNotes(flavorNote.toBuilder().flavorImageUrl(buildImageUrl(flavorNote.flavorImageUrl())).build())
                 .build();
     }
 
@@ -171,13 +223,13 @@ public class BeanServiceImpl implements BeanService {
 
         validateRange(request.minAcidity(), request.maxAcidity());
         validateRange(request.minSweetness(), request.maxSweetness());
-        validateRange(request.minBitterness(), request.maxBitterness());
+        validateRange(request.minBody(), request.maxBody());
+        validateRange(request.minBalance(), request.maxBalance());
     }
 
-    private void validateRange(Integer min, Integer max) {
-        if (min != null && max != null && min > max) {
+    private void validateRange(Double min, Double max) {
+        if (min == null || max == null || min > max || max > 5 || min < 0)
             throw new CustomException(ErrorCode.BEAN_SEARCH_INVALID_RANGE);
-        }
     }
 
 }

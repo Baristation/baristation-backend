@@ -11,8 +11,8 @@ public enum ErrorCode {
     BEAN_NOT_FOUND(HttpStatus.NOT_FOUND, "600-1", "원두를 찾을 수 없습니다."),
     BEAN_SEARCH_INVALID_RANGE(HttpStatus.BAD_REQUEST, "600-2", "검색 조건의 최소값이 최대값보다 클 수 없습니다."), // 600-2 최성우: 잘못된 검색조건 추가.
     BEAN_SEARCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "600-3", "원두 검색 중 오류가 발생했습니다."), // 600-3 최성우: 검색 시 DB 오류 추가
+    BEAN_SEARCH_INVALID_VALUE(HttpStatus.BAD_REQUEST, "600-4", "검색 값은 1 이상 5 이하 여야 합니다."), // 600-4 최성우: 검색조건의 값이 1~5 사이가 아닐 때 추가
 
-  CLUB_ID_INVALID(HttpStatus.BAD_REQUEST, "600-4", "올바르지 않은 클럽 요청입니다."),
     CLUB_SEARCH_FAILED(HttpStatus.BAD_REQUEST, "600-5", "검색 중 오류가 발생했습니다."),
     CLUB_DIVISION_INVALID(HttpStatus.BAD_REQUEST, "600-6", "올바르지 않은 분과입니다."),
     CLUB_CATEGORY_INVALID(HttpStatus.BAD_REQUEST, "600-7", "올바르지 않은 분류입니다."),
@@ -21,17 +21,11 @@ public enum ErrorCode {
     TOO_LONG_INTRODUCTION(HttpStatus.BAD_REQUEST, "600-10", "소개는 최대 24글자까지 입력할 수 있습니다."),
     CLUB_NAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "600-11", "이미 사용 중인 동아리 이름입니다."),
 
-    // 601xx: Class 관련 오류
-    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-1", "이미지 업로드에 실패하였습니다."),
-    FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "601-2", "이미지 파일을 찾을 수 없습니다."),
-    IMAGE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-4", "이미지 삭제에 실패하였습니다"),
-    KOREAN_FILE_NAME(HttpStatus.INTERNAL_SERVER_ERROR, "601-5", "파일명의 한국어를 인코딩할 수 없습니다."),
-    FILE_TRANSFER_ERROR(HttpStatus.BAD_REQUEST, "601-6", "파일을 올바른 형식으로 변경할 수 없습니다."),
-    UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "601-7", "파일의 확장자가 올바르지 않습니다."),
-    INVALID_FILE_URL(HttpStatus.BAD_REQUEST, "601-8", "올바르지 않은 파일 URL입니다."),
-    FILE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-9", "파일 삭제에 실패하였습니다."),
-    WEBHOOK_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "601-11", "웹훅 요청이 올바르지 않습니다."),
-
+    // 601xx: Lesson 관련 오류
+    LESSON_SEARCH_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "601-1", "클래스 검색 요청이 올바르지 않습니다."), // 601-1 이형동: 잘못된 검색 요청
+    LESSON_SEARCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-2", "클래스 검색 중 오류가 발생했습니다."), // 601-2 이형동: 검색 처리 중 예상 밖의 서버 오류 (서버 로그 확인)
+    LESSON_SEARCH_MAPPING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-3", "클래스 검색 결과를 응답으로 변환할 수 없습니다."), // 601-3 이형동: lesson이 없거나 hostUser가 없을 때
+    LESSON_NOT_FOUND(HttpStatus.NOT_FOUND, "601-4", "클래스를 찾을 수 없습니다."), // 601-4 이형동: lesson이 없을 때
      // 700xx: 사용자/권한 관련 오류
      USER_INVALID_LOGIN(HttpStatus.BAD_REQUEST, "700-4", "올바르지 않은 로그인"),
      USER_UNAUTHORIZED(HttpStatus.FORBIDDEN, "700-5", "권한이 없습니다."),
@@ -54,7 +48,9 @@ public enum ErrorCode {
     UNSUPPORTED_IMAGE_TYPE(HttpStatus.BAD_REQUEST, "800-3", "지원하지 않는 이미지 형식입니다."),
     IMAGE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "800-4", "이미지 크기는 5MB 이하여야 합니다."),
     BEAN_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "800-6", "원두 이미지를 찾을 수 없습니다."),
-    THUMB_IMAGE_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "800-7", "대표 이미지는 전용 API를 사용해주세요."),
+    LESSON_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "800-7", "클래스 이미지를 찾을 수 없습니다."), // 800-7 이형동: lesson image가 없을 때
+    THUMB_IMAGE_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "800-8", "대표 이미지는 전용 API를 사용해주세요."),
+    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "800-9", "이미지 업로드 중 오류가 발생했습니다."), // 800-9 이형동: 이미지 업로드 중 불미스러운 사고
 
     // 900xx: 기타 시스템 오류
     AES_CIPHER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "900-1", "암호화 중 오류가 발생했습니다."),
