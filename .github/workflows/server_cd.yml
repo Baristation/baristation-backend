@@ -222,7 +222,7 @@ jobs:
               export DOCKER_APP_IMAGE='${{ secrets.GCP_DOCKER_IMAGE }}' &&
               export COMPOSE_FILE='/home/${{ secrets.GCP_INSTANCE_USER }}/deploy/compose.blue-green.yml' &&
               export NGINX_CONFIG_PATH='/etc/nginx/sites-available/ssl.conf' &&
-              export COMPOSE_SHARED_NETWORK= ${{ secrets.DOCKER_NETWORK }} &&
+              export COMPOSE_SHARED_NETWORK=${{ secrets.DOCKER_NETWORK }} &&
               chmod +x /home/${{ secrets.GCP_INSTANCE_USER }}/deploy/deploy.sh &&
               /home/${{ secrets.GCP_INSTANCE_USER }}/deploy/deploy.sh &&
               docker image prune -af
