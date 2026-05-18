@@ -1,7 +1,10 @@
 package baristation.common.r2;
 
 import baristation.common.exception.CustomException;
+import baristation.common.logging.TraceIdUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -15,6 +18,8 @@ import java.util.UUID;
 import static baristation.common.exception.ErrorCode.*;
 
 @Service
+@ConditionalOnProperty(prefix = "app.r2", name = "enabled", havingValue = "true", matchIfMissing = true)
+@Slf4j
 public class R2ImageService {
 
     // 허용할 이미지 타입
@@ -53,18 +58,26 @@ public class R2ImageService {
 
     /**
      * 클래스 대표(THUMB) 이미지 업로드
-     * 저장 경로: classes/{classId}/thumb.webp
+     * 저장 경로: lessons/{lessonId}/thumb.webp
      */
-    public String uploadClassThumb(MultipartFile file, Long classId) throws IOException {
-        return uploadFixedFile(file, buildClassFolder(classId), "thumb");
+    public String uploadLessonThumb(MultipartFile file, Long lessonId) throws IOException {
+        return uploadFixedFile(file, buildLessonFolder(lessonId), "thumb");
     }
 
     /**
-     * 클래스 서브(SUB 이미지 업로드
-     * 저장 경로: classes/{classId}/sub_{uuid}.webp
+     * 클래스 서브(SUB) 이미지 업로드
+     * 저장 경로: lessons/{lessonId}/sub_{uuid}.webp
      */
-    public String uploadClassSubImage(MultipartFile file, Long classId) throws IOException {
-        return uploadUniqueFile(file, buildClassFolder(classId), "sub");
+    public String uploadLessonSubImage(MultipartFile file, Long lessonId) throws IOException {
+        return uploadUniqueFile(file, buildLessonFolder(lessonId), "sub");
+    }
+
+    /**
+     * 프로필 이미지 업로드
+     * 최종 저장 경로: users/{userId}/profile.{확장자}
+     */
+    public String uploadProfileImage(MultipartFile file, Long userId) throws IOException {
+        return uploadUniqueFile(file, buildUserFolder(userId), "profile");
     }
 
     // 기존 objectKey 위치의 파일 업데이트
@@ -94,6 +107,7 @@ public class R2ImageService {
                 .build();
 
         s3Client.deleteObject(request);
+        log.info("[R2] delete success. objectKey={}, traceId={}", objectKey, TraceIdUtil.getTraceId());
     }
 
     /**
@@ -158,22 +172,32 @@ public class R2ImageService {
                 .build();
 
         s3Client.putObject(request, RequestBody.fromBytes(file.getBytes()));
+        log.info("[R2] put success. objectKey={}, size={}, traceId={}",
+                objectKey, file.getSize(), TraceIdUtil.getTraceId());
     }
 
     /**
      * 원두 이미지 폴더 경로 생성
-     * 예: beans/3
+     * 예: beans/product-image/3
      */
     private String buildBeanFolder(Long beanId) {
-        return "beans/" + beanId;
+        return "beans/product-image/" + beanId;
     }
 
     /**
      * 클래스 이미지 폴더 경로 생성
-     * 예: classes/5
+     * 예: lessons/5
      */
-    private String buildClassFolder(Long classId) {
-        return "classes/" + classId;
+    private String buildLessonFolder(Long lessonId) {
+        return "lessons/" + lessonId;
+    }
+
+    /**
+     * 유저 전용 폴더 경로 생성
+     * 예: users/5
+     */
+    private String buildUserFolder(Long userId) {
+        return "users/" + userId;
     }
 
     // 업로드 가능한 파일인지 검증

@@ -3,12 +3,11 @@ package baristation.bean.domain;
 import baristation.bean.enums.RoastingType;
 import baristation.common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
-@Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "product")
@@ -39,17 +38,20 @@ public class Product extends BaseTimeEntity {
     private Integer agtronMax;
 
     @Column(name = "acidity")
-    private Integer acidity;
+    private Double acidity;
 
     @Column(name = "sweetness")
-    private Integer sweetness;
+    private Double sweetness;
 
     @Column(name = "body")
-    private Integer body;
+    private Double body;
 
     @Column(name = "balance")
-    private Integer balance;
+    private Double balance;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "product_url", columnDefinition = "TEXT")
+    private String productUrl;
 }

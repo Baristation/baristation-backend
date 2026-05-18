@@ -3,7 +3,7 @@ package baristation.security.jwt;
 import baristation.common.redis.RedisService;
 import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
-import baristation.security.payload.dto.TokenResponse;
+import baristation.security.payload.dto.TokenPair;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +20,7 @@ import java.security.Key;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -47,29 +48,47 @@ public class JwtTokenProvider {
     /**
      * 외부에서 호출 가능하도록 createTokenSet 구현
      */
-    public TokenResponse createTokenSet(User user) {
+    public TokenPair createTokenSet(User user) {
         String accessToken = generateAccessToken(user);
         String refreshToken = generateRefreshToken(user);
 
-        return TokenResponse.builder()
+        return TokenPair.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType(TOKEN_TYPE_BEARER)
                 .build();
     }
+
     public String generateAccessToken(User user) {
-        return createToken(user, accessExp, ACCESS_TOKEN_TYPE);
+        return createAccessToken(user);
     }
 
     public String generateRefreshToken(User user) {
-        return createToken(user, refreshExp, REFRESH_TOKEN_TYPE);
+        return createRefreshToken(user);
     }
-    // 로그인시 토큰 생성 메서드
-    private String createToken(User user, long expTime, String tokenType) {
+
+    private String createAccessToken(User user) {
+        Claims claims = Jwts.claims().setSubject(String.valueOf(user.getUserId()));
+        claims.put("role", user.getRole().name()); // 권한 주입
+        claims.put("name", user.getNickname());
+        // 이메일은 null일 수 있음
+        claims.put("email", Optional.ofNullable(user.getEmail()).orElse(""));
+        // 기본 이미지 URL 필요함.
+        claims.put("profileImageUrl", Optional.ofNullable(user.getProfileImageUrl()).orElse(""));
+        claims.put(CLAIM_TYPE, ACCESS_TOKEN_TYPE);
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + accessExp))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    private String createRefreshToken(User user) {
         // claims - jwt 토큰 속 내용 생성
         Claims claims = Jwts.claims().setSubject(String.valueOf(user.getUserId()));
         claims.put("role", user.getRole().name()); // 권한 주입
-        claims.put(CLAIM_TYPE, tokenType);
+        claims.put(CLAIM_TYPE, REFRESH_TOKEN_TYPE);
         /**
          * 압축해서 하나의 문자열로
          * 헤더(어떤 암호화인지),
@@ -79,7 +98,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expTime))
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExp))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -115,34 +134,22 @@ public class JwtTokenProvider {
             if (expectedType != null) {
                 String tokenType = claims.get(CLAIM_TYPE, String.class);
                 if (!expectedType.equals(tokenType)) {
-                    log.info("토큰 타입이 올바르지 않습니다. expected={}, actual={}", expectedType, tokenType);
                     throw new CustomException(ErrorCode.TOKEN_INVALID);
                 }
             }
 
             // 2. Redis를 조회하여 로그아웃된(Blacklist) 토큰인지 확인
             if (redisService.hasKeyBlackList(token)) {
-                log.info("로그아웃된 JWT 토큰입니다.");
                 throw new CustomException(ErrorCode.TOKEN_INVALID);
             }
         } catch (SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
             throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다.");
             throw new CustomException(ErrorCode.TOKEN_EXPIRED);
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰입니다.");
             throw new CustomException(ErrorCode.TOKEN_INVALID);
-        } catch (CustomException e) {
-            // CustomException(블랙리스트, 타입 불일치 등)은 그대로 전파
-            throw e;
         } catch (IllegalArgumentException e) {
-            log.info("JWT 토큰이 잘못되었습니다.");
-            throw new CustomException(ErrorCode.TOKEN_INVALID);
-        } catch (Exception e) {
-            log.info("유효하지 않은 JWT 토큰입니다.");
-            throw new CustomException(ErrorCode.TOKEN_INVALID);
+                throw new CustomException(ErrorCode.TOKEN_INVALID);
         }
     }
 

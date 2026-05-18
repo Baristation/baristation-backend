@@ -2,9 +2,11 @@ package baristation.user.service;
 
 import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
+import baristation.common.logging.TraceIdUtil;
+import baristation.common.r2.R2ImageService;
 import baristation.common.redis.RedisService;
 import baristation.security.jwt.JwtTokenProvider;
-import baristation.security.payload.dto.TokenResponse;
+import baristation.security.payload.dto.TokenPair;
 import jakarta.servlet.http.HttpServletRequest;
 import baristation.user.domain.User;
 import baristation.user.payload.dto.UserUpdateRequest;
@@ -15,7 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Duration;
 
 @Service
@@ -23,9 +27,11 @@ import java.time.Duration;
 @Transactional
 @Slf4j
 public class UserService {
+
+    private final UserRepository userRepository; // repo
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
-    private final UserRepository userRepository;
+    private final R2ImageService r2ImageService;
     private final NicknameValidator nicknameValidator;
 
     public void logout(HttpServletRequest request) {
@@ -33,15 +39,13 @@ public class UserService {
         Long userId = extractUserId(accessToken);
         String userIdText = String.valueOf(userId);
 
-        log.info("회원 로그아웃 요청. userId: {}", userIdText);
-
         redisService.deleteRefreshToken(userIdText);
         long expiration = jwtTokenProvider.getExpirationToken(accessToken);
         redisService.setBlackList(accessToken, "logout", Duration.ofMillis(expiration));
-        log.info("로그아웃 완료. userId: {}", userIdText);
+
     }
 
-    public TokenResponse refresh(String refreshToken) {
+    public TokenPair refresh(String refreshToken) {
         // null/blank 체크
         if (!StringUtils.hasText(refreshToken)) {
             throw new CustomException(ErrorCode.REFRESH_TOKEN_REQUIRED);
@@ -53,7 +57,6 @@ public class UserService {
         Long userId = extractUserId(refreshToken);
         String userIdText = String.valueOf(userId);
 
-        log.info("회원 refresh 요청. userId: {}", userIdText);
 
         String savedUserRefreshToken = redisService.getRefreshToken(userIdText);
         if (savedUserRefreshToken == null || !savedUserRefreshToken.equals(refreshToken)) {
@@ -62,18 +65,15 @@ public class UserService {
         User user = userRepository.getUserByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        TokenResponse newTokenResponse = jwtTokenProvider.createTokenSet(user);
-        redisService.setRefreshToken(userIdText, newTokenResponse.refreshToken());
-        log.info("회원 refresh 완료. userId: {}", userIdText);
-        return newTokenResponse;
+        TokenPair newTokenPair = jwtTokenProvider.createTokenSet(user);
+        redisService.setRefreshToken(userIdText, newTokenPair.refreshToken());
+        return newTokenPair;
     }
 
     public void deleteUser(HttpServletRequest request) {
         String accessToken = resolveToken(request);
         Long userId = extractUserId(accessToken);
         String userIdText = String.valueOf(userId);
-
-        log.info("회원탈퇴 요청. userId: {}", userIdText);
 
         User user = userRepository.getUserByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -83,19 +83,15 @@ public class UserService {
         long expiration = jwtTokenProvider.getExpirationToken(accessToken);
         redisService.setBlackList(accessToken, "delete", Duration.ofMillis(expiration));
 
-        log.info("회원 탈퇴 완료. userId: {}", userIdText);
     }
 
     /**
-     * 회원 정보 수정 (닉네임)
+     * 회원 정보 수정 (닉네임, 이미지)
      * - 닉네임 검증 (형식, 금지어, 특수문자)
      * - 중복 체크 (대소문자 무시)
+     * - 프로필 이미지 처리
      */
-    public void updateUser(HttpServletRequest request, UserUpdateRequest updateRequest) {
-        String accessToken = resolveToken(request);
-        Long userId = extractUserId(accessToken);
-        log.info("회원 정보 수정 요청. userId: {}", userId);
-
+    public void updateUser(Long userId, UserUpdateRequest updateRequest, MultipartFile profileImage) {
         User user = userRepository.getUserByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -117,8 +113,23 @@ public class UserService {
         // 3. 검증 완료된 닉네임 업데이트
         user.updateNickname(newNickname);
 
-        log.info("회원 정보 수정 완료. userId: {}", userId);
-        log.info("수정된 닉네임: {}", newNickname);
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                String oldImageUrl = user.getProfileImageUrl();
+                String newImageUrl = r2ImageService.uploadProfileImage(profileImage, userId);
+                user.updateProfileImageUrl(newImageUrl);
+
+                if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
+                    r2ImageService.deleteByUrl(oldImageUrl);
+                }
+            } catch (IOException e) {
+                String traceId = TraceIdUtil.getTraceId();
+                log.error("프로필 이미지 업로드 실패. traceId={}, userId={}", traceId, userId, e);
+                throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
+            }
+        }
+
+
     }
 
     private String resolveToken(HttpServletRequest request) {

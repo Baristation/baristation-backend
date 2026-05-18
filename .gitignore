@@ -1,12 +1,17 @@
 HELP.md
-application.properties
+pplication.properties
 application.yaml
-application-docker.yml
-application-local.yml
+application.yml
+application-*.yaml
+application-*.yml
 .env
 .env.*
 .ai
 .ai.*
+/spec/
+/docs/
+
+/src/main/generated/
 
 #동일한 버전 관리를 위해 "gradle/wrapper/*, gradlew*"는 공유
 .gradle/
@@ -35,6 +40,7 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+src/test/resources/application-test.yaml
 
 ### NetBeans ###
 /nbproject/private/
