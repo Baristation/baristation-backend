@@ -1,8 +1,10 @@
 package baristation.lesson.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
+@Getter
 @Table(name = "lesson_curriculum")
 public class LessonCurriculum {
 
