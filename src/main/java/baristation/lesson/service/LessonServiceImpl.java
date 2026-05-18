@@ -5,7 +5,7 @@ import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
 import baristation.common.payload.response.PageResponse;
 import baristation.lesson.domain.Lesson;
-import baristation.lesson.domain.LessonImages;
+import baristation.lesson.domain.LessonImage;
 import baristation.lesson.domain.LessonSchedule;
 import baristation.lesson.enums.ScheduleStatus;
 import baristation.lesson.payload.dto.LessonDTO;
@@ -104,7 +104,7 @@ public class LessonServiceImpl implements LessonService {
                 .stream()
                 .collect(Collectors.toMap(
                         image -> image.getLesson().getLessonId(),
-                        LessonImages::getImageUrl,
+                        LessonImage::getImageUrl,
                         (first, second) -> first
                 ));
     }

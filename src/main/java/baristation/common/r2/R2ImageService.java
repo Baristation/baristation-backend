@@ -58,18 +58,18 @@ public class R2ImageService {
 
     /**
      * 클래스 대표(THUMB) 이미지 업로드
-     * 저장 경로: classes/{classId}/thumb.webp
+     * 저장 경로: lessons/{lessonId}/thumb.webp
      */
-    public String uploadClassThumb(MultipartFile file, Long classId) throws IOException {
-        return uploadFixedFile(file, buildClassFolder(classId), "thumb");
+    public String uploadLessonThumb(MultipartFile file, Long lessonId) throws IOException {
+        return uploadFixedFile(file, buildLessonFolder(lessonId), "thumb");
     }
 
     /**
-     * 클래스 서브(SUB 이미지 업로드
-     * 저장 경로: classes/{classId}/sub_{uuid}.webp
+     * 클래스 서브(SUB) 이미지 업로드
+     * 저장 경로: lessons/{lessonId}/sub_{uuid}.webp
      */
-    public String uploadClassSubImage(MultipartFile file, Long classId) throws IOException {
-        return uploadUniqueFile(file, buildClassFolder(classId), "sub");
+    public String uploadLessonSubImage(MultipartFile file, Long lessonId) throws IOException {
+        return uploadUniqueFile(file, buildLessonFolder(lessonId), "sub");
     }
 
     /**
@@ -186,10 +186,10 @@ public class R2ImageService {
 
     /**
      * 클래스 이미지 폴더 경로 생성
-     * 예: classes/5
+     * 예: lessons/5
      */
-    private String buildClassFolder(Long classId) {
-        return "classes/" + classId;
+    private String buildLessonFolder(Long lessonId) {
+        return "lessons/" + lessonId;
     }
 
     /**
