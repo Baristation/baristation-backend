@@ -26,5 +26,13 @@ public class GlobalExceptionHandler {
 
         return ApiResponse.error(errorCode);
     }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
+        // 1. 개발자가 원인을 파악할 수 있도록 에러의 전체 스택 트레이스를 에러 로그로 남깁니다.
+        log.error("[Unexpected Exception] message={}, traceId={}",
+                e.getMessage(), TraceIdUtil.getTraceId(), e);
 
+        // 2. 클라이언트에게는 내부 정보가 노출되지 않도록 공통 500 에러 코드로 응답합니다.
+        return ApiResponse.error(ErrorCode.COMMON_INTERNAL_ERROR);
+    }
 }

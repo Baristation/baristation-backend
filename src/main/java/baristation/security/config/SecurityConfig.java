@@ -4,8 +4,9 @@ import baristation.security.handler.OAuth2SuccessHandler;
 import baristation.security.jwt.JwtAuthenticationFilter;
 import baristation.security.jwt.JwtTokenProvider;
 import baristation.user.service.CustomOAuth2UserService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,18 +19,30 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.util.Collections;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final JwtTokenProvider jwtTokenProvider;
+    private final HandlerExceptionResolver handlerExceptionResolver;
+
+    @Autowired
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
+                          OAuth2SuccessHandler oAuth2SuccessHandler,
+                          JwtTokenProvider jwtTokenProvider,
+                          @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.handlerExceptionResolver = handlerExceptionResolver;
+    }
 
     @Value("${app.frontend.base-url}")
     private String frontendBaseUrl;
@@ -76,7 +89,10 @@ public class SecurityConfig {
                         .logoutSuccessUrl(frontendBaseUrl) // 로그아웃 후 리액트 메인으로
                 );
 
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+            http.addFilterBefore(
+                    new JwtAuthenticationFilter(jwtTokenProvider, handlerExceptionResolver),
+                    UsernamePasswordAuthenticationFilter.class
+            );
         return http.build();
     }
 

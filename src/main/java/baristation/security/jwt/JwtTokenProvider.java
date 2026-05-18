@@ -73,7 +73,8 @@ public class JwtTokenProvider {
         claims.put("name", user.getNickname());
         // 이메일은 null일 수 있음
         claims.put("email", Optional.ofNullable(user.getEmail()).orElse(""));
-//        claims.put("profile", user.getProfile());
+        // 기본 이미지 URL 필요함.
+        claims.put("profileImageUrl", Optional.ofNullable(user.getProfileImageUrl()).orElse(""));
         claims.put(CLAIM_TYPE, ACCESS_TOKEN_TYPE);
         return Jwts.builder()
                 .setClaims(claims)
@@ -145,9 +146,6 @@ public class JwtTokenProvider {
             throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (ExpiredJwtException e) {
             throw new CustomException(ErrorCode.TOKEN_EXPIRED);
-        } catch (CustomException e) {
-            // CustomException(블랙리스트, 타입 불일치 등)은 그대로 전파
-            throw e;
         } catch (UnsupportedJwtException e) {
             throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (IllegalArgumentException e) {

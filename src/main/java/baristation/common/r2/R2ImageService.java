@@ -72,6 +72,14 @@ public class R2ImageService {
         return uploadUniqueFile(file, buildClassFolder(classId), "sub");
     }
 
+    /**
+     * 프로필 이미지 업로드
+     * 최종 저장 경로: users/{userId}/profile.{확장자}
+     */
+    public String uploadProfileImage(MultipartFile file, Long userId) throws IOException {
+        return uploadUniqueFile(file, buildUserFolder(userId), "profile");
+    }
+
     // 기존 objectKey 위치의 파일 업데이트
     public String updateByObjectKey(MultipartFile file, String objectKey) throws IOException {
         validate(file);
@@ -182,6 +190,14 @@ public class R2ImageService {
      */
     private String buildClassFolder(Long classId) {
         return "classes/" + classId;
+    }
+
+    /**
+     * 유저 전용 폴더 경로 생성
+     * 예: users/5
+     */
+    private String buildUserFolder(Long userId) {
+        return "users/" + userId;
     }
 
     // 업로드 가능한 파일인지 검증
