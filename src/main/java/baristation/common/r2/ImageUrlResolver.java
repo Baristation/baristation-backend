@@ -1,6 +1,5 @@
 package baristation.common.r2;
 
-import baristation.common.logging.TraceIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -26,10 +25,7 @@ public class ImageUrlResolver {
         }
 
         // DB에는 objectKey만 저장하고, 프론트 응답 직전에 public URL prefix를 붙입니다.
-        String publicUrl = publicBaseUrl + "/" + trimLeadingSlash(imagePath);
-        log.debug("[ImageUrl] public URL resolved. imagePath={}, publicUrl={}, traceId={}",
-                imagePath, publicUrl, TraceIdUtil.getTraceId());
-        return publicUrl;
+        return publicBaseUrl + "/" + trimLeadingSlash(imagePath);
     }
 
     // 전체 public URL 또는 /로 시작하는 path 값을 R2에서 사용하는 objectKey 형태로 변환합니다.
@@ -40,16 +36,10 @@ public class ImageUrlResolver {
 
         if (imageUrl.startsWith(publicBaseUrl + "/")) {
             // 기존 DB 데이터나 요청값이 전체 URL이어도 R2 삭제/수정에는 objectKey만 사용합니다.
-            String objectKey = imageUrl.substring((publicBaseUrl + "/").length());
-            log.debug("[ImageUrl] objectKey extracted from public URL. objectKey={}, traceId={}",
-                    objectKey, TraceIdUtil.getTraceId());
-            return objectKey;
+            return imageUrl.substring((publicBaseUrl + "/").length());
         }
 
-        String objectKey = trimLeadingSlash(imageUrl);
-        log.debug("[ImageUrl] objectKey normalized. objectKey={}, traceId={}",
-                objectKey, TraceIdUtil.getTraceId());
-        return objectKey;
+        return trimLeadingSlash(imageUrl);
     }
 
     // URL 경로 확인
