@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - feature/#15-cicd
 
 concurrency:
   group: server-cd-${{ github.ref }}
