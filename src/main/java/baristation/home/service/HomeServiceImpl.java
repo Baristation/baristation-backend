@@ -119,7 +119,8 @@ public class HomeServiceImpl implements HomeService {
         Map<Long, String> productImageMap = new LinkedHashMap<>();
         for (ProductImage productImage : productImages) {
             Long productId = productImage.getProduct().getProductId();
-            productImageMap.putIfAbsent(productId, productImage.getImageUrl());
+            // 홈 응답에는 원두 이미지 objectKey에 public URL prefix를 붙여 내려줍니다.
+            productImageMap.putIfAbsent(productId, buildImageUrl(productImage.getImageUrl()));
         }
 
         return productImageMap;

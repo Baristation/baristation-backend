@@ -45,6 +45,7 @@ public class R2ImageService {
      * 저장 경로: beans/{productId}/thumb.webp
      */
     public String uploadBeanThumb(MultipartFile file, Long beanId) throws IOException {
+        // 원두 이미지는 DB에 전체 URL이 아니라 objectKey 형태로 저장합니다.
         return uploadFixedFile(file, buildBeanFolder(beanId), "thumb");
     }
 
@@ -53,6 +54,7 @@ public class R2ImageService {
      * 저장 경로: beans/{productId}/sub_{uuid}.webp
      */
     public String uploadBeanSubImage(MultipartFile file, Long beanId) throws IOException {
+        // 원두 이미지는 DB에 public URL prefix 없이 path만 저장합니다.
         return uploadUniqueFile(file, buildBeanFolder(beanId), "sub");
     }
 
@@ -61,6 +63,7 @@ public class R2ImageService {
      * 저장 경로: lessons/{lessonId}/thumb.webp
      */
     public String uploadLessonThumb(MultipartFile file, Long lessonId) throws IOException {
+        // 레슨 이미지는 향미 이미지와 동일하게 DB에 path/objectKey만 저장합니다.
         return uploadFixedFile(file, buildLessonFolder(lessonId), "thumb");
     }
 
@@ -69,6 +72,7 @@ public class R2ImageService {
      * 저장 경로: lessons/{lessonId}/sub_{uuid}.webp
      */
     public String uploadLessonSubImage(MultipartFile file, Long lessonId) throws IOException {
+        // 레슨 이미지는 저장 시 objectKey만 남기고, 응답 서비스에서 public URL prefix를 붙입니다.
         return uploadUniqueFile(file, buildLessonFolder(lessonId), "sub");
     }
 
@@ -77,7 +81,8 @@ public class R2ImageService {
      * 최종 저장 경로: users/{userId}/profile.{확장자}
      */
     public String uploadProfileImage(MultipartFile file, Long userId) throws IOException {
-        return uploadUniqueFile(file, buildUserFolder(userId), "profile");
+        // 프로필 이미지는 기존 동작을 유지해 전체 public URL을 저장합니다.
+        return buildPublicUrl(uploadUniqueFile(file, buildUserFolder(userId), "profile"));
     }
 
     // 기존 objectKey 위치의 파일 업데이트
@@ -115,18 +120,39 @@ public class R2ImageService {
      * 예: https://.../beans/1/thumb.webp -> beans/1/thumb.webp
      */
     public String extractObjectKey(String imageUrl) {
-        String baseUrl = r2Properties.publicBaseUrl();
-
-        if (!imageUrl.startsWith(baseUrl + "/")) {
+        if (imageUrl == null || imageUrl.isBlank()) {
             throw new CustomException(INVALID_IMAGE_URL);
         }
 
-        return imageUrl.substring((baseUrl + "/").length());
+        String baseUrl = r2Properties.publicBaseUrl();
+        String normalizedBaseUrl = baseUrl.endsWith("/")
+                ? baseUrl.substring(0, baseUrl.length() - 1)
+                : baseUrl;
+
+        if (imageUrl.startsWith(normalizedBaseUrl + "/")) {
+            // 기존 DB 데이터에는 전체 public URL이 남아있을 수 있어 objectKey로 변환합니다.
+            return imageUrl.substring((normalizedBaseUrl + "/").length());
+        }
+
+        if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+            throw new CustomException(INVALID_IMAGE_URL);
+        }
+
+        return imageUrl.startsWith("/")
+                ? imageUrl.substring(1)
+                : imageUrl;
     }
 
     // objectKey를 공개 URL로 변환
     public String buildPublicUrl(String objectKey) {
-        return r2Properties.publicBaseUrl() + "/" + objectKey;
+        String baseUrl = r2Properties.publicBaseUrl().endsWith("/")
+                ? r2Properties.publicBaseUrl().substring(0, r2Properties.publicBaseUrl().length() - 1)
+                : r2Properties.publicBaseUrl();
+        String path = objectKey.startsWith("/")
+                ? objectKey.substring(1)
+                : objectKey;
+
+        return baseUrl + "/" + path;
     }
 
     /**
@@ -141,7 +167,8 @@ public class R2ImageService {
         String objectKey = buildObjectKey(folderPath, imageType, imageType, extension);
 
         putObject(file, objectKey);
-        return buildPublicUrl(objectKey);
+        // 원두/레슨 이미지 row에는 전체 URL이 아니라 objectKey만 저장되도록 반환합니다.
+        return objectKey;
     }
 
     /**
@@ -156,7 +183,8 @@ public class R2ImageService {
         String objectKey = buildObjectKey(folderPath, imageType, imageType + "_" + UUID.randomUUID(), extension);
 
         putObject(file, objectKey);
-        return buildPublicUrl(objectKey);
+        // 원두/레슨 이미지 row에는 전체 URL이 아니라 objectKey만 저장되도록 반환합니다.
+        return objectKey;
     }
 
     private String buildObjectKey(String folderPath, String imageType, String fileName, String extension) {

@@ -52,7 +52,7 @@ public class BeanImageServiceImpl {
                             .build()
             );
 
-            return BeanImageResponse.from(saved);
+            return toBeanImageResponse(saved);
         }
 
         // 대표 이미지가 있으면 "기존 URL 경로 재사용"이 아니라
@@ -70,7 +70,7 @@ public class BeanImageServiceImpl {
         thumbImage.changeImageUrl(newImageUrl);
         thumbImage.changeSortOrder(THUMB_SORT_ORDER);
 
-        return BeanImageResponse.from(thumbImage);
+        return toBeanImageResponse(thumbImage);
     }
 
     // 서브 이미지 추가
@@ -90,7 +90,7 @@ public class BeanImageServiceImpl {
 
         ProductImage saved = productImageRepository.save(subImage);
 
-        return BeanImageResponse.from(saved);
+        return toBeanImageResponse(saved);
     }
 
     // 서브 이미지 교체
@@ -115,7 +115,7 @@ public class BeanImageServiceImpl {
 
         productImage.changeImageUrl(newImageUrl);
 
-        return BeanImageResponse.from(productImage);
+        return toBeanImageResponse(productImage);
     }
 
     // 이미지 삭제
@@ -143,8 +143,32 @@ public class BeanImageServiceImpl {
 
         return productImageRepository.findByProduct_ProductIdOrderBySortOrderAsc(productId)
                 .stream()
-                .map(BeanImageResponse::from)
+                .map(this::toBeanImageResponse)
                 .toList();
+    }
+
+    // 응답 DTO 변환
+    private BeanImageResponse toBeanImageResponse(ProductImage productImage) {
+        // DB에는 objectKey만 저장하고, 프론트 응답에는 public URL prefix를 붙여 내려줍니다.
+        return new BeanImageResponse(
+                productImage.getProductImageId(),
+                productImage.getProduct().getProductId(),
+                productImage.getImageType(),
+                toPublicImageUrl(productImage.getImageUrl()),
+                productImage.getSortOrder()
+        );
+    }
+
+    private String toPublicImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return imageUrl;
+        }
+
+        if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+            return imageUrl;
+        }
+
+        return r2ImageService.buildPublicUrl(r2ImageService.extractObjectKey(imageUrl));
     }
 
     // Product 존재 여부 확인
