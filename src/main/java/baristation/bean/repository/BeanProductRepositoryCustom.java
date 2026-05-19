@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface BeanProductRepositoryCustom {
     // 동적 검색과 페이징을 DB에서 끝내고 Page 객체로 반환
-    Page<BeanProduct> searchBeansWithFilters(ProductSearchRequest request, Pageable pageable);
+    Page<BeanProduct> searchProductsWithFilters(ProductSearchRequest request, Pageable pageable);
+    Page<BeanProduct> searchProductsWithUserId(Pageable pageable, Long userId);
     BeanProduct findByProductId(Long productId);
 }

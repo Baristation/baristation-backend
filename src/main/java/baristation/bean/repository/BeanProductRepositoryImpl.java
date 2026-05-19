@@ -26,6 +26,7 @@ import static baristation.bean.domain.QFlavorNote.flavorNote;
 import static baristation.bean.domain.QProduct.product;
 import static baristation.bean.domain.QProductFlavorNote.productFlavorNote;
 import static baristation.bean.domain.QRoaster.roaster;
+import static baristation.bean.domain.QProductBookmark.productBookmark;
 
 @Repository
 @RequiredArgsConstructor
@@ -34,7 +35,7 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<BeanProduct> searchBeansWithFilters(ProductSearchRequest request, Pageable pageable) {
+    public Page<BeanProduct> searchProductsWithFilters(ProductSearchRequest request, Pageable pageable) {
         BooleanExpression keywordCondition = keywordContains(request == null ? null : request.keyword());
         BooleanExpression flavorCategoryCondition = flavorCategoryEq(request == null ? null : request.flavorCategory());
         BooleanExpression acidityCondition = acidityBetween(
@@ -89,6 +90,48 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                         balanceCondition,
                         roastingCondition
                 )
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total == null ? 0 : total);
+    }
+
+    @Override
+    public Page<BeanProduct> searchProductsWithUserId(Pageable pageable, Long userId) {
+
+        // userId가 없으면 빈 페이지 반환
+        if (userId == null) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
+        BooleanExpression bookmarkExists = JPAExpressions
+                .selectOne()
+                .from(productBookmark)
+                .where(
+                        productBookmark.product.eq(product),
+                        productBookmark.user.userId.eq(userId)
+                )
+                .exists();
+
+        // content 쿼리: 실제 페이지 데이터 조회
+        List<BeanProduct> content = queryFactory
+                .selectFrom(beanProduct)
+                .join(beanProduct.bean, bean).fetchJoin()
+                .join(beanProduct.product, product).fetchJoin()
+                .leftJoin(product.roaster, roaster).fetchJoin()
+                .where(bookmarkExists)
+                .orderBy(resolveOrderSpecifiers(null, pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // count 쿼리: fetch join 없이 전체 개수만 조회
+        Long total = queryFactory
+                .select(beanProduct.count())
+                .from(beanProduct)
+                .join(beanProduct.bean, bean)
+                .join(beanProduct.product, product)
+                .leftJoin(product.roaster, roaster)
+                .where(bookmarkExists)
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total == null ? 0 : total);

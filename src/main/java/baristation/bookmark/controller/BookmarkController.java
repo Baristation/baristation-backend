@@ -5,6 +5,9 @@ import baristation.common.logging.TraceIdUtil;
 import baristation.common.payload.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,7 +24,7 @@ public class BookmarkController {
     @PostMapping("/{productId}")
     public ResponseEntity<ApiResponse<Void>> toggleBookmark(
             @PathVariable Long productId,
-            @AuthenticationPrincipal UserDetails userDetails // 스프링이 토큰 까서 넣어줌
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
         Long userId = Long.valueOf(userDetails.getUsername());
         log.info("[Bookmark] toggle start. productId={}, userId={}, traceId={}",
@@ -31,5 +34,17 @@ public class BookmarkController {
                 productId, userId, TraceIdUtil.getTraceId());
         return ApiResponse.ok(null);
     }
-
+    @GetMapping("/list")
+    public ResponseEntity<ApiResponse<Void>> toggleBookmark(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+        Long userId = Long.valueOf(userDetails.getUsername());
+        log.info("[Bookmark] toggle start. userId={}, traceId={}",
+                userId, TraceIdUtil.getTraceId());
+        bookmarkService.getBookmarks(userId, pageable);
+        log.info("[Bookmark] toggle done. userId={}, traceId={}",
+                userId, TraceIdUtil.getTraceId());
+        return ApiResponse.ok(null);
+    }
 }

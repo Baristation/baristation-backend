@@ -128,8 +128,6 @@ public class UserService {
                 throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
             }
         }
-
-
     }
 
     private String resolveToken(HttpServletRequest request) {
