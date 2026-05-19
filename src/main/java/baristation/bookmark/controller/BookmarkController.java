@@ -1,8 +1,10 @@
 package baristation.bookmark.controller;
 
+import baristation.bean.payload.dto.ProductSummaryDTO;
 import baristation.bookmark.service.BookmarkService;
 import baristation.common.logging.TraceIdUtil;
 import baristation.common.payload.response.ApiResponse;
+import baristation.common.payload.response.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -35,16 +37,16 @@ public class BookmarkController {
         return ApiResponse.ok(null);
     }
     @GetMapping("/list")
-    public ResponseEntity<ApiResponse<Void>> toggleBookmark(
+    public ResponseEntity<ApiResponse<PageResponse<ProductSummaryDTO>>> getBookmarks(
             @AuthenticationPrincipal UserDetails userDetails,
             @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
         Long userId = Long.valueOf(userDetails.getUsername());
-        log.info("[Bookmark] toggle start. userId={}, traceId={}",
+        log.info("[Bookmark] getBookmarks start. userId={}, traceId={}",
                 userId, TraceIdUtil.getTraceId());
-        bookmarkService.getBookmarks(userId, pageable);
-        log.info("[Bookmark] toggle done. userId={}, traceId={}",
+        PageResponse<ProductSummaryDTO> response = bookmarkService.getBookmarks(userId, pageable);
+        log.info("[Bookmark] getBookmarks done. userId={}, traceId={}",
                 userId, TraceIdUtil.getTraceId());
-        return ApiResponse.ok(null);
+        return ApiResponse.ok(response);
     }
 }

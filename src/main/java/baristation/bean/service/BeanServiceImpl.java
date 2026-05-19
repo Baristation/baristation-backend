@@ -45,7 +45,7 @@ public class BeanServiceImpl implements BeanService {
         // 조건 검증
         validateSearchRequest(request);
 
-        Page<BeanProduct> beanProductPage = beanProductRepository.searchBeansWithFilters(request, pageable);
+        Page<BeanProduct> beanProductPage = beanProductRepository.searchProductsWithFilters(request, pageable);
         // 검색 조건에 해당하는 상품이 없는 경우
         if (beanProductPage.isEmpty()) {
             return PageResponse.of(Page.empty(pageable));

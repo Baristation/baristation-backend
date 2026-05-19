@@ -103,22 +103,15 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
             return new PageImpl<>(List.of(), pageable, 0);
         }
 
-        BooleanExpression bookmarkExists = JPAExpressions
-                .selectOne()
-                .from(productBookmark)
-                .where(
-                        productBookmark.product.eq(product),
-                        productBookmark.user.userId.eq(userId)
-                )
-                .exists();
-
         // content 쿼리: 실제 페이지 데이터 조회
+        // INNER JOIN으로 북마크된 상품만 직접 조회 (EXISTS보다 효율적)
         List<BeanProduct> content = queryFactory
                 .selectFrom(beanProduct)
                 .join(beanProduct.bean, bean).fetchJoin()
                 .join(beanProduct.product, product).fetchJoin()
+                .join(productBookmark).on(productBookmark.product.eq(product))
                 .leftJoin(product.roaster, roaster).fetchJoin()
-                .where(bookmarkExists)
+                .where(productBookmark.user.userId.eq(userId))
                 .orderBy(resolveOrderSpecifiers(null, pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -130,13 +123,13 @@ public class BeanProductRepositoryImpl implements BeanProductRepositoryCustom {
                 .from(beanProduct)
                 .join(beanProduct.bean, bean)
                 .join(beanProduct.product, product)
+                .join(productBookmark).on(productBookmark.product.eq(product))
                 .leftJoin(product.roaster, roaster)
-                .where(bookmarkExists)
+                .where(productBookmark.user.userId.eq(userId))
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total == null ? 0 : total);
     }
-
     // --- 동적 쿼리를 위한 BooleanExpression 메서드들 ---
 
     private BooleanExpression keywordContains(String keyword) {

@@ -71,7 +71,8 @@ public class BookmarkServiceImpl implements BookmarkService {
     @Override
     public PageResponse<ProductSummaryDTO> getBookmarks(Long userId, Pageable pageable) {
 
-        Page<BeanProduct> beanProductPage = null;
+        // userId가 북마크한 상품 조회 (BeanProductRepository의 커스텀 메소드 사용)
+        Page<BeanProduct> beanProductPage = beanProductRepository.searchProductsWithUserId(pageable, userId);
         // 검색 조건에 해당하는 상품이 없는 경우
         if (beanProductPage.isEmpty()) {
             return PageResponse.of(Page.empty(pageable));
@@ -101,12 +102,6 @@ public class BookmarkServiceImpl implements BookmarkService {
         });
 
         return PageResponse.of(page);
-    }
-    private List<FlavorNoteDTO> getFlavorNotes(Long resolvedProductId) {
-        return productFlavorNoteRepository.findByProduct_ProductIdIn(List.of(resolvedProductId))
-                .stream()
-                .map(productFlavorNote -> FlavorNoteDTO.from(productFlavorNote.getFlavorNote()))
-                .toList();
     }
 
     private Map<Long, ProductImageDTO> getThumbImages(List<Long> productIds) {
