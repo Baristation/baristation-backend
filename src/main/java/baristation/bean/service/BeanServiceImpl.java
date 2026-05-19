@@ -123,6 +123,7 @@ public class BeanServiceImpl implements BeanService {
                 .roastingType(product.getRoastLevel())
                 .flavorNotes(flavorNotes)
                 .description(product.getDescription())
+                .productUrl(product.getProductUrl())
                 .agtronMin(product.getAgtronMin())
                 .agtronMax(product.getAgtronMax())
                 .acidity(product.getAcidity())

@@ -12,6 +12,7 @@ public record ProductDetailDTO(
         RoastingType roastingType,
         List<FlavorNoteDTO> flavorNotes,
         String description,
+        String productUrl,
         Integer agtronMin,
         Integer agtronMax,
         Double acidity,
