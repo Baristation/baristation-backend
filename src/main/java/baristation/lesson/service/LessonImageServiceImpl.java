@@ -2,6 +2,7 @@ package baristation.lesson.service;
 
 import baristation.bean.enums.ImageType;
 import baristation.common.exception.CustomException;
+import baristation.common.r2.ImageUrlResolver;
 import baristation.common.r2.R2ImageService;
 import baristation.lesson.domain.Lesson;
 import baristation.lesson.domain.LessonImage;
@@ -28,6 +29,7 @@ public class LessonImageServiceImpl implements LessonImageService {
     private final LessonRepository lessonRepository;
     private final LessonImageRepository lessonImageRepository;
     private final R2ImageService r2ImageService;
+    private final ImageUrlResolver imageUrlResolver;
 
     private static final int THUMB_SORT_ORDER = 0;
 
@@ -163,26 +165,14 @@ public class LessonImageServiceImpl implements LessonImageService {
     }
 
     private LessonImageResponse toLessonImageResponse(LessonImage lessonImage) {
-        // DB에는 objectKey만 저장하고, 프론트 응답에는 public URL prefix를 붙여 내려줍니다.
+        // DB에는 objectKey만 저장하고, 프론트 응답에는 공통 컴포넌트로 public URL prefix를 붙입니다.
         return LessonImageResponse.builder()
                 .lessonImageId(lessonImage.getLessonImageId())
                 .lessonId(lessonImage.getLesson().getLessonId())
                 .imageType(lessonImage.getImageType())
-                .imageUrl(toPublicImageUrl(lessonImage.getImageUrl()))
+                .imageUrl(imageUrlResolver.toPublicUrl(lessonImage.getImageUrl()))
                 .sortOrder(lessonImage.getSortOrder())
                 .build();
-    }
-
-    private String toPublicImageUrl(String imageUrl) {
-        if (imageUrl == null || imageUrl.isBlank()) {
-            return imageUrl;
-        }
-
-        if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
-            return imageUrl;
-        }
-
-        return r2ImageService.buildPublicUrl(r2ImageService.extractObjectKey(imageUrl));
     }
 
     private String uploadLessonThumb(MultipartFile file, Long lessonId) {

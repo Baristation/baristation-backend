@@ -4,6 +4,7 @@ import baristation.bean.enums.ImageType;
 import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
 import baristation.common.payload.response.PageResponse;
+import baristation.common.r2.ImageUrlResolver;
 import baristation.lesson.domain.Lesson;
 import baristation.lesson.domain.LessonImage;
 import baristation.lesson.domain.LessonSchedule;
@@ -19,7 +20,6 @@ import baristation.lesson.repository.LessonScheduleRepository;
 import baristation.user.domain.Career;
 import baristation.user.repository.CareerRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -40,13 +40,11 @@ import static baristation.common.exception.ErrorCode.LESSON_NOT_FOUND;
 @RequiredArgsConstructor
 public class LessonServiceImpl implements LessonService {
 
-    @Value("${cloudflare.r2.public-base-url}")
-    private String publicBaseUrl;
-
     private final LessonRepository lessonRepository;
     private final LessonImageRepository lessonImageRepository;
     private final LessonScheduleRepository lessonScheduleRepository;
     private final CareerRepository careerRepository;
+    private final ImageUrlResolver imageUrlResolver;
 
     /**
      * 검색 조건에 맞는 클래스 목록을 조회하고, 썸네일 이미지와 가장 빠른 OPEN 일정을 함께 응답으로 조립
@@ -116,8 +114,8 @@ public class LessonServiceImpl implements LessonService {
                 .map(image -> LessonImageDTO.builder()
                         .lessonImageId(image.getLessonImageId())
                         .imageType(image.getImageType())
-                        // 레슨 이미지 DB 값은 objectKey이므로 API 응답에서는 전체 public URL로 변환합니다.
-                        .imageUrl(buildImageUrl(image.getImageUrl()))
+                        // 레슨 이미지 DB 값은 objectKey이므로 공통 컴포넌트로 public URL을 조립합니다.
+                        .imageUrl(imageUrlResolver.toPublicUrl(image.getImageUrl()))
                         .sortOrder(image.getSortOrder())
                         .build())
                 .toList();
@@ -150,8 +148,8 @@ public class LessonServiceImpl implements LessonService {
                 .stream()
                 .collect(Collectors.toMap(
                         image -> image.getLesson().getLessonId(),
-                        // 레슨 목록 썸네일도 응답 시 public URL prefix를 붙여 내려줍니다.
-                        image -> buildImageUrl(image.getImageUrl()),
+                        // 레슨 목록 썸네일도 공통 컴포넌트로 public URL prefix를 붙여 내려줍니다.
+                        image -> imageUrlResolver.toPublicUrl(image.getImageUrl()),
                         (first, second) -> first
                 ));
     }
@@ -199,25 +197,5 @@ public class LessonServiceImpl implements LessonService {
                 .difficulty(lesson.getDifficultyLevel())
                 .hostProfileUrl(lesson.getHostUser().getProfileImageUrl())
                 .build();
-    }
-
-    private String buildImageUrl(String imagePath) {
-        if (imagePath == null || imagePath.isBlank()) {
-            return null;
-        }
-
-        if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-            return imagePath;
-        }
-
-        String baseUrl = publicBaseUrl.endsWith("/")
-                ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1)
-                : publicBaseUrl;
-
-        String path = imagePath.startsWith("/")
-                ? imagePath
-                : "/" + imagePath;
-
-        return baseUrl + path;
     }
 }

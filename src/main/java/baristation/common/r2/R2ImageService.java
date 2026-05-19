@@ -34,10 +34,12 @@ public class R2ImageService {
 
     private final S3Client s3Client;
     private final R2Properties r2Properties;
+    private final ImageUrlResolver imageUrlResolver;
 
-    public R2ImageService(S3Client s3Client, R2Properties r2Properties) {
+    public R2ImageService(S3Client s3Client, R2Properties r2Properties, ImageUrlResolver imageUrlResolver) {
         this.s3Client = s3Client;
         this.r2Properties = r2Properties;
+        this.imageUrlResolver = imageUrlResolver;
     }
 
     /**
@@ -124,35 +126,24 @@ public class R2ImageService {
             throw new CustomException(INVALID_IMAGE_URL);
         }
 
-        String baseUrl = r2Properties.publicBaseUrl();
-        String normalizedBaseUrl = baseUrl.endsWith("/")
-                ? baseUrl.substring(0, baseUrl.length() - 1)
-                : baseUrl;
-
-        if (imageUrl.startsWith(normalizedBaseUrl + "/")) {
-            // 기존 DB 데이터에는 전체 public URL이 남아있을 수 있어 objectKey로 변환합니다.
-            return imageUrl.substring((normalizedBaseUrl + "/").length());
-        }
-
-        if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+        if (imageUrlResolver.isExternalUrl(imageUrl)) {
+            log.warn("[R2] reject external image URL. imageUrl={}, traceId={}",
+                    imageUrl, TraceIdUtil.getTraceId());
             throw new CustomException(INVALID_IMAGE_URL);
         }
 
-        return imageUrl.startsWith("/")
-                ? imageUrl.substring(1)
-                : imageUrl;
+        String objectKey = imageUrlResolver.toObjectKey(imageUrl);
+        log.debug("[R2] extract objectKey. objectKey={}, traceId={}",
+                objectKey, TraceIdUtil.getTraceId());
+        return objectKey;
     }
 
     // objectKey를 공개 URL로 변환
     public String buildPublicUrl(String objectKey) {
-        String baseUrl = r2Properties.publicBaseUrl().endsWith("/")
-                ? r2Properties.publicBaseUrl().substring(0, r2Properties.publicBaseUrl().length() - 1)
-                : r2Properties.publicBaseUrl();
-        String path = objectKey.startsWith("/")
-                ? objectKey.substring(1)
-                : objectKey;
-
-        return baseUrl + "/" + path;
+        String publicUrl = imageUrlResolver.toPublicUrl(objectKey);
+        log.debug("[R2] build public URL. objectKey={}, publicUrl={}, traceId={}",
+                objectKey, publicUrl, TraceIdUtil.getTraceId());
+        return publicUrl;
     }
 
     /**
