@@ -83,8 +83,8 @@ public class R2ImageService {
      * 최종 저장 경로: users/{userId}/profile.{확장자}
      */
     public String uploadProfileImage(MultipartFile file, Long userId) throws IOException {
-        // 프로필 이미지는 기존 동작을 유지해 전체 public URL을 저장합니다.
-        return buildPublicUrl(uploadUniqueFile(file, buildUserFolder(userId), "profile"));
+        // 프로필 이미지는 저장 시 objectKey만 남기고, 응답 서비스에서 public URL prefix를 붙입니다.
+        return uploadUniqueFile(file, buildUserFolder(userId), "profile");
     }
 
     // 기존 objectKey 위치의 파일 업데이트
