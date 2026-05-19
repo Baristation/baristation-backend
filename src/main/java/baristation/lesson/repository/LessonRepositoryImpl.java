@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Locale;
 
 import static baristation.lesson.domain.QLesson.lesson;
 import static baristation.user.domain.QUser.user;
@@ -69,13 +70,20 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
         }
 
         String normalized = keyword.trim();
-        return lesson.title.containsIgnoreCase(normalized)
+        BooleanExpression textCondition = lesson.title.containsIgnoreCase(normalized)
                 .or(lesson.subtitle.containsIgnoreCase(normalized))
                 .or(user.nickname.containsIgnoreCase(normalized))
-                .or(lesson.region.containsIgnoreCase(normalized))
                 .or(lesson.city.containsIgnoreCase(normalized))
                 .or(lesson.place.containsIgnoreCase(normalized))
                 .or(lesson.address.containsIgnoreCase(normalized));
+
+        // region은 String이 아니라 Region enum 필드이므로 containsIgnoreCase를 직접 사용할 수 없다.
+        // 대신 검색어가 enum name(SEOUL) 또는 label(서울)에 포함되는지 확인한 뒤 enum 값으로 비교한다.
+        BooleanExpression regionCondition = regionKeywordEq(normalized);
+
+        return regionCondition == null
+                ? textCondition
+                : textCondition.or(regionCondition);
     }
 
     // 카테고리가 정확히 일치하는 클래스를 찾는 조건을 만든다.
@@ -95,9 +103,26 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
             return null;
         }
 
-        // 프론트는 "제주" 같은 표시명을 보내지만, DB lessons.region에는 "JEJU" 같은 enum name이 저장되어 있다.
-        // 입력값은 label로 검증하고, 실제 DB 비교는 저장 형식에 맞춰 enum name으로 수행한다.
-        return lesson.region.eq(normalizedRegion.name());
+        // Lesson.region은 Region enum 타입이므로 문자열 name이 아니라 enum 값 자체로 비교한다.
+        return lesson.region.eq(normalizedRegion);
+    }
+
+    private BooleanExpression regionKeywordEq(String keyword) {
+        String upperKeyword = keyword.toUpperCase(Locale.ROOT);
+        BooleanExpression regionCondition = null;
+
+        for (Region region : Region.values()) {
+            if (!region.name().contains(upperKeyword) && !region.label().contains(keyword)) {
+                continue;
+            }
+
+            BooleanExpression matchedRegion = lesson.region.eq(region);
+            regionCondition = regionCondition == null
+                    ? matchedRegion
+                    : regionCondition.or(matchedRegion);
+        }
+
+        return regionCondition;
     }
 
     // 난이도가 정확히 일치하는 클래스를 찾는 조건을 만든다.

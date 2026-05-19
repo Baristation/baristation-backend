@@ -43,9 +43,9 @@ public class LessonController {
      */
     @GetMapping("/{lessonId}")
     public ResponseEntity<ApiResponse<LessonDetailDTO>> getLessonDetail(@PathVariable Long lessonId) {
-        log.info("[Lesson]] getLessonDetail start. lessonId={}, traceId={}", lessonId, TraceIdUtil.getTraceId());
+        log.info("[Lesson] getLessonDetail start. lessonId={}, traceId={}", lessonId, TraceIdUtil.getTraceId());
         LessonDetailDTO response = lessonService.getLessonDetail(lessonId);
-        log.info("[Lesson]] getLessonDetail done. lessonId={}, hasDetail={}, traceId={}",
+        log.info("[Lesson] getLessonDetail done. lessonId={}, hasDetail={}, traceId={}",
                 lessonId, response != null, TraceIdUtil.getTraceId());
         return ApiResponse.ok(response);
     }

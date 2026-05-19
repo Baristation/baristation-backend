@@ -3,6 +3,7 @@ package baristation.lesson.domain;
 import baristation.common.domain.BaseTimeEntity;
 import baristation.lesson.enums.DifficultyLevel;
 import baristation.lesson.enums.LessonCategory;
+import baristation.lesson.enums.Region;
 import baristation.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -44,8 +45,9 @@ public class Lesson extends BaseTimeEntity {
     @Column(name = "difficulty_level", nullable = false, length = 20)
     private DifficultyLevel difficultyLevel;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "region", length = 100)
-    private String region;
+    private Region region;
 
     @Column(name = "city", length = 100)
     private String city;
