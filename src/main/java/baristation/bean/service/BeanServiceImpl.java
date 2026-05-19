@@ -13,8 +13,8 @@ import baristation.bean.repository.ProductImageRepository;
 import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
 import baristation.common.payload.response.PageResponse;
+import baristation.common.r2.ImageUrlResolver;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,12 +28,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BeanServiceImpl implements BeanService {
 
-    @Value("${cloudflare.r2.public-base-url}")
-    private String publicBaseUrl;
-
     private final BeanProductRepository beanProductRepository;
     private final ProductFlavorNoteRepository productFlavorNoteRepository;
     private final ProductImageRepository productImageRepository;
+    private final ImageUrlResolver imageUrlResolver;
 
     /**
      * 조건에 맞는 원두 목록을 검색하고 페이지네이션하여 반환
@@ -135,27 +133,6 @@ public class BeanServiceImpl implements BeanService {
                 .build();
     }
 
-    // flavor ImageUrl 조립
-    private String buildImageUrl(String imagePath) {
-        if (imagePath == null || imagePath.isBlank()) {
-            return null;
-        }
-
-        if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-            return imagePath;
-        }
-
-        String baseUrl = publicBaseUrl.endsWith("/")
-                ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1)
-                : publicBaseUrl;
-
-        String path = imagePath.startsWith("/")
-                ? imagePath
-                : "/" + imagePath;
-
-        return baseUrl + path;
-    }
-
     private List<FlavorNoteDTO> getFlavorNotes(Long resolvedProductId) {
         return productFlavorNoteRepository.findByProduct_ProductIdIn(List.of(resolvedProductId))
                 .stream()
@@ -213,16 +190,16 @@ public class BeanServiceImpl implements BeanService {
                 .region(bean.getRegion())
                 .process(bean.getProcess())
                 .productImage(image)
-                .flavorNotes(flavorNote.toBuilder().flavorImageUrl(buildImageUrl(flavorNote.flavorImageUrl())).build())
+                .flavorNotes(flavorNote.toBuilder().flavorImageUrl(imageUrlResolver.toPublicUrl(flavorNote.flavorImageUrl())).build())
                 .build();
     }
 
     private ProductImageDTO toProductImageDto(ProductImage productImage) {
-        // 원두 이미지 DB 값은 objectKey이므로 API 응답에서는 전체 public URL로 변환합니다.
+        // 원두 이미지 DB 값은 objectKey이므로 공통 컴포넌트로 public URL을 조립합니다.
         return ProductImageDTO.builder()
                 .productImageId(productImage.getProductImageId())
                 .imageType(productImage.getImageType())
-                .imageUrl(productImage.getImageUrl())
+                .imageUrl(imageUrlResolver.toPublicUrl(productImage.getImageUrl()))
                 .sortOrder(productImage.getSortOrder())
                 .build();
     }
