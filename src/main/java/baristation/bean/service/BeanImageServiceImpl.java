@@ -132,13 +132,13 @@ public class BeanImageServiceImpl {
 
     private BeanImageResponse toBeanImageResponse(ProductImage productImage) {
         // DB에는 objectKey만 저장하고, 프론트 응답에는 공통 컴포넌트로 public URL prefix를 붙입니다.
-        return new BeanImageResponse(
-                productImage.getProductImageId(),
-                productImage.getProduct().getProductId(),
-                productImage.getImageType(),
-                imageUrlResolver.toPublicUrl(productImage.getImageUrl()),
-                productImage.getSortOrder()
-        );
+        return BeanImageResponse.builder()
+                .productImageId(productImage.getProductImageId())
+                .productId(productImage.getProduct().getProductId())
+                .imageType(productImage.getImageType())
+                .imageUrl(imageUrlResolver.toPublicUrl(productImage.getImageUrl()))
+                .sortOrder(productImage.getSortOrder())
+                .build();
     }
 
     private Product getProduct(Long productId) {

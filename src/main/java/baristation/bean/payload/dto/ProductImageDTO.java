@@ -1,6 +1,5 @@
 package baristation.bean.payload.dto;
 
-import baristation.bean.domain.ProductImage;
 import baristation.bean.enums.ImageType;
 import lombok.Builder;
 
@@ -11,12 +10,4 @@ public record ProductImageDTO(
         String imageUrl,
         Integer sortOrder
 ) {
-//    public static ProductImageDTO from(ProductImage productImage) {
-//        return new ProductImageDTO(
-//                productImage.getProductImageId(),
-//                productImage.getImageType(),
-//                productImage.getImageUrl(),
-//                productImage.getSortOrder()
-//        );
-//    }
 }
