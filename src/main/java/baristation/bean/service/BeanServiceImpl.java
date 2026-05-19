@@ -3,6 +3,7 @@ package baristation.bean.service;
 import baristation.bean.domain.Bean;
 import baristation.bean.domain.BeanProduct;
 import baristation.bean.domain.Product;
+import baristation.bean.domain.ProductImage;
 import baristation.bean.enums.ImageType;
 import baristation.bean.payload.dto.*;
 import baristation.bean.payload.request.ProductSearchRequest;
@@ -12,8 +13,8 @@ import baristation.bean.repository.ProductImageRepository;
 import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
 import baristation.common.payload.response.PageResponse;
+import baristation.common.r2.ImageUrlResolver;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,12 +28,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BeanServiceImpl implements BeanService {
 
-    @Value("${cloudflare.r2.public-base-url}")
-    private String publicBaseUrl;
-
     private final BeanProductRepository beanProductRepository;
     private final ProductFlavorNoteRepository productFlavorNoteRepository;
     private final ProductImageRepository productImageRepository;
+    private final ImageUrlResolver imageUrlResolver;
 
     /**
      * 조건에 맞는 원두 목록을 검색하고 페이지네이션하여 반환
@@ -93,7 +92,7 @@ public class BeanServiceImpl implements BeanService {
         // 2. 상세 응답용 전체 이미지와 대표 썸네일을 분리 조회
         List<ProductImageDTO> images = productImageRepository.findByProduct_ProductIdOrderBySortOrderAsc(resolvedProductId)
                 .stream()
-                .map(ProductImageDTO::from)
+                .map(this::toProductImageDto)
                 .filter(image -> image.imageType() != ImageType.THUMB)
                 .toList();
 
@@ -102,7 +101,7 @@ public class BeanServiceImpl implements BeanService {
                         ImageType.THUMB
                 ).stream()
                 .findFirst()
-                .map(ProductImageDTO::from)
+                .map(this::toProductImageDto)
                 .orElse(null);
 
         List<FlavorNoteDTO> flavorNotes = getFlavorNotes(resolvedProductId);
@@ -134,27 +133,6 @@ public class BeanServiceImpl implements BeanService {
                 .build();
     }
 
-    // flavor ImageUrl 조립
-    private String buildImageUrl(String imagePath) {
-        if (imagePath == null || imagePath.isBlank()) {
-            return null;
-        }
-
-        if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-            return imagePath;
-        }
-
-        String baseUrl = publicBaseUrl.endsWith("/")
-                ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1)
-                : publicBaseUrl;
-
-        String path = imagePath.startsWith("/")
-                ? imagePath
-                : "/" + imagePath;
-
-        return baseUrl + path;
-    }
-
     private List<FlavorNoteDTO> getFlavorNotes(Long resolvedProductId) {
         return productFlavorNoteRepository.findByProduct_ProductIdIn(List.of(resolvedProductId))
                 .stream()
@@ -171,7 +149,7 @@ public class BeanServiceImpl implements BeanService {
                 .stream()
                 .collect(Collectors.toMap(
                         image -> image.getProduct().getProductId(),
-                        ProductImageDTO::from,
+                        this::toProductImageDto,
                         (first, second) -> first
                 ));
     }
@@ -212,7 +190,17 @@ public class BeanServiceImpl implements BeanService {
                 .region(bean.getRegion())
                 .process(bean.getProcess())
                 .productImage(image)
-                .flavorNotes(flavorNote.toBuilder().flavorImageUrl(buildImageUrl(flavorNote.flavorImageUrl())).build())
+                .flavorNotes(flavorNote.toBuilder().flavorImageUrl(imageUrlResolver.toPublicUrl(flavorNote.flavorImageUrl())).build())
+                .build();
+    }
+
+    private ProductImageDTO toProductImageDto(ProductImage productImage) {
+        // 원두 이미지 DB 값은 objectKey이므로 공통 컴포넌트로 public URL을 조립합니다.
+        return ProductImageDTO.builder()
+                .productImageId(productImage.getProductImageId())
+                .imageType(productImage.getImageType())
+                .imageUrl(imageUrlResolver.toPublicUrl(productImage.getImageUrl()))
+                .sortOrder(productImage.getSortOrder())
                 .build();
     }
 

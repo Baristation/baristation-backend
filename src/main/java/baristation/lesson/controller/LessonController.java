@@ -1,5 +1,6 @@
 package baristation.lesson.controller;
 
+import baristation.bean.payload.dto.ProductDetailDTO;
 import baristation.common.logging.TraceIdUtil;
 import baristation.common.payload.response.ApiResponse;
 import baristation.common.payload.response.PageResponse;
@@ -42,6 +43,10 @@ public class LessonController {
      */
     @GetMapping("/{lessonId}")
     public ResponseEntity<ApiResponse<LessonDetailDTO>> getLessonDetail(@PathVariable Long lessonId) {
-        return ApiResponse.ok(lessonService.getLessonDetail(lessonId));
+        log.info("[Lesson]] getLessonDetail start. lessonId={}, traceId={}", lessonId, TraceIdUtil.getTraceId());
+        LessonDetailDTO response = lessonService.getLessonDetail(lessonId);
+        log.info("[Lesson]] getLessonDetail done. lessonId={}, hasDetail={}, traceId={}",
+                lessonId, response != null, TraceIdUtil.getTraceId());
+        return ApiResponse.ok(response);
     }
 }

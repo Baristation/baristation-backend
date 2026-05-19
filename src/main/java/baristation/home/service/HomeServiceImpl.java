@@ -9,11 +9,11 @@ import baristation.bean.repository.FlavorNoteRepository;
 import baristation.bean.repository.ProductFlavorNoteRepository;
 import baristation.bean.repository.ProductImageRepository;
 import baristation.bean.repository.ProductRepository;
+import baristation.common.r2.ImageUrlResolver;
 import baristation.home.payload.response.HomeFlavorResponse;
 import baristation.home.payload.response.HomeProductResponse;
 import baristation.home.payload.response.HomeResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,13 +27,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class HomeServiceImpl implements HomeService {
 
-    @Value("${cloudflare.r2.public-base-url}")
-    private String publicBaseUrl;
-
     private final ProductRepository productRepository;
     private final FlavorNoteRepository flavorNoteRepository;
     private final ProductFlavorNoteRepository productFlavorNoteRepository;
     private final ProductImageRepository productImageRepository;
+    private final ImageUrlResolver imageUrlResolver;
 
     /**
      * 향미 바로가기와 추천 상품 카드를 조합해 메인 페이지 응답을 생성합니다.
@@ -58,7 +56,7 @@ public class HomeServiceImpl implements HomeService {
         return flavorNotes.stream()
                 .map(flavorNote -> HomeFlavorResponse.of(
                         flavorNote,
-                        buildImageUrl(flavorNote.getFlavorImageUrl())
+                        imageUrlResolver.toPublicUrl(flavorNote.getFlavorImageUrl())
                 ))
                 .toList();
     }
@@ -119,30 +117,10 @@ public class HomeServiceImpl implements HomeService {
         Map<Long, String> productImageMap = new LinkedHashMap<>();
         for (ProductImage productImage : productImages) {
             Long productId = productImage.getProduct().getProductId();
-            productImageMap.putIfAbsent(productId, productImage.getImageUrl());
+            // 홈 응답에는 원두 이미지 objectKey에 public URL prefix를 붙여 내려줍니다.
+            productImageMap.putIfAbsent(productId, imageUrlResolver.toPublicUrl(productImage.getImageUrl()));
         }
 
         return productImageMap;
-    }
-
-    // flavor ImageUrl 조립
-    private String buildImageUrl(String imagePath) {
-        if (imagePath == null || imagePath.isBlank()) {
-            return null;
-        }
-
-        if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-            return imagePath;
-        }
-
-        String baseUrl = publicBaseUrl.endsWith("/")
-                ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1)
-                : publicBaseUrl;
-
-        String path = imagePath.startsWith("/")
-                ? imagePath
-                : "/" + imagePath;
-
-        return baseUrl + path;
     }
 }

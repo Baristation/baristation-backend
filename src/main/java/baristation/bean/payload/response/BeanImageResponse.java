@@ -2,7 +2,9 @@ package baristation.bean.payload.response;
 
 import baristation.bean.domain.ProductImage;
 import baristation.bean.enums.ImageType;
+import lombok.Builder;
 
+@Builder
 public record BeanImageResponse(
         Long productImageId,
         Long productId,

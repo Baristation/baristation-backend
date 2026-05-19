@@ -2,6 +2,7 @@ package baristation.lesson.service;
 
 import baristation.bean.enums.ImageType;
 import baristation.common.exception.CustomException;
+import baristation.common.r2.ImageUrlResolver;
 import baristation.common.r2.R2ImageService;
 import baristation.lesson.domain.Lesson;
 import baristation.lesson.domain.LessonImage;
@@ -28,6 +29,7 @@ public class LessonImageServiceImpl implements LessonImageService {
     private final LessonRepository lessonRepository;
     private final LessonImageRepository lessonImageRepository;
     private final R2ImageService r2ImageService;
+    private final ImageUrlResolver imageUrlResolver;
 
     private static final int THUMB_SORT_ORDER = 0;
 
@@ -51,13 +53,7 @@ public class LessonImageServiceImpl implements LessonImageService {
                             .build()
             );
 
-            return LessonImageResponse.builder()
-                    .lessonImageId(saved.getLessonImageId())
-                    .lessonId(saved.getLesson().getLessonId())
-                    .imageType(ImageType.THUMB)
-                    .imageUrl(imageUrl)
-                    .sortOrder(THUMB_SORT_ORDER)
-                    .build();
+            return toLessonImageResponse(saved);
         }
 
         // 대표 이미지가 있으면 기존 URL 경로 재사용이 아니라 항상 새 규칙 경로로 업로드
@@ -74,13 +70,7 @@ public class LessonImageServiceImpl implements LessonImageService {
         thumbImage.changeImageUrl(newImageUrl);
         thumbImage.changeSortOrder(THUMB_SORT_ORDER);
 
-        return LessonImageResponse.builder()
-                .lessonImageId(thumbImage.getLessonImageId())
-                .lessonId(thumbImage.getLesson().getLessonId())
-                .imageType(thumbImage.getImageType())
-                .imageUrl(thumbImage.getImageUrl())
-                .sortOrder(thumbImage.getSortOrder())
-                .build();
+        return toLessonImageResponse(thumbImage);
     }
 
     // 서브 이미지 추가
@@ -100,13 +90,7 @@ public class LessonImageServiceImpl implements LessonImageService {
 
         LessonImage saved = lessonImageRepository.save(subImage);
 
-        return LessonImageResponse.builder()
-                .lessonImageId(saved.getLessonImageId())
-                .lessonId(saved.getLesson().getLessonId())
-                .imageType(saved.getImageType())
-                .imageUrl(saved.getImageUrl())
-                .sortOrder(saved.getSortOrder())
-                .build();
+        return toLessonImageResponse(saved);
     }
 
     // 서브 이미지 교체
@@ -128,13 +112,7 @@ public class LessonImageServiceImpl implements LessonImageService {
 
         lessonImage.changeImageUrl(newImageUrl);
 
-        return LessonImageResponse.builder()
-                .lessonImageId(lessonImage.getLessonImageId())
-                .lessonId(lessonImage.getLesson().getLessonId())
-                .imageType(lessonImage.getImageType())
-                .imageUrl(lessonImage.getImageUrl())
-                .sortOrder(lessonImage.getSortOrder())
-                .build();
+        return toLessonImageResponse(lessonImage);
     }
 
     // 이미지 삭제
@@ -160,13 +138,7 @@ public class LessonImageServiceImpl implements LessonImageService {
 
         return lessonImageRepository.findByLesson_LessonIdOrderBySortOrderAsc(lessonId)
                 .stream()
-                .map(image -> LessonImageResponse.builder()
-                        .lessonImageId(image.getLessonImageId())
-                        .lessonId(image.getLesson().getLessonId())
-                        .imageType(image.getImageType())
-                        .imageUrl(image.getImageUrl())
-                        .sortOrder(image.getSortOrder())
-                        .build())
+                .map(this::toLessonImageResponse)
                 .toList();
     }
 
@@ -190,6 +162,17 @@ public class LessonImageServiceImpl implements LessonImageService {
         if (!lessonImage.getLesson().getLessonId().equals(lessonId)) {
             throw new CustomException(LESSON_IMAGE_NOT_FOUND);
         }
+    }
+
+    private LessonImageResponse toLessonImageResponse(LessonImage lessonImage) {
+        // DB에는 objectKey만 저장하고, 프론트 응답에는 공통 컴포넌트로 public URL prefix를 붙입니다.
+        return LessonImageResponse.builder()
+                .lessonImageId(lessonImage.getLessonImageId())
+                .lessonId(lessonImage.getLesson().getLessonId())
+                .imageType(lessonImage.getImageType())
+                .imageUrl(imageUrlResolver.toPublicUrl(lessonImage.getImageUrl()))
+                .sortOrder(lessonImage.getSortOrder())
+                .build();
     }
 
     private String uploadLessonThumb(MultipartFile file, Long lessonId) {
