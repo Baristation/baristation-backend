@@ -19,6 +19,7 @@ import baristation.lesson.repository.LessonScheduleRepository;
 import baristation.user.domain.Career;
 import baristation.user.repository.CareerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +39,9 @@ import static baristation.common.exception.ErrorCode.LESSON_NOT_FOUND;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class LessonServiceImpl implements LessonService {
+
+    @Value("${cloudflare.r2.public-base-url}")
+    private String publicBaseUrl;
 
     private final LessonRepository lessonRepository;
     private final LessonImageRepository lessonImageRepository;
@@ -88,16 +92,18 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public LessonDetailDTO getLessonDetail(Long lessonId) {
 
-        Lesson lesson = getLesson(lessonId);
-        List<LessonImageDTO> lessonImages = getLessonImages(lessonId);
-        List<String> careers = careerRepository.findByUser_UserId(lesson.getHostUser().getUserId())
-                .stream()
-                .map(Career::getTitle)
-                .toList();
+//        Lesson lesson = getLesson(lessonId);
+//        List<LessonImageDTO> lessonImages = getLessonImages(lessonId);
+//        List<String> careers = careerRepository.findByUser_UserId(lesson.getHostUser().getUserId())
+//                .stream()
+//                .map(Career::getTitle)
+//                .toList();
+//
+//        List<LocalDateTime> schedules =
+//        List<CurriculumDTO> curriculum
+//        return LessonDetailDTO.bui
 
-        List<LocalDateTime> schedules =
-        List<CurriculumDTO> curriculum
-        return LessonDetailDTO.bui
+        return null;
     }
 
     // 클래스 이미지 조회
@@ -110,7 +116,8 @@ public class LessonServiceImpl implements LessonService {
                 .map(image -> LessonImageDTO.builder()
                         .lessonImageId(image.getLessonImageId())
                         .imageType(image.getImageType())
-                        .imageUrl(image.getImageUrl())
+                        // 레슨 이미지 DB 값은 objectKey이므로 API 응답에서는 전체 public URL로 변환합니다.
+                        .imageUrl(buildImageUrl(image.getImageUrl()))
                         .sortOrder(image.getSortOrder())
                         .build())
                 .toList();
@@ -143,7 +150,8 @@ public class LessonServiceImpl implements LessonService {
                 .stream()
                 .collect(Collectors.toMap(
                         image -> image.getLesson().getLessonId(),
-                        LessonImage::getImageUrl,
+                        // 레슨 목록 썸네일도 응답 시 public URL prefix를 붙여 내려줍니다.
+                        image -> buildImageUrl(image.getImageUrl()),
                         (first, second) -> first
                 ));
     }
@@ -191,5 +199,25 @@ public class LessonServiceImpl implements LessonService {
                 .difficulty(lesson.getDifficultyLevel())
                 .hostProfileUrl(lesson.getHostUser().getProfileImageUrl())
                 .build();
+    }
+
+    private String buildImageUrl(String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return null;
+        }
+
+        if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+            return imagePath;
+        }
+
+        String baseUrl = publicBaseUrl.endsWith("/")
+                ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1)
+                : publicBaseUrl;
+
+        String path = imagePath.startsWith("/")
+                ? imagePath
+                : "/" + imagePath;
+
+        return baseUrl + path;
     }
 }

@@ -3,6 +3,7 @@ package baristation.bean.service;
 import baristation.bean.domain.Bean;
 import baristation.bean.domain.BeanProduct;
 import baristation.bean.domain.Product;
+import baristation.bean.domain.ProductImage;
 import baristation.bean.enums.ImageType;
 import baristation.bean.payload.dto.*;
 import baristation.bean.payload.request.ProductSearchRequest;
@@ -93,7 +94,7 @@ public class BeanServiceImpl implements BeanService {
         // 2. 상세 응답용 전체 이미지와 대표 썸네일을 분리 조회
         List<ProductImageDTO> images = productImageRepository.findByProduct_ProductIdOrderBySortOrderAsc(resolvedProductId)
                 .stream()
-                .map(ProductImageDTO::from)
+                .map(this::toProductImageDto)
                 .filter(image -> image.imageType() != ImageType.THUMB)
                 .toList();
 
@@ -102,7 +103,7 @@ public class BeanServiceImpl implements BeanService {
                         ImageType.THUMB
                 ).stream()
                 .findFirst()
-                .map(ProductImageDTO::from)
+                .map(this::toProductImageDto)
                 .orElse(null);
 
         List<FlavorNoteDTO> flavorNotes = getFlavorNotes(resolvedProductId);
@@ -171,7 +172,7 @@ public class BeanServiceImpl implements BeanService {
                 .stream()
                 .collect(Collectors.toMap(
                         image -> image.getProduct().getProductId(),
-                        ProductImageDTO::from,
+                        this::toProductImageDto,
                         (first, second) -> first
                 ));
     }
@@ -213,6 +214,16 @@ public class BeanServiceImpl implements BeanService {
                 .process(bean.getProcess())
                 .productImage(image)
                 .flavorNotes(flavorNote.toBuilder().flavorImageUrl(buildImageUrl(flavorNote.flavorImageUrl())).build())
+                .build();
+    }
+
+    private ProductImageDTO toProductImageDto(ProductImage productImage) {
+        // 원두 이미지 DB 값은 objectKey이므로 API 응답에서는 전체 public URL로 변환합니다.
+        return ProductImageDTO.builder()
+                .productImageId(productImage.getProductImageId())
+                .imageType(productImage.getImageType())
+                .imageUrl(productImage.getImageUrl())
+                .sortOrder(productImage.getSortOrder())
                 .build();
     }
 
