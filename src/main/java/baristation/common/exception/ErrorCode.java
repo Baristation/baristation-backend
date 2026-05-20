@@ -26,21 +26,25 @@ public enum ErrorCode {
     LESSON_SEARCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-2", "클래스 검색 중 오류가 발생했습니다."), // 601-2 이형동: 검색 처리 중 예상 밖의 서버 오류 (서버 로그 확인)
     LESSON_SEARCH_MAPPING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "601-3", "클래스 검색 결과를 응답으로 변환할 수 없습니다."), // 601-3 이형동: lesson이 없거나 hostUser가 없을 때
     LESSON_NOT_FOUND(HttpStatus.NOT_FOUND, "601-4", "클래스를 찾을 수 없습니다."), // 601-4 이형동: lesson이 없을 때
-     // 700xx: 사용자/권한 관련 오류
-     USER_INVALID_LOGIN(HttpStatus.BAD_REQUEST, "700-4", "올바르지 않은 로그인"),
-     USER_UNAUTHORIZED(HttpStatus.FORBIDDEN, "700-5", "권한이 없습니다."),
-     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "700-6", "사용자를 찾을 수 없습니다."),
-     USER_NICKNAME_REQUIRED(HttpStatus.BAD_REQUEST, "700-7", "닉네임은 필수 입력값입니다."),
-     USER_NICKNAME_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "700-8", "닉네임은 2~20자의 한글, 영문, 숫자, 언더바(_), 대시(-)만 사용 가능합니다."),
-     USER_NICKNAME_RESERVED(HttpStatus.BAD_REQUEST, "700-9", "사용할 수 없는 예약어입니다."),
-     USER_NICKNAME_DUPLICATE(HttpStatus.CONFLICT, "700-10", "이미 사용 중인 닉네임입니다."),
-     USER_NICKNAME_INVALID_SPECIAL_CHAR(HttpStatus.BAD_REQUEST, "700-11", "특수문자가 연속되거나 시작/끝에 위치할 수 없습니다."),
+
+    // 700xx: 사용자/권한 관련 오류
+    USER_INVALID_LOGIN(HttpStatus.BAD_REQUEST, "700-4", "올바르지 않은 로그인입니다."),
+    USER_UNAUTHORIZED(HttpStatus.FORBIDDEN, "700-5", "권한이 없습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "700-6", "사용자를 찾을 수 없습니다."),
+    USER_NICKNAME_REQUIRED(HttpStatus.BAD_REQUEST, "700-7", "닉네임은 필수 입력값입니다."),
+    USER_NICKNAME_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "700-8", "닉네임은 2~20자의 한글, 영문, 숫자, 언더바(_), 대시(-)만 사용 가능합니다."),
+    USER_NICKNAME_RESERVED(HttpStatus.BAD_REQUEST, "700-9", "사용할 수 없는 예약어입니다."),
+    USER_NICKNAME_DUPLICATE(HttpStatus.CONFLICT, "700-10", "이미 사용 중인 닉네임입니다."),
+    USER_NICKNAME_INVALID_SPECIAL_CHAR(HttpStatus.BAD_REQUEST, "700-11", "특수문자가 연속되거나 시작/끝에 위치할 수 없습니다."),
 
     // 701xx: 토큰 관련 오류
     TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "701-1", "유효하지 않은 토큰입니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "701-2", "토큰이 만료되었습니다."),
     REFRESH_TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED, "701-3", "Refresh Token이 일치하지 않거나 만료되었습니다."),
     REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "701-4", "Refresh Token 헤더는 필수입니다."),
+    TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "701-5", "토큰이 존재하지 않습니다."), // 701-5 최성우: 토큰이 존재하지 않을 때 추가
+    UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED, "701-6", "지원되지 않는 토큰입니다."), // 701-6 최성우: 지원되지 않는 토큰일 때 추가
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "701-7", "접근이 거부되었습니다."), // 701-7 최성우: 접근이 거부되었을 때 추가
 
     // 800xx: 이미지 관련
     INVALID_IMAGE_URL(HttpStatus.BAD_REQUEST, "800-1", "잘못된 imageUrl 형식입니다."),

@@ -143,13 +143,17 @@ public class JwtTokenProvider {
                 throw new CustomException(ErrorCode.TOKEN_INVALID);
             }
         } catch (SecurityException | MalformedJwtException e) {
+            // 서명이 변조되었거나, JWT 형식이 아닌 문자열이 들어온 경우
             throw new CustomException(ErrorCode.TOKEN_INVALID);
         } catch (ExpiredJwtException e) {
+            // 토큰의 유효기간이 만료된 경우
             throw new CustomException(ErrorCode.TOKEN_EXPIRED);
         } catch (UnsupportedJwtException e) {
-            throw new CustomException(ErrorCode.TOKEN_INVALID);
+            // 서버가 예상하는 형식과 다른 형식의 JWT인 경우
+            throw new CustomException(ErrorCode.UNSUPPORTED_TOKEN);
         } catch (IllegalArgumentException e) {
-                throw new CustomException(ErrorCode.TOKEN_INVALID);
+            // 토큰 값이 null이거나 비어있는 경우
+            throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
         }
     }
 

@@ -42,6 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 에러를 필터에서 숨기거나 자체 처리하지 않고,
             // GlobalExceptionHandler(@RestControllerAdvice)로 그대로 던져버림
             handlerExceptionResolver.resolveException(request, response, null, e);
+            return;
         }
 
         filterChain.doFilter(request, response);
