@@ -13,6 +13,7 @@ public record LessonDetailDTO(
         String hostName,
         String hostProfileUrl,
         String lessonCategory,
+        String difficulty,
         List<String> careers,
         String region,
         String city,

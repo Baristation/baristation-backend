@@ -125,6 +125,7 @@ public class LessonServiceImpl implements LessonService {
                 .hostName(lesson.getHostUser().getNickname())
                 .hostProfileUrl(imageUrlResolver.toPublicUrl(lesson.getHostUser().getProfileImageUrl()))
                 .lessonCategory(lesson.getLessonCategory().label())
+                .difficulty(lesson.getDifficultyLevel().label())
                 .careers(careers)
                 .region(lesson.getRegion().label())
                 .city(lesson.getCity())
