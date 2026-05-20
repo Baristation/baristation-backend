@@ -18,6 +18,6 @@ public record LessonDTO(
         String place,
         LocalDateTime nextDate,
         Integer price,
-        DifficultyLevel difficulty
+        String difficulty
 ) {
 }
