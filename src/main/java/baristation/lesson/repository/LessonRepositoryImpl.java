@@ -126,8 +126,14 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
     }
 
     // 난이도가 정확히 일치하는 클래스를 찾는 조건을 만든다.
-    private BooleanExpression difficultyEq(DifficultyLevel difficulty) {
-        return difficulty == null ? null : lesson.difficultyLevel.eq(difficulty);
+    private BooleanExpression difficultyEq(String difficulty) {
+        DifficultyLevel normalizedDifficultyLevel = DifficultyLevel.from(difficulty);
+        if (normalizedDifficultyLevel == null) {
+            return null;
+        }
+
+        // Difficulty.region은 Difficulty enum 타입이므로 문자열 name이 아니라 enum 값 자체로 비교한다.
+        return lesson.difficultyLevel.eq(normalizedDifficultyLevel);
     }
 
     // 최신순을 기본 정렬로 사용
