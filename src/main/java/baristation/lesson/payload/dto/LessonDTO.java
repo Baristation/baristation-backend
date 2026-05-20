@@ -13,6 +13,7 @@ public record LessonDTO(
         String subTitle,
         String hostName,
         String hostProfileUrl,
+        String lessonCategory,
         String region,
         String place,
         LocalDateTime nextDate,

@@ -577,10 +577,10 @@ ON DUPLICATE KEY UPDATE product_id=new_row.product_id, flavor_note_id=new_row.fl
 -- =========================================================
 
 INSERT INTO users (user_id, email, provider, provider_id, nickname, profile_image_url, role, created_at, updated_at) VALUES
-    (1, 'host.v60@baristation.local', 'GOOGLE', 'mock-host-v60', '브루잉 가이드 민준', '/users/1/profile/v1/host-v60.png', 'HOST', '2026-05-19 00:00:00', '2026-05-19 00:00:00'),
-    (2, 'host.roast@baristation.local', 'KAKAO', 'mock-host-roast', '로스팅 큐레이터 서연', '/users/2/profile/v1/host-roast.png', 'HOST', '2026-05-19 00:00:00', '2026-05-19 00:00:00'),
-    (3, 'host.sca@baristation.local', 'NAVER', 'mock-host-sca', '자격증 코치 현우', '/users/3/profile/v1/host-sca.png', 'HOST', '2026-05-19 00:00:00', '2026-05-19 00:00:00'),
-    (4, 'host.homecafe@baristation.local', 'GOOGLE', 'mock-host-homecafe', '홈카페 멘토 다은', '/users/4/profile/v1/host-homecafe.png', 'HOST', '2026-05-19 00:00:00', '2026-05-19 00:00:00')
+    (1, 'host.v60@baristation.local', 'GOOGLE', 'mock-host-v60', '브루잉 가이드 민준', '/users/1/profile/basic_profile.png', 'HOST', '2026-05-19 00:00:00', '2026-05-19 00:00:00'),
+    (2, 'host.roast@baristation.local', 'KAKAO', 'mock-host-roast', '로스팅 큐레이터 서연', '/users/1/profile/basic_profile.png', 'HOST', '2026-05-19 00:00:00', '2026-05-19 00:00:00'),
+    (3, 'host.sca@baristation.local', 'NAVER', 'mock-host-sca', '자격증 코치 현우', '/users/1/profile/basic_profile.png', 'HOST', '2026-05-19 00:00:00', '2026-05-19 00:00:00'),
+    (4, 'host.homecafe@baristation.local', 'GOOGLE', 'mock-host-homecafe', '홈카페 멘토 다은', '/users/1/profile/basic_profile.png', 'HOST', '2026-05-19 00:00:00', '2026-05-19 00:00:00')
 AS new_row
 ON DUPLICATE KEY UPDATE
     email = new_row.email,
