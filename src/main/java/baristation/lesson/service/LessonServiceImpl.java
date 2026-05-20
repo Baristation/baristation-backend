@@ -265,7 +265,7 @@ public class LessonServiceImpl implements LessonService {
                 .nextDate(nextSchedule == null ? null : nextSchedule.getLessonDate())
                 .price(nextSchedule == null ? null : nextSchedule.getPrice())
                 .difficulty(lesson.getDifficultyLevel())
-                .hostProfileUrl(lesson.getHostUser().getProfileImageUrl())
+                .hostProfileUrl(imageUrlResolver.toPublicUrl(lesson.getHostUser().getProfileImageUrl()))
                 .build();
     }
 }
