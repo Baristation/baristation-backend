@@ -91,7 +91,6 @@ public class LessonServiceImpl implements LessonService {
         }
     }
 
-    // 추후 구현
     @Override
     public LessonDetailDTO getLessonDetail(Long lessonId) {
 
