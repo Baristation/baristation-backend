@@ -182,7 +182,14 @@ public class BeanServiceImpl implements BeanService {
                                            ProductImageDTO image,
                                            FlavorNoteDTO flavorNote) {
 
-
+        // 향미 정보가 없는 경우 null-safe 처리
+        FlavorNoteDTO processedFlavorNote = null;
+        if (flavorNote != null) {
+            processedFlavorNote = flavorNote.toBuilder()
+                    .flavorImageUrl(imageUrlResolver.toPublicUrl(flavorNote.flavorImageUrl()))
+                    .build();
+        }
+        
         return ProductSummaryDTO.builder()
                 .productId(productId)
                 .beanNameKo(bean.getNameKo())
@@ -191,7 +198,7 @@ public class BeanServiceImpl implements BeanService {
                 .region(bean.getRegion())
                 .process(bean.getProcess())
                 .productImage(image)
-                .flavorNotes(flavorNote.toBuilder().flavorImageUrl(imageUrlResolver.toPublicUrl(flavorNote.flavorImageUrl())).build())
+                .flavorNotes(processedFlavorNote)
                 .build();
     }
 
