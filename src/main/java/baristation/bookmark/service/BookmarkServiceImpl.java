@@ -50,11 +50,8 @@ public class BookmarkServiceImpl implements BookmarkService {
         // 이미 존재하면 삭제
         productBookmarkRepository.findByUserAndProduct(userProxy, product)
                 .ifPresentOrElse(
-                        bookmark -> {
-                            productBookmarkRepository.delete(bookmark);
-                            log.info("[Bookmark] removed. userId={}, productId={}, traceId={}",
-                                    userId, productId, TraceIdUtil.getTraceId());
-                        },
+                        bookmark ->
+                            productBookmarkRepository.delete(bookmark),
                         () -> {
                             ProductBookmark newBookmark = ProductBookmark
                                     .builder()
@@ -62,8 +59,6 @@ public class BookmarkServiceImpl implements BookmarkService {
                                     .product(product)
                                     .build();
                             productBookmarkRepository.save(newBookmark);
-                            log.info("[Bookmark] created. userId={}, productId={}, traceId={}",
-                                    userId, productId, TraceIdUtil.getTraceId());
                         }
                 );
     }

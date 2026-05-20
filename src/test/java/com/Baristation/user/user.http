@@ -18,7 +18,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJpY
 // eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJuYW1lIjoi7LWc7ISx7JqwIiwiZW1haWwiOiJncmVlbnRqZGRuQGdtYWlsLmNvbSIsInByb2ZpbGVJbWFnZVVybCI6IiIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3Nzg5MjM2MDQsImV4cCI6MTc3ODk2NjgwNH0.GKHPR5yzBZxt87YBtaiVI40E01oe4S0jBLXqHUU5njg
 
 ### 3-1. 회원 정보 수정 테스트 (닉네임만)
-PATCH http://localhost:8080/api/auth/update
+PUT http://localhost:8080/api/auth/update
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJuYW1lIjoi7LWc7ISx7JqwIiwiZW1haWwiOiJncmVlbnRqZGRuQGdtYWlsLmNvbSIsInByb2ZpbGVJbWFnZVVybCI6IiIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3Nzg5MjQxMzYsImV4cCI6MTc3ODk2NzMzNn0.MxjynJvs733q8tyRj8Nr-GNyrhLVC2T9Yezpgpb_40Y
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
@@ -32,7 +32,7 @@ Content-Type: application/json
 --WebAppBoundary--
 
 ### 3-2. 회원 정보 수정 테스트 (닉네임 + 프로필 이미지)
-PATCH http://localhost:8080/api/auth/update
+PUT http://localhost:8080/api/auth/update
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJuYW1lIjoi7LWc7ISx7JqwIiwiZW1haWwiOiJncmVlbnRqZGRuQGdtYWlsLmNvbSIsInByb2ZpbGVJbWFnZVVybCI6IiIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3Nzg5MjQxMzYsImV4cCI6MTc3ODk2NzMzNn0.MxjynJvs733q8tyRj8Nr-GNyrhLVC2T9Yezpgpb_40Y
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
