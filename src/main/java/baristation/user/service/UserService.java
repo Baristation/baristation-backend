@@ -116,20 +116,23 @@ public class UserService {
         if (profileImage != null && !profileImage.isEmpty()) {
             try {
                 String oldImageUrl = user.getProfileImageUrl();
-                String newImageUrl = r2ImageService.uploadProfileImage(profileImage, userId);
-                user.updateProfileImageUrl(newImageUrl);
+                String newImageUrl;
 
                 if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
-                    r2ImageService.deleteByUrl(oldImageUrl);
+                    // 기존 이미지가 있으면 해당 위치에 덮어쓰기(update)하여 멱등성 보장
+                    newImageUrl = r2ImageService.updateByUrl(profileImage, oldImageUrl);
+                } else {
+                    // 기존 이미지가 없으면 새로 업로드
+                    newImageUrl = r2ImageService.uploadProfileImage(profileImage, userId);
                 }
+
+                user.updateProfileImageUrl(newImageUrl);
             } catch (IOException e) {
                 String traceId = TraceIdUtil.getTraceId();
                 log.error("프로필 이미지 업로드 실패. traceId={}, userId={}", traceId, userId, e);
                 throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
             }
         }
-
-
     }
 
     private String resolveToken(HttpServletRequest request) {

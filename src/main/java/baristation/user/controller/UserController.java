@@ -3,6 +3,7 @@ package baristation.user.controller;
 import baristation.common.cookie.CookieUtil;
 import baristation.common.logging.TraceIdUtil;
 import baristation.common.payload.response.ApiResponse;
+import baristation.security.annotation.CurrentUserId;
 import baristation.security.payload.dto.TokenPair;
 import baristation.security.payload.dto.TokenResponse;
 import baristation.user.payload.dto.UserUpdateRequest;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -61,15 +63,13 @@ public class UserController {
         return ApiResponse.ok();
     }
 
-    @PatchMapping("/update")
+    @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Void>> updateUserInfo(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @CurrentUserId Long userId,
             @RequestPart(value = "data") UserUpdateRequest updateRequest,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
 
         log.info("[Auth] updateUserInfo start. traceId={}", TraceIdUtil.getTraceId());
-
-        Long userId = Long.valueOf(userDetails.getUsername());
         userService.updateUser(userId, updateRequest, profileImage);
 
         log.info("[Auth] updateUserInfo done. traceId={}", TraceIdUtil.getTraceId());
