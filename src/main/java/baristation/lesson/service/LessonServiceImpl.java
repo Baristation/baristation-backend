@@ -134,6 +134,7 @@ public class LessonServiceImpl implements LessonService {
                 .duration(firstSchedule == null ? null : firstSchedule.getDuration())
                 .curriculum(curriculum)
                 .price(firstSchedule == null ? null : firstSchedule.getPrice())
+                .lessonReservationUrl(lesson.getLessonReservationUrl())
                 .build();
     }
 

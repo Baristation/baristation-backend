@@ -21,6 +21,7 @@ public record LessonDetailDTO(
         List<LocalDateTime> schedules,
         Integer duration,
         List<CurriculumDTO> curriculum,
-        Integer price
+        Integer price,
+        String lessonReservationUrl
 ) {
 }

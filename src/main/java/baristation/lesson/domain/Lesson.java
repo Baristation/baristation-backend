@@ -58,6 +58,9 @@ public class Lesson extends BaseTimeEntity {
     @Column(name = "address", length = 255)
     private String address;
 
+    @Column(name = "lesson_reservation_url")
+    private String lessonReservationUrl;
+
     @Column(name = "latitude", precision = 10, scale = 7)
     private BigDecimal latitude;
 
