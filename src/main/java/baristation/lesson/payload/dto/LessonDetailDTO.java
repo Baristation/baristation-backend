@@ -12,6 +12,8 @@ public record LessonDetailDTO(
         String title,
         String hostName,
         String hostProfileUrl,
+        String lessonCategory,
+        String difficulty,
         List<String> careers,
         String region,
         String city,
@@ -19,6 +21,7 @@ public record LessonDetailDTO(
         List<LocalDateTime> schedules,
         Integer duration,
         List<CurriculumDTO> curriculum,
-        Integer price
+        Integer price,
+        String lessonReservationUrl
 ) {
 }

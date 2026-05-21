@@ -6,6 +6,6 @@ public record LessonSearchRequest(
         String keyword,
         String category,
         String region,
-        DifficultyLevel difficulty
+        String difficulty
         ) {
 }

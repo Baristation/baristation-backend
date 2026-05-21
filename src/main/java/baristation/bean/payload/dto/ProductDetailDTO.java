@@ -20,7 +20,6 @@ public record ProductDetailDTO(
         Double body,
         Double balance,
         List<ProductImageDTO> images
-
 ) {
 }
 

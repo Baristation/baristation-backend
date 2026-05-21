@@ -13,10 +13,11 @@ public record LessonDTO(
         String subTitle,
         String hostName,
         String hostProfileUrl,
+        String lessonCategory,
         String region,
         String place,
         LocalDateTime nextDate,
         Integer price,
-        DifficultyLevel difficulty
+        String difficulty
 ) {
 }
