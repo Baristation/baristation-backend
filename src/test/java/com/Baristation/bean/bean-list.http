@@ -36,4 +36,4 @@ GET http://localhost:8080/api/products/search?page=0&size=12
 
 ### 13. 원두 상세 조회 (1)
 GET http://localhost:8080/api/products/1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2Iiwicm9sZSI6IlVTRVIiLCJuYW1lIjoi7LWc7ISx7JqwIiwiZW1haWwiOiJncmVlbnRqZGRuQGdtYWlsLmNvbSIsInByb2ZpbGVJbWFnZVVybCI6IiIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3Nzk0MzMyNDYsImV4cCI6MTc3OTQ3NjQ0Nn0.Zbyt2EW8iz4KOtaqJPFqI9-j_sVYV34hMjYzX8oD2yE
+Authorization: Bearer {{JWT_TOKEN}}
