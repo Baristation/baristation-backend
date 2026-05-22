@@ -7,6 +7,7 @@ import baristation.bean.service.BeanService;
 import baristation.common.logging.TraceIdUtil;
 import baristation.common.payload.response.ApiResponse;
 import baristation.common.payload.response.PageResponse;
+import baristation.security.annotation.CurrentUserId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -36,9 +37,12 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ApiResponse<ProductDetailDTO>> getProductDetail(@PathVariable Long productId) {
-        log.info("[Product] getProductDetail start. productId={}, traceId={}", productId, TraceIdUtil.getTraceId());
-        ProductDetailDTO response = beanService.getProductDetail(productId);
+    public ResponseEntity<ApiResponse<ProductDetailDTO>> getProductDetail(
+            @PathVariable Long productId,
+            @CurrentUserId Long userId) {
+        log.info("[Product] getProductDetail start. productId={}, userId={}, traceId={}",
+                productId, userId, TraceIdUtil.getTraceId());
+        ProductDetailDTO response = beanService.getProductDetail(productId, userId);
         log.info("[Product] getProductDetail done. productId={}, hasDetail={}, traceId={}",
                 productId, response != null, TraceIdUtil.getTraceId());
         return ApiResponse.ok(response);
