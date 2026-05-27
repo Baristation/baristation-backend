@@ -30,6 +30,12 @@ public class TraceLoggingFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
+        String uri = request.getRequestURI();
+
+        if (uri.startsWith("/swagger-ui") || uri.startsWith("/api-docs") || uri.equals("/favicon.ico")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         long startTime = System.currentTimeMillis();
 
         String traceId = request.getHeader(TRACE_ID_HEADER);

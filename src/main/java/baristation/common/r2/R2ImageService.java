@@ -1,8 +1,7 @@
 package baristation.common.r2;
 
+import baristation.common.annotation.ExternalApiLog;
 import baristation.common.exception.CustomException;
-import baristation.common.logging.TraceIdUtil;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,7 +18,6 @@ import static baristation.common.exception.ErrorCode.*;
 
 @Service
 @ConditionalOnProperty(prefix = "app.r2", name = "enabled", havingValue = "true", matchIfMissing = true)
-@Slf4j
 public class R2ImageService {
 
     // 허용할 이미지 타입
@@ -107,6 +105,7 @@ public class R2ImageService {
     }
 
     // objectKey 기준으로 파일 삭제
+    @ExternalApiLog("R2 데이터 삭제")
     public void deleteByObjectKey(String objectKey) {
         DeleteObjectRequest request = DeleteObjectRequest.builder()
                 .bucket(r2Properties.bucketName())
@@ -114,35 +113,30 @@ public class R2ImageService {
                 .build();
 
         s3Client.deleteObject(request);
-        log.info("[R2] delete success. objectKey={}, traceId={}", objectKey, TraceIdUtil.getTraceId());
     }
 
     /**
      * 공개 URL에서 objectKey만 추출
      * 예: https://.../beans/1/thumb.webp -> beans/1/thumb.webp
      */
+    @ExternalApiLog("R2 이미지 URL 검증 및 objectKey 추출")
     public String extractObjectKey(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) {
             throw new CustomException(INVALID_IMAGE_URL);
         }
 
         if (imageUrlResolver.isExternalUrl(imageUrl)) {
-            log.warn("[R2] reject external image URL. imageUrl={}, traceId={}",
-                    imageUrl, TraceIdUtil.getTraceId());
             throw new CustomException(INVALID_IMAGE_URL);
         }
 
         String objectKey = imageUrlResolver.toObjectKey(imageUrl);
-        log.debug("[R2] extract objectKey. objectKey={}, traceId={}",
-                objectKey, TraceIdUtil.getTraceId());
         return objectKey;
     }
 
     // objectKey를 공개 URL로 변환
+    @ExternalApiLog("R2 이미지 공개 URL 조립")
     public String buildPublicUrl(String objectKey) {
         String publicUrl = imageUrlResolver.toPublicUrl(objectKey);
-        log.debug("[R2] build public URL. objectKey={}, publicUrl={}, traceId={}",
-                objectKey, publicUrl, TraceIdUtil.getTraceId());
         return publicUrl;
     }
 
@@ -183,6 +177,7 @@ public class R2ImageService {
     }
 
     // R2에 파일 업로드
+    @ExternalApiLog("R2 파일 업로드")
     private void putObject(MultipartFile file, String objectKey) throws IOException {
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(r2Properties.bucketName())
@@ -191,8 +186,6 @@ public class R2ImageService {
                 .build();
 
         s3Client.putObject(request, RequestBody.fromBytes(file.getBytes()));
-        log.info("[R2] put success. objectKey={}, size={}, traceId={}",
-                objectKey, file.getSize(), TraceIdUtil.getTraceId());
     }
 
     /**
