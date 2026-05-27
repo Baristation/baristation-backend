@@ -1,5 +1,6 @@
 package baristation.user.service;
 
+import baristation.common.annotation.ExternalApiLog;
 import baristation.common.exception.CustomException;
 import baristation.common.exception.ErrorCode;
 import baristation.user.domain.User;
@@ -31,6 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
 
     @Override
+    @ExternalApiLog("OAuth2 User Loading")
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
