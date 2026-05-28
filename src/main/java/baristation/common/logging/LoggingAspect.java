@@ -36,7 +36,6 @@ public class LoggingAspect {
         String apiDescription = externalApiLog.value().isEmpty() ? "" : " [" + externalApiLog.value() + "]";
 
         long startTime = System.currentTimeMillis();
-
         try {
             Object result = jp.proceed();
             long duration = System.currentTimeMillis() - startTime;

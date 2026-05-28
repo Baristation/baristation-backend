@@ -1,10 +1,7 @@
 package baristation.user.event;
 
-import baristation.common.annotation.ExternalApiLog;
-import baristation.common.logging.TraceIdUtil;
 import baristation.common.r2.R2ImageService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -22,7 +19,6 @@ import java.util.List;
  */
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class R2FileDeleteEventListener {
 
     private final R2ImageService r2ImageService;
@@ -34,29 +30,29 @@ public class R2FileDeleteEventListener {
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async
-    @ExternalApiLog("R2 File Deletion on User Deletion")
     public void handleUserDeletedEvent(UserDeletedEvent event) {
         List<String> fileKeys = event.r2FileKeys();
-        if (fileKeys.isEmpty()) {
-            return;
-        }
+        if (fileKeys.isEmpty()) return;
+
+        boolean hasError = false;
+        StringBuilder errorSummary = new StringBuilder();
 
         for (String fileKey : fileKeys) {
-            if (fileKey == null || fileKey.isEmpty()) {
-                //
-                log.warn("[R2FileDelete] 빈 파일 키가 전달되었습니다. userId={}", event.userId());
-                continue;
-            }
+            if (fileKey == null || fileKey.isEmpty()) continue;
 
             try {
-                // R2 스토리지에서 파일 삭제
                 r2ImageService.deleteByUrl(fileKey);
             } catch (Exception e) {
-                log.error("[R2FileDelete] 파일 삭제 실패. userId={}, fileKey={}, traceId={}, error={}",
-                        event.userId(), fileKey, TraceIdUtil.getTraceId(), e.getMessage(), e);
+                hasError = true;
+                errorSummary.append(String.format("[fileKey=%s, error=%s] ", fileKey, e.getMessage()));
+                // 💡 여기서 throw 하지 않음으로써, 하나의 파일이 실패해도 다음 파일 삭제를 계속 진행합니다!
             }
         }
 
+        // 💡 모든 파일 순회가 끝난 후, 하나라도 실패가 있었다면 예외를 발생시켜 AOP가 캐치하게 만듭니다.
+        if (hasError) {
+            throw new RuntimeException("R2 파일 삭제 중 일부 실패 발생. userId=" + event.userId() + " -> " + errorSummary);
+        }
     }
 }
 

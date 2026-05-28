@@ -44,6 +44,7 @@ public class R2ImageService {
      * 원두 대표(THUMB) 이미지 업로드
      * 저장 경로: beans/{productId}/thumb.webp
      */
+    @ExternalApiLog("R2 원두 Thumb 이미지 업로드")
     public String uploadBeanThumb(MultipartFile file, Long beanId) throws IOException {
         // 원두 이미지는 DB에 전체 URL이 아니라 objectKey 형태로 저장합니다.
         return uploadFixedFile(file, buildBeanFolder(beanId), "thumb");
@@ -53,24 +54,27 @@ public class R2ImageService {
      * 원두 서브(SUB) 이미지 업로드
      * 저장 경로: beans/{productId}/sub_{uuid}.webp
      */
+    @ExternalApiLog("R2 원두 Sub 이미지 업로드")
     public String uploadBeanSubImage(MultipartFile file, Long beanId) throws IOException {
         // 원두 이미지는 DB에 public URL prefix 없이 path만 저장합니다.
         return uploadUniqueFile(file, buildBeanFolder(beanId), "sub");
     }
 
     /**
-     * 클래스 대표(THUMB) 이미지 업로드
+     * 레슨 대표(THUMB) 이미지 업로드
      * 저장 경로: lessons/{lessonId}/thumb.webp
      */
+    @ExternalApiLog("R2 레슨 Thumb 이미지 업로드")
     public String uploadLessonThumb(MultipartFile file, Long lessonId) throws IOException {
         // 레슨 이미지는 향미 이미지와 동일하게 DB에 path/objectKey만 저장합니다.
         return uploadFixedFile(file, buildLessonFolder(lessonId), "thumb");
     }
 
     /**
-     * 클래스 서브(SUB) 이미지 업로드
+     * 레슨 서브(SUB) 이미지 업로드
      * 저장 경로: lessons/{lessonId}/sub_{uuid}.webp
      */
+    @ExternalApiLog("R2 레슨 Sub 이미지 업로드")
     public String uploadLessonSubImage(MultipartFile file, Long lessonId) throws IOException {
         // 레슨 이미지는 저장 시 objectKey만 남기고, 응답 서비스에서 public URL prefix를 붙입니다.
         return uploadUniqueFile(file, buildLessonFolder(lessonId), "sub");
@@ -80,12 +84,14 @@ public class R2ImageService {
      * 프로필 이미지 업로드
      * 최종 저장 경로: users/{userId}/profile.{확장자}
      */
+    @ExternalApiLog("R2 프로필 이미지 업로드")
     public String uploadProfileImage(MultipartFile file, Long userId) throws IOException {
         // 프로필 이미지는 저장 시 objectKey만 남기고, 응답 서비스에서 public URL prefix를 붙입니다.
         return uploadUniqueFile(file, buildUserFolder(userId), "profile");
     }
 
     // 기존 objectKey 위치의 파일 업데이트
+    @ExternalApiLog("R2 이미지 objectKey 기준 업데이트")
     public String updateByObjectKey(MultipartFile file, String objectKey) throws IOException {
         validate(file);
         putObject(file, objectKey);
@@ -93,19 +99,20 @@ public class R2ImageService {
     }
 
     // imageUrl에서 objectKey를 추출한 뒤 해당 위치의 파일 업데이트
+    @ExternalApiLog("R2 이미지 url 기준 업데이트")
     public String updateByUrl(MultipartFile file, String imageUrl) throws IOException {
         String objectKey = extractObjectKey(imageUrl);
         return updateByObjectKey(file, objectKey);
     }
 
     // imageUrl 기준으로 파일 삭제
+    @ExternalApiLog("R2 이미지 url 기준 삭제")
     public void deleteByUrl(String imageUrl) {
         String objectKey = extractObjectKey(imageUrl);
         deleteByObjectKey(objectKey);
     }
 
     // objectKey 기준으로 파일 삭제
-    @ExternalApiLog("R2 데이터 삭제")
     public void deleteByObjectKey(String objectKey) {
         DeleteObjectRequest request = DeleteObjectRequest.builder()
                 .bucket(r2Properties.bucketName())
@@ -119,7 +126,6 @@ public class R2ImageService {
      * 공개 URL에서 objectKey만 추출
      * 예: https://.../beans/1/thumb.webp -> beans/1/thumb.webp
      */
-    @ExternalApiLog("R2 이미지 URL 검증 및 objectKey 추출")
     public String extractObjectKey(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) {
             throw new CustomException(INVALID_IMAGE_URL);
@@ -134,7 +140,6 @@ public class R2ImageService {
     }
 
     // objectKey를 공개 URL로 변환
-    @ExternalApiLog("R2 이미지 공개 URL 조립")
     public String buildPublicUrl(String objectKey) {
         String publicUrl = imageUrlResolver.toPublicUrl(objectKey);
         return publicUrl;
@@ -177,7 +182,6 @@ public class R2ImageService {
     }
 
     // R2에 파일 업로드
-    @ExternalApiLog("R2 파일 업로드")
     private void putObject(MultipartFile file, String objectKey) throws IOException {
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(r2Properties.bucketName())

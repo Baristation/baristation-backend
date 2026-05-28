@@ -10,7 +10,7 @@ GET http://localhost:8080/oauth2/authorization/kakao
 
 ### 1. 토큰 재발급 테스트
 POST http://localhost:8080/api/auth/refresh
-Cookie: refreshToken={{JWT_REFRESH_TOKEN}}
+Cookie: refreshToken={{REFRESH_TOKEN}}
 ### 2. 로그아웃 테스트
 POST http://localhost:8080/api/auth/logout
 Authorization: Bearer {{JWT_TOKEN}}
@@ -33,7 +33,7 @@ Content-Type: application/json
 
 ### 3-2. 회원 정보 수정 테스트 (닉네임 + 프로필 이미지)
 PUT http://localhost:8080/api/auth/update
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2Iiwicm9sZSI6IlVTRVIiLCJuYW1lIjoi7LWc7ISx7JqwIiwiZW1haWwiOiJncmVlbnRqZGRuQGdtYWlsLmNvbSIsInByb2ZpbGVJbWFnZVVybCI6IiIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3Nzk5MzkyMzQsImV4cCI6MTc3OTk4MjQzNH0.BG7RWI5MyyEhpm_xERIctEuKLA75qDJNd6fyNzJp0Dk
+Authorization: Bearer {{JWT_TOKEN}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
 --WebAppBoundary
@@ -51,5 +51,5 @@ Content-Type: image/png
 --WebAppBoundary--
 ### 4. 회원 탈퇴 테스트
 DELETE http://localhost:8080/api/auth/delete
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2Iiwicm9sZSI6IlVTRVIiLCJuYW1lIjoi7LWc7ISx7JqwIiwiZW1haWwiOiJncmVlbnRqZGRuQGdtYWlsLmNvbSIsInByb2ZpbGVJbWFnZVVybCI6IiIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3Nzk5MzkyMzQsImV4cCI6MTc3OTk4MjQzNH0.BG7RWI5MyyEhpm_xERIctEuKLA75qDJNd6fyNzJp0Dk
-Cookie: refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTc3OTkzOTIzNCwiZXhwIjoxNzgyNTMxMjM0fQ.gIe4ECSxVpHqgyQJQKL77aaOf-GiDVOIgBsLrAYCvIY
+Authorization: Bearer {{JWT_TOKEN}}
+Cookie: refreshToken={{REFRESH_TOKEN}}
