@@ -1,5 +1,6 @@
 package baristation.user.event;
 
+import baristation.common.annotation.ExternalApiLog;
 import baristation.common.logging.TraceIdUtil;
 import baristation.common.r2.R2ImageService;
 import lombok.RequiredArgsConstructor;
@@ -33,20 +34,16 @@ public class R2FileDeleteEventListener {
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async
+    @ExternalApiLog("R2 File Deletion on User Deletion")
     public void handleUserDeletedEvent(UserDeletedEvent event) {
         List<String> fileKeys = event.r2FileKeys();
-
-        log.info("[R2FileDelete] 탈퇴 회원[{}]의 파일 삭제 시작. fileCount={}, traceId={}",
-                event.userId(), fileKeys.size(), TraceIdUtil.getTraceId());
-
         if (fileKeys.isEmpty()) {
-            log.info("[R2FileDelete] 삭제할 파일이 없습니다. userId={}, traceId={}",
-                    event.userId(), TraceIdUtil.getTraceId());
             return;
         }
 
         for (String fileKey : fileKeys) {
             if (fileKey == null || fileKey.isEmpty()) {
+                //
                 log.warn("[R2FileDelete] 빈 파일 키가 전달되었습니다. userId={}", event.userId());
                 continue;
             }
@@ -54,18 +51,12 @@ public class R2FileDeleteEventListener {
             try {
                 // R2 스토리지에서 파일 삭제
                 r2ImageService.deleteByUrl(fileKey);
-                log.info("[R2FileDelete] 파일 삭제 성공. userId={}, fileKey={}, traceId={}",
-                        event.userId(), fileKey, TraceIdUtil.getTraceId());
             } catch (Exception e) {
-                // 비동기 스레드에서 예외가 발생해도 DB 트랜잭션에는 영향을 주지 않음
-                // 고아 파일이 되며, 수동 정리 스크립트나 모니터링을 통해 처리 필요
                 log.error("[R2FileDelete] 파일 삭제 실패. userId={}, fileKey={}, traceId={}, error={}",
                         event.userId(), fileKey, TraceIdUtil.getTraceId(), e.getMessage(), e);
             }
         }
 
-        log.info("[R2FileDelete] 탈퇴 회원[{}]의 파일 삭제 완료. traceId={}",
-                event.userId(), TraceIdUtil.getTraceId());
     }
 }
 

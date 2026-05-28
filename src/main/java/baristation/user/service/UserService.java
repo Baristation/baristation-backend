@@ -144,7 +144,7 @@ public class UserService {
 
         // 6. R2 파일 삭제 이벤트 발행
         // (DB 트랜잭션 커밋 후 AFTER_COMMIT 리스너가 비동기로 처리)
-        eventPublisher.publishEvent(new UserDeletedEvent(userId, fileKeysToDelete));
+        eventPublisher.publishEvent(new UserDeletedEvent(userId, fileKeysToDelete, TraceIdUtil.getTraceId()));
 
         log.info("[Auth] User withdrawal completed. userId={}, fileCount={}, traceId={}",
                 userId, fileKeysToDelete.size(), TraceIdUtil.getTraceId());

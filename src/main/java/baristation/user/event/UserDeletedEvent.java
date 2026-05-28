@@ -8,7 +8,8 @@ import java.util.List;
  */
 public record UserDeletedEvent(
     Long userId,
-    List<String> r2FileKeys // 삭제해야 할 R2 파일의 키(경로) 목록
+    List<String> r2FileKeys, // 삭제해야 할 R2 파일의 키(경로) 목록
+    String traceId
 ) {
 
     public UserDeletedEvent {
